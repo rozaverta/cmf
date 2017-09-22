@@ -1,6 +1,6 @@
 {
 	"name": "rozaverta/cmf",
-	"description": "The Elastic CMF Framework.",
+	"description": "The Elastic CMF (Anaconda).",
 	"keywords": ["framework", "elastic", "els", "anaconda"],
 	"homepage": "http://rozaverta.com",
 	"license": "MIT",
