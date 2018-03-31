@@ -1,0 +1,51 @@
+{
+	"type": "#/data_base_table",
+	"name": "config",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "module_id",
+			"type": "integer"
+		},
+		{
+			"name": "name"
+		},
+		{
+			"name": "title"
+		},
+		{
+			"name": "type"
+		},
+		{
+			"name": "value",
+			"type": "text/longtext"
+		},
+		{
+			"name": "default_value"
+		},
+		{
+			"name": "properties",
+			"type": "text/json",
+			"default": "{}"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_module_id",
+			"fields": [
+				"module_id"
+			]
+		},
+		{
+			"name": "index_name",
+			"type": "unique",
+			"fields": [
+				"name"
+			]
+		}
+	]
+}

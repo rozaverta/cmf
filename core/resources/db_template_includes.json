@@ -1,0 +1,31 @@
+{
+	"type": "#/data_base_table",
+	"name": "template_includes",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "module_id",
+			"type": "integer"
+		},
+		{
+			"name": "path"
+		},
+		{
+			"name": "position",
+			"type": "integer",
+			"default": 1
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_module_id",
+			"fields": [
+				"module_id"
+			]
+		}
+	]
+}

@@ -1,0 +1,37 @@
+{
+	"type": "#/data_base_table",
+	"name": "plugins",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "module_id",
+			"type": "integer"
+		},
+		{
+			"name": "name"
+		},
+		{
+			"name": "title"
+		},
+		{
+			"name": "visible",
+			"type": "boolean",
+			"default": true
+		},
+		{
+			"name": "class_name"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_module_id",
+			"fields": [
+				"module_id"
+			]
+		}
+	]
+}

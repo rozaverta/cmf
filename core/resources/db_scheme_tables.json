@@ -1,0 +1,38 @@
+{
+	"type": "#/data_base_table",
+	"name": "scheme_tables",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "name"
+		},
+		{
+			"name": "title"
+		},
+		{
+			"name": "description"
+		},
+		{
+			"name": "module_id",
+			"type": "integer"
+		},
+		{
+			"name": "version"
+		},
+		{
+			"name": "resource"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_module_id",
+			"fields": [
+				"module_id"
+			]
+		}
+	]
+}

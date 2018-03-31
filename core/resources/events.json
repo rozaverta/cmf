@@ -1,0 +1,30 @@
+{
+	"type": "#/events",
+	"item": [
+		{
+			"name": "onSystem",
+			"title": "Progress system events"
+		},
+		{
+			"name": "onSystemException",
+			"title": "Fatal error"
+		},
+		{
+			"name": "onResponseSend",
+			"title": "Send content",
+			"completable": true
+		},
+		{
+			"name": "onResponseRedirect",
+			"title": "Redirect page"
+		},
+		{
+			"name": "onLanguage",
+			"title": "Calling an event after initialize the instance class of the language / Select language"
+		},
+		{
+			"name": "onLanguageLoad",
+			"title": "Load current language"
+		}
+	]
+}

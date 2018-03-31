@@ -1,0 +1,22 @@
+{
+	"type": "#/data_base_table",
+	"name": "modules",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "name"
+		},
+		{
+			"name": "name_space"
+		},
+		{
+			"name": "install",
+			"type": "boolean",
+			"default": false
+		}
+	],
+	"primaryKey": "id"
+}

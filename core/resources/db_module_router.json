@@ -1,0 +1,34 @@
+{
+	"type": "#/data_base_table",
+	"name": "module_router",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "module_id",
+			"type": "integer"
+		},
+		{
+			"name": "path"
+		},
+		{
+			"name": "position",
+			"type": "integer",
+			"default": 1
+		},
+		{
+			"name": "properties"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_module_id",
+			"fields": [
+				"module_id"
+			]
+		}
+	]
+}
