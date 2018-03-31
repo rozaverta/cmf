@@ -21,6 +21,7 @@
 			"EApp\\": "core/"
 		},
 		"files": [
+			"core/boot_required.inc.php",
 			"core/func_required.inc.php"
 		]
 	}
