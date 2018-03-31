@@ -1,0 +1,27 @@
+<?php
+/**
+ * Created by IntelliJ IDEA.
+ * User: GoshaV [Maniako] <gosha@rozaverta.com>
+ * Date: 23.09.2016
+ * Time: 19:34
+ */
+
+namespace EApp\Template;
+
+use EApp\DB\QueryPrototype;
+use EApp\Template\Scheme\PackageSchemeDesigner;
+
+class QueryPackages extends QueryPrototype
+{
+	protected $pagination = true;
+
+	public function getTableName()
+	{
+		return 'template_packages';
+	}
+
+	protected function fetchObject()
+	{
+		return PackageSchemeDesigner::class;
+	}
+}
