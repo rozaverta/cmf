@@ -89,15 +89,52 @@ set_exception_handler(static function( $exception )
 		}
 	}
 
-	if( ! defined("SYSTEM_INSTALL") || ! SYSTEM_INSTALL )
+	function exc_print( $text, array $args = [])
 	{
-		printf("%s. %s, %s", ($is_error ? "Fatal error" : "System error"), $exception->getCode(), $exception->getMessage());
+		if( CONSOLE_MODE )
+		{
+			$text .= "\n";
+		}
+		else if( ! headers_sent() )
+		{
+			header("Content-Type: text/plain; charset=utf-8");
+		}
+
+		vprintf($text, $args);
 		exit();
 	}
 
-	// todo add database connect test
+	function exc_has_app()
+	{
+		return class_exists("\\EApp\\App", false);
+	}
 
-	$app = class_exists("\\EApp\\App", false) ? \EApp\App::getInstance() : false;
+	function exc_db($exception)
+	{
+		if( exc_has_app() && $exception instanceof \EApp\DB\QueryException )
+		{
+			$app = \EApp\App::getInstance();
+			$app->Log->line("Error sql query: " . $exception->getSql());
+			$bindings = $exception->getBindings();
+			if( count($bindings) )
+			{
+				$app->Log->line("Sql binding: " . implode(", ", $bindings));
+			}
+
+			$conn = \DB::connection();
+			if( $conn->transactionLevel() > 0 )
+			{
+				$conn->rollBack();
+			}
+		}
+	}
+
+	if( ! defined("SYSTEM_INSTALL") || ! SYSTEM_INSTALL )
+	{
+		exc_print("%s. %s, %s", [($is_error ? "Fatal error" : "System error"), $exception->getCode(), $exception->getMessage()] );
+	}
+
+	$app = exc_has_app() ? \EApp\App::getInstance() : false;
 
 	$title = $is_error ? "Fatal error" : "System error";
 	$code = $exception->getCode();
@@ -125,42 +162,41 @@ set_exception_handler(static function( $exception )
 		$is_send = $response->isSent() || $response->isLocked();
 
 		// write an error to the log file
+
 		$app->Log->exception($exception);
 
 		// database error
-		if( $exception instanceof \EApp\DB\QueryException )
-		{
-			$app->Log->line("Error sql query: " . $exception->getSql());
-			$bindings = $exception->getBindings();
-			if( count($bindings) )
-			{
-				$app->Log->line("Sql binding: " . implode(", ", $bindings));
-			}
 
-			$conn = \DB::connection();
-			if( $conn->transactionLevel() > 0 )
-			{
-				$conn->rollBack();
-			}
-		}
+		exc_db($exception);
 
 		// event
-		\EApp\Event\EventManager::dispatch(
-			'onSystemException',
-			new \EApp\System\Events\ExceptionEvent( $app, $exception ),
-			function( $result ) use ( & $output ) {
-				if( $result instanceof \Closure )
-				{
-					$output = $result;
-					return false;
-				}
-				else
-				{
-					return null;
-				}
-			});
 
-		$app->close();
+		try {
+			\EApp\Event\EventManager::dispatch(
+				'onSystemException',
+				new \EApp\System\Events\ExceptionEvent( $app, $exception ),
+				function( $result ) use ( & $output ) {
+					if( $result instanceof \Closure )
+					{
+						$output = $result;
+						return false;
+					}
+					else
+					{
+						return null;
+					}
+				});
+		}
+		catch(\EApp\DB\QueryException $e) {
+			exc_db($e);
+		}
+
+		try {
+			$app->close();
+		}
+		catch(\EApp\DB\QueryException $e) {
+			exc_db($e);
+		}
 	}
 
 	if( $output instanceof \Closure )
@@ -214,8 +250,7 @@ set_exception_handler(static function( $exception )
 		}
 
 		if( ! $body )
-			$body = '
-<!DOCTYPE html>
+			$body = '<!DOCTYPE html>
 <html>
 <head>
 	<title>{{ $title }}</title>
@@ -271,6 +306,13 @@ set_exception_handler(static function( $exception )
 		);
 	}
 
-	$response->send(true);
+	try {
+		$response->send(true);
+	}
+	catch(\EApp\DB\QueryException $e) {
+		exc_db($e);
+		exc_print((CONSOLE_MODE ? "\033[31;31m%s (%s)\033[0m" : "%s (%s)") . ": %s", [$title, $code, $message]);
+	}
+
 	exit();
 });
