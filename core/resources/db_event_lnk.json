@@ -1,0 +1,28 @@
+{
+	"type": "#/data_base_table",
+	"name": "event_lnk",
+	"fields": [
+		{
+			"name": "callback_id",
+			"type": "integer"
+		},
+		{
+			"name": "event_id",
+			"type": "integer"
+		}
+	],
+	"indexes": [
+		{
+			"name": "index_callback_id",
+			"fields": [
+				"callback_id"
+			]
+		},
+		{
+			"name": "index_event_id",
+			"fields": [
+				"event_id"
+			]
+		}
+	]
+}

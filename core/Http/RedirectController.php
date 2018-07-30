@@ -11,7 +11,7 @@ namespace EApp\Http;
 use EApp\App;
 use EApp\Prop;
 use EApp\Proto\Controller;
-use EApp\Support\Interfaces\ControllerContentOutput;
+use EApp\System\Interfaces\ControllerContentOutput;
 use EApp\Component\Module;
 
 final class RedirectController extends Controller implements ControllerContentOutput
@@ -32,7 +32,7 @@ final class RedirectController extends Controller implements ControllerContentOu
 	public function ready()
 	{
 		App::Response()->redirect(
-				$this->properties->getOr("url", "/"),
+				$this->properties->getOr("location", "/"),
 				$this->properties->getOr("permanent", false),
 				$this->properties->getOr("refresh", false)
 			);

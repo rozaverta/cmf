@@ -6,7 +6,7 @@
  * Time: 21:50
  */
 
-namespace EApp\Console;
+namespace EApp\Proto;
 
 use Symfony\Component\Console\Command\Command;
 

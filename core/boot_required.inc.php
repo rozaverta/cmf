@@ -11,17 +11,27 @@ if( ! defined("BASE_DIR") ) {
 	throw new \Exception("BASE_DIR is not defined");
 }
 
-if( ! defined("ELS_CMS") ) {
-	define("ELS_CMS", true);
-}
-
 // base constants
 
+defined("ELS_CMS")          || define( "ELS_CMS"        , true );
 defined("NOW_MICROTIME")    || define( "NOW_MICROTIME"  , microtime(true) );
 defined("NOW_TIME")         || define( "NOW_TIME"       , time() );
 defined("BASE_ENCODING")    || define( "BASE_ENCODING"  , "UTF-8" );
-defined("BASE_PROTOCOL")    || define( "BASE_PROTOCOL"  , isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] == 'on' ? 'https' : 'http' );
+defined("BASE_PROTOCOL")    || define( "BASE_PROTOCOL"  , isset( $_SERVER['HTTPS'] ) && strtolower($_SERVER['HTTPS']) == 'on' || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' ? 'https' : 'http' );
 defined("CONSOLE_MODE")     || define( "CONSOLE_MODE"   , function_exists("php_sapi_name") && php_sapi_name() == 'cli' );
+
+$is_ref = false;
+if( isset($_SERVER['HTTP_REFERER'], $_SERVER["HTTP_HOST"]) )
+{
+	$ref = BASE_PROTOCOL . "://" . $_SERVER["HTTP_HOST"];
+	if( $ref === $_SERVER['HTTP_REFERER'] || strpos($_SERVER['HTTP_REFERER'], $ref . "/") === 0 )
+	{
+		$is_ref = true;
+	}
+}
+
+define("APP_HOST_REFERER", $is_ref);
+unset($is_ref, $ref);
 
 define("CORE_DIR", __DIR__ . DIRECTORY_SEPARATOR );
 
@@ -229,16 +239,6 @@ set_exception_handler(static function( $exception )
 			}
 		}
 
-		// default error page from file
-		if( !$body )
-		{
-			$file = APP_DIR . 'system_error.html';
-			if( file_exists($file) )
-			{
-				$body = @ file_get_contents($file);
-			}
-		}
-
 		if( $page404 )
 		{
 			$title = $message;
@@ -246,64 +246,55 @@ set_exception_handler(static function( $exception )
 		}
 		else
 		{
-			$head_title = $title . ( $code ? " [{$code}]" : '' );
+			$head_title = $title;
+			if( $code ) {
+				$head_title .= " [{$code}]";
+			}
+		}
+
+		$mode = defined("DEBUG_MODE") ? DEBUG_MODE : "production";
+		$debug = "";
+
+		// default error page from file
+		if( !$body )
+		{
+			$file = APP_DIR . 'system_error.inc.php';
+			if( file_exists($file) )
+			{
+				$compact = compact('title', 'head_title', 'message', 'mode', 'is_error', 'replace');
+				$compact['charset'] = 'utf-8';
+				ob_start();
+				\E\IncludeFile($file, $compact);
+				$body = ob_get_contents();
+				ob_end_clean();
+			}
+			else if($mode === "development" && (! $exception instanceof \EApp\Support\Exceptions\PageNotFoundException || $code !== 404)) {
+				$debug = '<pre>' . get_class($exception) . ", trace: \n" . $exception->getTraceAsString() . '</pre>';
+			}
 		}
 
 		if( ! $body )
-			$body = '<!DOCTYPE html>
+			$body = <<<EOT
+<!DOCTYPE html>
 <html>
 <head>
-	<title>{{ $title }}</title>
+	<title>{$title}</title>
 	<meta charset="utf-8" />
 	<meta http-equiv="Content-Type" content="text-html; charset=utf-8" />
-
 	<link href="https://fonts.googleapis.com/css?family=Roboto:400,300&subset=latin,cyrillic" rel="stylesheet" type="text/css" />
-	<style type="text/css">
-		html { 
-			background-color: #f3f3f3; 
-		}
-		body { 
-			font: 300 14px Roboto, Verdana, Arial, sans-serif;
-			margin: 0;
-			padding: 0;
-			color: #333;
-		}
-		.center {
-			background-color: white;
-			margin: 120px auto;
-			position: relative;
-			width: 440px;
-			padding-bottom: 20px;
-			border-radius: 2px;
-			-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-			box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-		}
-		h1 { font-weight: 400; font-size: 22px; color: #000; padding: 20px; margin: 1px 1px 30px; border-bottom: 1px solid #eee; }
-		p { margin: 10px 20px; }
-	</style>
+	<style type="text/css">html{background-color:#f3f3f3}body{font:300 14px Roboto,Verdana,Arial,sans-serif;margin:0;padding:0;color:#333}.center{background-color:white;margin:120px auto;position:relative;width:440px;padding-bottom:20px;border-radius:2px;-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.2);box-shadow:0 1px 3px rgba(0,0,0,0.2)}.center pre{margin:10px 20px;border:1px solid #ccc;padding:10px;overflow:auto}.center.mode-development{width:800px}h1{font-weight:400;font-size:22px;color:#000;padding:20px;margin:1px 1px 30px;border-bottom:1px solid #eee}p{margin:10px 20px}</style>
 </head>
 <body>
-<div class="center">
-	<h1>{{ $head_title }}</h1>
-	<p>{{ $message }}</p>
+<div class="center mode-{$mode}">
+	<h1>{$head_title}</h1>
+	<p>{$message}</p>
+	{$debug}
 </div>
 </body>
-</html>';
+</html>
+EOT;
 
-		$replace = compact('title', 'head_title', 'message');
-		$replace['charset'] = 'utf-8';
-
-		$response->setBody(
-			preg_replace_callback(
-				'/\{\{\s*\$([a-zA-Z_]+)\s*\}\}/',
-				function($m) use ($replace)
-				{
-					$name = strtolower(trim($m[1]));
-					return isset($replace[$name]) ? $replace[$name] : '';
-				},
-				$body
-			)
-		);
+		$response->setBody($body);
 	}
 
 	try {

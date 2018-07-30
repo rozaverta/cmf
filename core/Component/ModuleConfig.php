@@ -11,10 +11,10 @@ namespace EApp\Component;
 use EApp\Support\Collection;
 use EApp\Support\Exceptions\ReadyException;
 use EApp\Support\Str;
-use EApp\System\Files\ResourceFile;
+use EApp\System\Files\FileResource;
 use ReflectionClass;
 
-abstract class ModuleInstance
+abstract class ModuleConfig
 {
 	public $version = "1.0.0";
 	public $name  = "";
@@ -71,7 +71,7 @@ abstract class ModuleInstance
 
 	/**
 	 * @param $name
-	 * @return ResourceFile|null
+	 * @return FileResource|null
 	 */
 	public function getResource( $name )
 	{
@@ -81,7 +81,7 @@ abstract class ModuleInstance
 			return null;
 		}
 
-		return new ResourceFile($file);
+		return new FileResource($file);
 	}
 
 	/**
@@ -107,7 +107,7 @@ abstract class ModuleInstance
 			{
 				if( $file[0] !== "." && preg_match('/\.json$/', $file) )
 				{
-					$list[] = new ResourceFile($path . $file);
+					$list[] = new FileResource($path . $file);
 				}
 			}
 		}

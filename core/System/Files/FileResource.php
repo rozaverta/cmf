@@ -8,13 +8,15 @@
 
 namespace EApp\System\Files;
 
+use EApp\Component\Module;
+use EApp\ModuleCore;
 use EApp\Support\Exceptions\FileReadyException;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Exceptions\ReadyException;
 use EApp\Support\Json;
 use EApp\Support\Traits\Get;
 
-class ResourceFile
+class FileResource
 {
 	use Get;
 
@@ -24,19 +26,27 @@ class ResourceFile
 	protected $type  = 'unknown';
 	protected $name  = '';
 	protected $path  = '';
+	protected $raw   = '{}';
 
-	public function __construct( $file )
+	/**
+	 * @var Module|null
+	 */
+	protected $module = null;
+
+	/**
+	 * FileResource constructor.
+	 *
+	 * @param string $file
+	 * @param string|null $directory
+	 * @param Module|null $module
+	 * @param bool|string $module_cache_version
+	 * @throws NotFoundException
+	 */
+	public function __construct( $file, $directory = null, Module $module = null, $module_cache_version = false )
 	{
-		if( $file[0] === '@' )
-		{
-			$file = \E\Path($file);
-		}
-
-		$file = realpath($file);
 		$dot = strrpos($file, '.');
 		if( $dot === false )
 		{
-			$dot = strlen($file);
 			$file .= '.json';
 		}
 		else if( strtolower(substr($file, $dot)) !== '.json' )
@@ -44,6 +54,48 @@ class ResourceFile
 			throw new \InvalidArgumentException("The resource must be a json data file.");
 		}
 
+		if( $file[0] === '@' )
+		{
+			$file = \E\Path($file);
+		}
+		else
+		{
+			if($module)
+			{
+				$this->module = $module;
+				if($module_cache_version)
+				{
+					$directory = APP_DIR . "resources" . DIRECTORY_SEPARATOR . $module->getId() . DIRECTORY_SEPARATOR;
+					if(is_string($module_cache_version) || is_int($module_cache_version))
+					{
+						$directory .= $module_cache_version . DIRECTORY_SEPARATOR;
+					}
+				}
+				else
+				{
+					if($module instanceof ModuleCore)
+					{
+						$directory = CORE_DIR;
+					}
+					else
+					{
+						$directory = $module->get("path");
+					}
+					$directory .= "resources" . DIRECTORY_SEPARATOR;
+				}
+			}
+			else if($directory)
+			{
+				$directory = rtrim($directory, "/\\") . DIRECTORY_SEPARATOR;
+			}
+
+			if($directory)
+			{
+				$file = $directory . $file;
+			}
+		}
+
+		$file = realpath($file);
 		if( ! is_file($file) )
 		{
 			throw new NotFoundException("The resource file not found.");
@@ -55,9 +107,15 @@ class ResourceFile
 		}
 
 		$end = strrpos($file, DIRECTORY_SEPARATOR);
+		$dot = strrpos($file, '.');
 		$this->file = $file;
 		$this->path = $end === false ? "" : substr($file, 0, $end + 1);
 		$this->name = $end === false ? substr($file, 0, $dot) : substr($file, $end + 1, $dot - $end - 1);
+	}
+
+	public function getModule()
+	{
+		return $this->module;
 	}
 
 	public function ready()
@@ -67,14 +125,14 @@ class ResourceFile
 			return $this;
 		}
 
-		$data = @ file_get_contents($this->file);
-		if( !$data )
+		$this->raw = @ file_get_contents($this->file);
+		if( !$this->raw )
 		{
 			throw new FileReadyException("Cannot ready resource '{$this->name}'");
 		}
 
 		try {
-			$data = Json::parse($data, true);
+			$data = Json::parse($this->raw, true);
 			if( ! is_array($data) )
 			{
 				throw new \InvalidArgumentException();
@@ -113,5 +171,10 @@ class ResourceFile
 	public function getFile()
 	{
 		return $this->file;
+	}
+
+	public function getRawData()
+	{
+		return $this->ready()->raw;
 	}
 }

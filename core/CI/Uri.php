@@ -179,6 +179,9 @@ class Uri
 				$last = $this->segment[ $this->length-1 ];
 				$this->last = substr( $last, 0, strlen($last) - strlen($ext) );
 			}
+			else {
+				$this->last = $this->segment[ $this->length-1 ];
+			}
 		}
 
 		if( $this->basePath == "full" ) $this->base = BASE_PROTOCOL . "://" . $this->host . "/" . $this->load_directory;

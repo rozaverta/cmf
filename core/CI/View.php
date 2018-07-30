@@ -12,9 +12,14 @@ use EApp\App;
 use EApp\Cache;
 use EApp\Event\EventManager;
 use EApp\Plugin\QueryPlugins;
-use EApp\Plugin\Interfaces\Shortable;
+use EApp\Plugin\Interfaces\PluginShotable;
+use EApp\Plugin\Scheme\PluginSchemeDesigner;
+use EApp\Prop;
 use EApp\Proto\Plugin;
 use EApp\Support\Interfaces\SingletonCompletable;
+use EApp\Support\Str;
+use EApp\Support\Traits\Set;
+use EApp\System\Events\RenderCompleteEvent;
 use EApp\System\Events\ShutdownEvent;
 use EApp\System\Events\SystemEvent;
 use EApp\Support\Traits\Get;
@@ -23,16 +28,18 @@ use EApp\Support\Traits\SingletonInstance;
 use EApp\Template\Package;
 use EApp\Template\QueryIncludes;
 use EApp\Template\QueryPackages;
+use ArrayAccess;
 
 /**
  * Class Log
  * @package CI
  * @method static View getInstance()
  */
-final class View implements SingletonCompletable
+final class View implements SingletonCompletable, ArrayAccess
 {
 	use SingletonInstance;
 	use Get;
+	use Set;
 	use Compare;
 
 	protected $items = [];
@@ -47,13 +54,22 @@ final class View implements SingletonCompletable
 	private $charset;
 
 	/**
-	 * @var Package
+	 * @var \EApp\Template\Package
 	 */
 	private $package;
+
+	/**
+	 * @var null | \EApp\Template\Template
+	 */
+	private $template = null;
 
 	private $packages = [];
 
 	private $plugins = [];
+
+	private $call = [];
+
+	private $protected = [];
 
 	public function __construct( $conf = [] )
 	{
@@ -77,6 +93,12 @@ final class View implements SingletonCompletable
 		$this->items["route_base"]  = $url->base;
 		$this->items["route_path"]  = $url->path;
 
+		$this->protected = array_keys($this->items);
+		$this->protected[] = "package";
+		$this->protected[] = "template";
+		$this->protected[] = "controller";
+		$this->protected[] = "from_cache";
+
 		// load plugins
 
 		$cache = new Cache("plugins", 'template');
@@ -88,18 +110,84 @@ final class View implements SingletonCompletable
 		{
 			foreach((new QueryPlugins())->filter("visible", true)->orderBy("name")->get() as $item)
 			{
-				/** @var \EApp\Plugin\Scheme\PluginSchemeDesigner $item */
-				$this->plugins[$item->name] =
-					[
-						"name" => $item->package_name,
-						"driver" => $item->name,
-						"short" => $item->name,
-						"class_name" => $item->class_name
-					];
+				$load = $this->loadPlugin($item);
+				if($load)
+				{
+					$this->plugins[$item->name] = $load;
+				}
 			}
 
 			$cache->write($this->plugins);
 		}
+
+		foreach($this->plugins as $plugin)
+		{
+			if($plugin["short"])
+			{
+				$this->shortTags[$plugin["short"]] = $plugin["class_name"];
+			}
+		}
+	}
+
+	protected function loadPlugin( PluginSchemeDesigner $item )
+	{
+		$class_name = $item->class_name;
+		if( !class_exists($class_name, true) )
+		{
+			App::Log("Plugin load error, class '{$class_name}' not found");
+			return false;
+		}
+
+		$ref = new \ReflectionClass($class_name);
+
+		$found = false;
+		$parent = $ref;
+		$instance = Plugin::class;
+		while( $parent = $parent->getParentClass() )
+		{
+			$found = $parent->getName() === $instance;
+			if($found)
+			{
+				break;
+			}
+		}
+
+		if( !$found )
+		{
+			App::Log("Plugin load error, class '{$class_name}' must be inherited of {$instance}");
+			return false;
+		}
+
+		$short = false;
+		if( in_array( PluginShotable::class, $ref->getInterfaces()) )
+		{
+			$short = $ref->getMethod('getShotName')->invoke(null);
+		}
+
+		return [
+				"package_name" => $item->package_name,
+				"name" => $item->name,
+				"short" => $short,
+				"class_name" => $class_name
+			];
+	}
+
+	public function __call( $name, $arguments )
+	{
+		if( isset($this->call[$name]) )
+		{
+			return $this->call[$name]( $this, ...$arguments );
+		}
+		else
+		{
+			throw new \InvalidArgumentException("Method not used '$name'");
+		}
+	}
+
+	public function register( $name, \Closure $callback )
+	{
+		$this->call[$name] = $callback;
+		return $this;
 	}
 
 	public function getPackageInstance($name, array $conf = [])
@@ -108,6 +196,22 @@ final class View implements SingletonCompletable
 		$instance->packages = $this->packages;
 		$instance->shortTags = $this->shortTags;
 		return $instance->usePackage($name);
+	}
+
+	/**
+	 * @return \EApp\Template\Package
+	 */
+	public function getPackage()
+	{
+		return $this->package;
+	}
+
+	/**
+	 * @return \EApp\Template\Template|null
+	 */
+	public function getTemplate()
+	{
+		return $this->template;
 	}
 
 	public function instanceComplete( App $app )
@@ -164,28 +268,32 @@ final class View implements SingletonCompletable
 		unset($cache, $inc);
 	}
 
-	// global data
-
-	public function set( $name, $value = null )
+	public function setKeysAsProtected($keys)
 	{
-		if( is_null( $value ) ) {
-			unset( $this->items[$name] ) ;
+		if( !is_array($keys) ) {
+			$keys = [$keys];
 		}
-		else {
-			$this->items[$name] = $value ;
-		}
-		return $this;
-	}
 
-	public function setData( $data )
-	{
-		if( is_array( $data ) ) {
-			foreach( $data as $name => $value ) {
-				$this->set( $name, $value );
+		foreach($keys as $key) {
+			if( ! in_array($key, $this->protected, true) ) {
+				$this->protected[] = $key;
 			}
 		}
+
 		return $this;
 	}
+
+	public function getIsProtectedKey($name)
+	{
+		if( substr($name, 0, 2) === "__" ) {
+			return true;
+		}
+		else {
+			return in_array($name, $this->protected, true);
+		}
+	}
+
+	// global data
 
 	public function concat( $name, $value, $separate = "", $before = false )
 	{
@@ -228,11 +336,6 @@ final class View implements SingletonCompletable
 			$this->getDelay[$name] = md5(mt_rand());
 		}
 		return '{item:' . $name . ':' . $this->getDelay[$name] . '}';
-	}
-
-	public function getData()
-	{
-		return $this->items;
 	}
 
 	public function postValue( $name, $value = '', $escape = true )
@@ -286,6 +389,26 @@ final class View implements SingletonCompletable
 		}
 
 		return $found;
+	}
+
+	/**
+	 * Get an item from the collection by keys if value not empty.
+	 *
+	 * @param array $keys
+	 * @param mixed $default default value
+	 * @return mixed
+	 */
+	public function fillChoice( array $keys, $default = "" )
+	{
+		foreach( $keys as $key )
+		{
+			if( $this->isFill($key) )
+			{
+				return $this->items[$key];
+			}
+		}
+
+		return $default;
 	}
 
 	// assets
@@ -360,7 +483,7 @@ final class View implements SingletonCompletable
 		return $get;
 	}
 
-	public function getCSS( $file, $prop = [] )
+	public function getCss( $file, $prop = [] )
 	{
 		$dir = isset($prop["dir"]) ? trim($prop["dir"], "/") : "css";
 		$src = $this->items["assets"] . ( $dir ? $dir . "/" : "" );
@@ -519,12 +642,17 @@ final class View implements SingletonCompletable
 		return $this;
 	}
 
-	public function getTpl( $name, $local = null ) {
+	public function getTplCache( $name, $path )
+	{
+		//
+	}
 
-		static $func, $level = 0, $init = false;
+	public function getTpl( $name, $local = null )
+	{
+		static $func, $level = 0, $init = false, $current_path = "";
 
-		if( !$init ) {
-
+		if( !$init )
+		{
 			$init = true;
 			$app  = App::getInstance();
 			$view = $this;
@@ -550,6 +678,31 @@ final class View implements SingletonCompletable
 			$local = [];
 		}
 
+		$root = $level < 1;
+		$back = $current_path;
+		if( $root )
+		{
+			$this->template = $this->package->getTemplate($name);
+			$path = $this->template->getPath();
+		}
+		else
+		{
+			if($name[0] === ".")
+			{
+				$name = strlen($current_path) ? ($current_path . $name) : substr($name, 1);
+			}
+
+			$path = $this->package->getTplPath($name);
+			if(!$path !== false)
+			{
+				$dot = strrpos($name, ".");
+				if( $dot !== false )
+				{
+					$current_path = substr($name, 0, $dot);
+				}
+			}
+		}
+
 		++ $level;
 
 		// create global local array link
@@ -559,13 +712,15 @@ final class View implements SingletonCompletable
 			unset( $this->items['__local__'] );
 		}
 
-		$parentTemplate = isset( $this->items['__template__'] ) ? $this->items['__template__'] : null;
+		$local = new Prop($local);
+
+		$parentTemplate = $local->getOr("__template__", null);
 		$this->items['__local__'] =& $local;
 		$this->items['__level__'] = $level;
 		$this->items['__template__'] = $name;
 
 		ob_start();
-		$html = $func( $this->package->getTplPath($name), $name, $local );
+		$body = $func( $path, $name, $local );
 		$tpl  = ob_get_contents();
 		ob_end_clean();
 		-- $level;
@@ -581,19 +736,59 @@ final class View implements SingletonCompletable
 				$this->items['__local__'] =& $local['__parent__'];
 			}
 		}
-		unset($local);
 
-		if( !is_string( $html ) || !strlen($html) ) {
-			$html = $tpl;
+		if( !is_string($body) || !strlen($body) ) {
+			$body = $tpl;
 		}
 
-		unset( $tpl );
-		if( $level < 1 ) {
-			return $this->replaceDelay( $html );
+		$current_path = $back;
+
+		unset( $local, $back, $tpl );
+
+		if( $root )
+		{
+			// replace plugin data (delay and short_tags) too, default YES
+			$replace_plugin_content = $this->template->getOr("replace_plugin_content", true);
+			$keys = $replace_plugin_content ? array_keys($this->plugin) : [];
+
+			// replace delay variables, default YES
+			if( $this->template->getOr("replace_delay", true) )
+			{
+				$depth = (int) $this->template->getOr("delay_depth", 1);
+				$body = $this->replaceDelay( $body, $depth );
+				if($replace_plugin_content)
+				{
+					foreach($keys as $key)
+					{
+						$this->plugin[$key]["content"] = $this->replaceDelay($this->plugin[$key]["content"], $depth);
+					}
+				}
+			}
+
+			// replace short tags, default NO
+			if( $this->template->get("replace_short_tag") )
+			{
+				$depth = (int) $this->template->getOr("short_tag_depth", 1);
+				$body = $this->replaceShortTag($body, false, $depth);
+				if($replace_plugin_content)
+				{
+					foreach($keys as $key)
+					{
+						$this->plugin[$key]["content"] = $this->replaceShortTag($this->plugin[$key]["content"], false, $depth);
+					}
+				}
+			}
+
+			// dispatch render complete event
+			// update body
+			$event = new RenderCompleteEvent( App::getInstance(), $this->template, $body );
+			EventManager::dispatch('onSystem', $event);
+			$body = $event->getParam("body");
+
+			$this->template = null;
 		}
-		else {
-			return $html;
-		}
+
+		return $body;
 	}
 
 	public function tplExists( $template )
@@ -601,14 +796,15 @@ final class View implements SingletonCompletable
 		return $this->package->getTplPath( $template ) !== false;
 	}
 
-	// special method
-
-	// $view->getPlugin( "Link", [ 'ID' => $moduleID, 'type' => $moduleLinkType, 'index' => $moduleIndex ] )
-	// $view->getPlugin( "ModuleName@PluginName" )
-
-	// {{ Link &ID=12 &type=typeIndex &index=12 }}
-	// {{ Link: 12, typeIndex, 1 }}
-
+	/**
+	 * Get plugin data
+	 *
+	 * @param $name
+	 * @param array $data
+	 * @param bool $rawResult
+	 * @return mixed
+	 * @throws \Exception
+	 */
 	public function getPlugin( $name, array $data = [], $rawResult = false )
 	{
 		if( ! isset($this->plugins[$name]) )
@@ -624,7 +820,7 @@ final class View implements SingletonCompletable
 		}
 
 		/** @var Plugin $plugin */
-		$plugin = new $class_name( $data );
+		$plugin = new $class_name( $data, $this );
 
 		if( !$plugin instanceof Plugin )
 		{
@@ -636,12 +832,21 @@ final class View implements SingletonCompletable
 			return $plugin->getContent();
 		}
 
-		if( $plugin->cacheType() == "view" )
-		{
-			$path = explode( '\\', ltrim($class_name, '\\') );
-			array_unshift($path, "plugin");
-			$cache = new Cache( array_shift($path), implode("/", $path), $plugin->cacheData() );
+		$cache_type = $plugin->cacheType();
+		$cache_view = $cache_type === "view";
 
+		if( $cache_view || $cache_type === "plugin" )
+		{
+			$cache_name = Str::snake($name);
+			$cache_data = $plugin->cacheData();
+			$id = $name;
+			if( isset($cache_data["id"]) )
+			{
+				$id = $cache_data["id"];
+				unset($cache_data["id"]);
+			}
+
+			$cache = new Cache( $id, "plugin/" . $cache_name, $cache_data );
 			if( $cache->ready() )
 			{
 				$content = $cache->getContentData();
@@ -652,18 +857,23 @@ final class View implements SingletonCompletable
 				$cache->write($content);
 			}
 
-			return $content;
+			if($cache_view) {
+				return $content;
+			}
+		}
+		else
+		{
+			$content = $plugin->getContent();
 		}
 
 		$number = $this->plugin_index ++;
 		$hash = md5(mt_rand( 1000, 100000 )) . "-" . time();
 		$this->plugin[$number] = [
+			"package"   => $plug["package_name"],
 			"name"      => $name,
-			"driver"    => $plug["driver"],
-			"alias"     => $plug["name"] . "/" . $plug["driver"],
-			"cache"     => $plugin->cacheType(),
+			"cache"     => $cache_type,
 			"cacheData" => $plugin->cacheData(),
-			"content"   => $plugin->getContent(),
+			"content"   => $content,
 			"data"      => $data,
 			"hash"      => $hash
 		];
@@ -671,9 +881,30 @@ final class View implements SingletonCompletable
 		return '{plugin:' . $number . ':' . $hash . '}';
 	}
 
-	public function registerShortTag( $name, $className )
+	public function registerShortPlugin( $name, $class_name )
 	{
-		$this->shortTags[$name] = $className;
+		if( !class_exists($class_name, true) )
+		{
+			App::Log("Plugin load error, class '{$class_name}' not found");
+			return $this;
+		}
+
+		$ref = new \ReflectionClass($class_name);
+		$short_interface = PluginShotable::class;
+
+		if( in_array( $short_interface, $ref->getInterfaces()) )
+		{
+			App::Log("Plugin load error, class '{$class_name}' must be inherited of {$short_interface}");
+			return $this;
+		}
+
+		$this->shortTags[$name] = $class_name;
+		return $this;
+	}
+
+	public function registerShortPluginClosure( $name, \Closure $plugin )
+	{
+		$this->shortTags[$name] = $plugin;
 		return $this;
 	}
 
@@ -898,38 +1129,24 @@ final class View implements SingletonCompletable
 					}
 				}
 
+				$class_name = $this->_getShortTag($name);
+
 				// call function
 
-				$call = $this->_getShortTag($name);
-				if( $call instanceof \Closure )
+				if( $class_name instanceof \Closure )
 				{
-					$get .= $call( $name, $args );
+					$get .= $class_name( $name, $args, $this );
 				}
 
-				// create new class instance
-				// call getContent() method or __toString() magic method
+				// create new class instance and invoke getContent()
 
-				else if( class_exists($call, true) )
+				else
 				{
-					$call = new $call( $args );
-					if( $call instanceof Shortable )
-					{
-						$call->toShortTag();
-					}
-
-					if( method_exists($call, "getContent") ) {
-						$get .= $call->getContent();
-					}
-					else if( method_exists($call, "__toString") ) {
-						$get .= (string) $call;
-					}
-					else {
-						$get .= '{{ ' . $name . ' cannot ready short tag class content }}';
-					}
-				}
-
-				else {
-					$get .= '{{ ' . $name . ' instance class not loaded }}';
+					/** @var \EApp\Plugin\Interfaces\PluginShotable $plugin */
+					$plugin = new $class_name( $args, $this );
+					$plugin->toShortTag();
+					$get .= $plugin->getContent();
+					unset($plugin);
 				}
 			}
 
@@ -1038,12 +1255,12 @@ final class View implements SingletonCompletable
 
 	private function _hasShortTag($name)
 	{
-		return isset($this->shortTags[$name]) || isset($this->plugins[$name]) && $this->plugins[$name]["short"];
+		return isset($this->shortTags[$name]);
 	}
 
 	private function _getShortTag($name)
 	{
-		return isset($this->shortTags[$name]) ? $this->shortTags[$name] : ( isset($this->plugins[$name]) && $this->plugins[$name]["short"] ? $this->plugins[$name]["class_name"] : null );
+		return isset($this->shortTags[$name]) ? $this->shortTags[$name] : null;
 	}
 
 	private function _nsTag( $str )

@@ -8,6 +8,10 @@
 
 namespace EApp\Support;
 
+use Closure;
+use EApp\Support\Interfaces\Jsonable;
+use InvalidArgumentException;
+
 ! defined("JSON_DECODE_OPTIONS") && define("JSON_DECODE_OPTIONS", 0);
 ! defined("JSON_ENCODE_OPTIONS") && define("JSON_ENCODE_OPTIONS", 0);
 
@@ -28,7 +32,7 @@ class Json
 	* @param int    $options Bitmask of JSON decode options.
 	*
 	* @return mixed
-	* @throws \InvalidArgumentException if the JSON cannot be decoded.
+	* @throws InvalidArgumentException if the JSON cannot be decoded.
 	* @link http://www.php.net/manual/en/function.json-decode.php
 	*/
 	public static function parse( $json, $assoc = false, $depth = 512, $options = null )
@@ -43,9 +47,57 @@ class Json
 		$err = json_last_error();
 		if(JSON_ERROR_NONE !== $err)
 		{
-			throw new \InvalidArgumentException(
+			throw new InvalidArgumentException(
 				'json_decode error: ' . self::getError($err)
 			);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * @param mixed $data
+	 * @param bool $throw
+	 * @return array
+	 */
+	public static function getArrayProperties( $data, $throw = false ): array
+	{
+		if( $data instanceof Closure )
+		{
+			$data = $data();
+		}
+
+		if( is_object($data) )
+		{
+			return get_object_vars($data);
+		}
+		else if( $data instanceof Jsonable )
+		{
+			$data = $data->toJson();
+		}
+
+		if( is_string($data) )
+		{
+			if( $throw ) {
+				$data = self::parse($data, true);
+			}
+			else {
+				try {
+					$data = self::parse($data, true);
+				}
+				catch( InvalidArgumentException $e ) {
+					$data = [];
+				}
+			}
+		}
+
+		if( ! is_array($data) )
+		{
+			if( $throw )
+			{
+				throw new InvalidArgumentException('json_decode error: result must be array');
+			}
+			$data = [];
 		}
 
 		return $data;
@@ -59,7 +111,7 @@ class Json
 	 * @param int    $depth   Set the maximum depth. Must be greater than zero.
 	 *
 	 * @return string
-	 * @throws \InvalidArgumentException if the JSON cannot be encoded.
+	 * @throws InvalidArgumentException if the JSON cannot be encoded.
 	 * @link http://www.php.net/manual/en/function.json-encode.php
 	 */
 	public static function stringify( $value, $options = null, $depth = 512 )
@@ -81,7 +133,7 @@ class Json
 		$err = json_last_error();
 		if (JSON_ERROR_NONE !== $err)
 		{
-			throw new \InvalidArgumentException(
+			throw new InvalidArgumentException(
 				'json_encode error: ' . self::getError($err)
 			);
 		}

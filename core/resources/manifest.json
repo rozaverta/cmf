@@ -1,5 +1,20 @@
 {
 	"type": "#/system",
 	"name": "Elastic CMF (Anaconda)",
-	"version": "0.0.1"
+	"version": "0.0.1",
+	"database_tables": [
+		"config",
+		"module_router",
+		"modules",
+		"plugins",
+		"template_data",
+		"template_includes",
+		"template_packages",
+		"events",
+		"event_callback",
+		"event_lnk"
+	],
+	"packages": [
+		"main"
+	]
 }

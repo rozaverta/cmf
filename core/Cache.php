@@ -183,6 +183,40 @@ class Cache
 		return $this->write($data);
 	}
 
+	public function writePhp( $data )
+	{
+		if($this->raw)
+		{
+			throw new \InvalidArgumentException("You cannot use writePhp method for raw file");
+		}
+
+		$file = $this->getPath();
+		$this->makeDir( $this->baseDir );
+		strlen($this->dir) && $this->makeDir( $this->dir );
+
+		if( !$this->writeFileContent( $file, $data ) )
+		{
+			$this->cacheData = null;
+			return false;
+		}
+
+		$this->info =
+			[
+				"created" => time()
+			];
+
+		if( $this->time )
+		{
+			$this->info["expired"] = $this->info["created"] + $this->time;
+			$this->writeFileContent( $this->getPath( true ), $this->info );
+		}
+
+		$this->ready = true;
+		$this->found = true;
+
+		return true;
+	}
+
 	public function write( $data, $as_php = null )
 	{
 		if( !$this->raw )
@@ -276,10 +310,10 @@ class Cache
 		}
 
 		$file = $this->getPath();
-		$this->_makeDir( $this->baseDir );
-		strlen($this->dir) && $this->_makeDir( $this->dir );
+		$this->makeDir( $this->baseDir );
+		strlen($this->dir) && $this->makeDir( $this->dir );
 
-		if( !$this->_write( $file, $data ) )
+		if( !$this->writeFileContent( $file, $data ) )
 		{
 			$this->cacheData = null;
 			return false;
@@ -302,7 +336,7 @@ class Cache
 
 		if( $this->time || $this->raw )
 		{
-			$this->_write( $this->getPath( true ), $this->info );
+			$this->writeFileContent( $this->getPath( true ), $this->info );
 		}
 
 		$this->ready = true;

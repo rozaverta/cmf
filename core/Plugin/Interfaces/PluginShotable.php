@@ -1,14 +1,8 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: GoshaV [Maniako] <gosha@rozaverta.com>
- * Date: 12.09.2017
- * Time: 13:26
- */
 
 namespace EApp\Plugin\Interfaces;
 
-interface Shortable
+interface PluginShotable
 {
 	/**
 	 * The plugin used a short tag
@@ -22,4 +16,18 @@ interface Shortable
 	 * @return boolean
 	 */
 	public function hasShortTag();
+
+	/**
+	 * Get plugin content data
+	 *
+	 * @return string
+	 */
+	public function getContent();
+
+	/**
+	 * Return short name
+	 *
+	 * @return string
+	 */
+	public static function getShotName();
 }

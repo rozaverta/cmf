@@ -6,7 +6,7 @@
  * Time: 16:07
  */
 
-namespace EApp\SecurityFilter;
+namespace EApp\SecurityFilter\Interfaces;
 
 
 interface ValidateFilterInterface
@@ -14,4 +14,6 @@ interface ValidateFilterInterface
 	public function __construct( $name = null, array $props = [] );
 
 	public function filter( $value );
+
+	public function toDataBaseFormat( $value );
 }

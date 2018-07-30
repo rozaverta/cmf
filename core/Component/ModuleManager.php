@@ -134,7 +134,7 @@ class ModuleManager implements Arrayable
 		$id = $this->getId($name);
 		if( $id === false )
 		{
-			throw new \Exception("Module '{$name}' not found");
+			throw new \Exception("ModuleComponent '{$name}' not found");
 		}
 
 		return new Module($id, $cached);

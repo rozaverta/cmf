@@ -26,6 +26,9 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	use Set;
 	use Compare;
 
+	const EACH_USE_BOTH = 1;
+	const EACH_USE_KEY = 2;
+
 	protected $items = [];
 
 	/**
@@ -66,6 +69,37 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 		{
 			return new self(array_filter($this->items));
 		}
+	}
+
+	/**
+	 * @param callable $callback
+	 * @param int $flag
+	 * @return $this
+	 */
+	public function each(callable $callback, $flag = 0)
+	{
+		if($flag & self::EACH_USE_BOTH)
+		{
+			foreach($this->items as $key => $item)
+			{
+				call_user_func( $callback, $item, $key );
+			}
+		}
+		else if($flag & self::EACH_USE_KEY)
+		{
+			foreach(array_keys($this->items) as $key)
+			{
+				call_user_func( $callback, $key );
+			}
+		}
+		else
+		{
+			foreach($this->items as $item)
+			{
+				call_user_func( $callback, $item );
+			}
+		}
+		return $this;
 	}
 
 	/**
@@ -325,23 +359,23 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 		{
 			return $items;
 		}
-		else if($items instanceof self)
+		if($items instanceof self)
 		{
 			return $items->getAll();
 		}
-		else if($items instanceof Arrayable)
+		if($items instanceof Arrayable)
 		{
 			return $items->toArray();
 		}
-		else if($items instanceof Jsonable)
+		if($items instanceof Jsonable)
 		{
 			return json_decode($items->toJson(), true);
 		}
-		else if($items instanceof JsonSerializable)
+		if($items instanceof JsonSerializable)
 		{
 			return $items->jsonSerialize();
 		}
-		else if($items instanceof Traversable)
+		if($items instanceof Traversable)
 		{
 			return iterator_to_array($items);
 		}

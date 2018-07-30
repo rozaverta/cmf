@@ -23,10 +23,11 @@ abstract class Router
 	protected $type  = null;
 	protected $match = null;
 	protected $mask  = '';
+	protected $mount_id = 0;
 
 	abstract public function ready();
 
-	public function __construct( Module $module, $prop = [], $type = null, $mask = '', $match = null )
+	public function __construct( Module $module, $prop = [], $type = null, $mask = '', $match = null, $mount_id = 0 )
 	{
 		$name = get_class($this);
 		if( strpos($name, $module->get('name_space')) !== 0 )
@@ -39,6 +40,7 @@ abstract class Router
 		$this->type = $type;
 		$this->match = $match;
 		$this->mask = $mask;
+		$this->mount_id = $mount_id;
 	}
 
 	public function controller()

@@ -13,6 +13,9 @@
 			"name": "name_space"
 		},
 		{
+			"name": "version"
+		},
+		{
 			"name": "install",
 			"type": "boolean",
 			"default": false

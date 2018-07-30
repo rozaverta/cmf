@@ -12,6 +12,7 @@ use EApp\App;
 use EApp\DB\Query\JoinClause;
 use EApp\Event\Interfaces\EventPrepareInterface;
 use EApp\Component\Module;
+use EApp\Prop;
 
 final class EventFactory
 {
@@ -20,19 +21,28 @@ final class EventFactory
 	private $completable = false;
 	private $classes = [];
 
-	public function __construct( $name )
+	public function __construct( $name, $completable = null )
 	{
 		$this->name = trim($name);
-
-		$row = \DB::table('events')
-			->limit(1)
-			->where('name', $this->name)
-			->first(['id', 'completable']);
-
-		if( $row )
+		if( is_bool($completable) )
 		{
-			$this->id = (int) $row->id;
-			$this->completable = $row->completable > 0;
+			$this->completable = $completable;
+		}
+
+		// ready database only for install system
+
+		if( Prop::cache("system")->get("install") )
+		{
+			$row = \DB::table('events')
+				->limit(1)
+				->where('name', $this->name)
+				->first(['id', 'completable']);
+
+			if( $row )
+			{
+				$this->id = (int) $row->id;
+				$this->completable = $row->completable > 0;
+			}
 		}
 	}
 

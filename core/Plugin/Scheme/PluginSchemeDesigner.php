@@ -9,7 +9,6 @@
 namespace EApp\Plugin\Scheme;
 
 use EApp\Component\Module;
-use EApp\Plugin\Interfaces\Shortable;
 
 class PluginSchemeDesigner
 {
@@ -21,7 +20,7 @@ class PluginSchemeDesigner
 	public $id;
 
 	/**
-	 * ModuleInstance identifier.
+	 * ModuleConfig identifier.
 	 *
 	 * @var int
 	 */
@@ -87,12 +86,6 @@ class PluginSchemeDesigner
 		else
 		{
 			$this->package_name = $this->name;
-		}
-
-		$ref = new \ReflectionClass($this->class_name);
-		if( $ref->implementsInterface(Shortable::class) )
-		{
-			$this->short = true;
 		}
 	}
 }

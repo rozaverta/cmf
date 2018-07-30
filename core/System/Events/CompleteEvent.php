@@ -15,6 +15,7 @@ use EApp\App;
  *
  * @property \EApp\App $app
  * @property string $content_type
+ * @property bool $cache
  *
  * @package EApp\System\Events
  */

@@ -14,11 +14,16 @@ use EApp\Support\Json;
 class RouteSchemeDesigner implements Arrayable
 {
 	/**
-	 * ModuleInstance unique identifier in the database table.
+	 * ModuleConfig unique identifier in the database table.
 	 *
 	 * @var int
 	 */
 	public $id;
+
+	/**
+	 * @var int
+	 */
+	public $module_id;
 
 	public $path;
 
@@ -32,6 +37,7 @@ class RouteSchemeDesigner implements Arrayable
 	public function __construct()
 	{
 		$this->id = (int) $this->id;
+		$this->module_id = (int) $this->module_id;
 
 		if( is_object($this->properties) )
 		{

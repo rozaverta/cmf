@@ -29,6 +29,13 @@ class Dispatcher
 	 */
 	private $callbacks;
 
+	/**
+	 * Registered name
+	 *
+	 * @type array
+	 */
+	private $registered = [];
+
 	private $complete = [];
 
 	private $aborted = false;
@@ -84,6 +91,26 @@ class Dispatcher
 	{
 		$this->callbacks->insert( $callback, (int) $priority );
 		return $this;
+	}
+
+	/**
+	 * @param \Closure $callback
+	 * @param $name
+	 * @return $this
+	 */
+	public function register(\Closure $callback, $name)
+	{
+		if(! $this->isRegistered($name))
+		{
+			$this->registered[] = $name;
+			$callback($this);
+		}
+		return $this;
+	}
+
+	public function isRegistered($name)
+	{
+		return in_array($name, $this->registered);
 	}
 
 	public function aborted()
@@ -191,5 +218,19 @@ class Dispatcher
 			$call(... $args);
 		}
 		$this->complete = [];
+	}
+
+	/**
+	 * @return Dispatcher
+	 */
+	public function getCompletableClone()
+	{
+		$clone = new self($this->name, $this->completable);
+		if($this->completable)
+		{
+			$clone->complete = $this->complete;
+			$this->complete = [];
+		}
+		return $clone;
 	}
 }

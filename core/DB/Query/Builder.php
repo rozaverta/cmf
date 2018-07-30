@@ -186,6 +186,13 @@ class Builder
 	public $useWritePdo = false;
 
 	/**
+	 * Result class
+	 *
+	 * @var null|string
+	 */
+	public $resultClass = null;
+
+	/**
 	 * Create a new query builder instance.
 	 *
 	 * @param  \EApp\DB\Connection  $connection
@@ -1659,6 +1666,18 @@ class Builder
 	}
 
 	/**
+	 * Set result class
+	 *
+	 * @param string $resultClass
+	 * @return \EApp\DB\Query\Builder
+	 */
+	public function setResultClass($resultClass)
+	{
+		$this->resultClass = $resultClass;
+		return $this;
+	}
+
+	/**
 	 * Get the SQL representation of the query.
 	 *
 	 * @return string
@@ -1743,7 +1762,7 @@ class Builder
 	protected function runSelect()
 	{
 		return $this->connection->select(
-			$this->toSql(), $this->getBindings(), ! $this->useWritePdo
+			$this->toSql(), $this->getBindings(), ! $this->useWritePdo, $this->resultClass
 		);
 	}
 
@@ -1764,10 +1783,10 @@ class Builder
 		// Once we have run the pagination count query, we will get the resulting count and
 		// take into account what type of query it was. When there is a group by we will
 		// just return the count of the entire results set since that will be correct.
-		if(isset($this->groups))
+		if(isset($this->groups) || count($query->havings))
 		{
 			$column = '*';
-			if( strpos($columns[0], '*') === false )
+			if( !$columns[0] instanceof Expression && strpos($columns[0], '*') === false )
 			{
 				$columns[0] .= ' as uid';
 				$column = 'uid';

@@ -17,19 +17,24 @@ class Module implements Arrayable
 {
 	use Get;
 
+	protected $id = 0;
+
 	protected $items = [];
+
 	protected $support = [];
+
+	protected $is_install = true;
 
 	public function __construct( $id, $cached = true )
 	{
-		$id = (int) $id;
+		$this->id = (int) $id;
 
 		if( $cached )
 		{
-			$cache = new Cache( $id, 'modules' );
+			$cache = new Cache( $this->id, 'modules' );
 			if( !$cache->ready() )
 			{
-				$row = $this->fetch($id);
+				$row = $this->fetch();
 				$cache->write($row);
 			}
 			else
@@ -39,7 +44,7 @@ class Module implements Arrayable
 		}
 		else
 		{
-			$row = $this->fetch($id);
+			$row = $this->fetch();
 		}
 
 		$this->support = $row['support'];
@@ -63,6 +68,11 @@ class Module implements Arrayable
 		return $cache[$id];
 	}
 
+	public function getId()
+	{
+		return $this->id;
+	}
+
 	public function support( $name )
 	{
 		return in_array($name, $this->support, true);
@@ -75,7 +85,7 @@ class Module implements Arrayable
 		return $data;
 	}
 
-	protected function load( $id, ModuleInstance $module )
+	protected function load( $id, ModuleConfig $module )
 	{
 		$get = [
 			'id' => $id,
@@ -100,34 +110,40 @@ class Module implements Arrayable
 		return $get;
 	}
 
-	private function fetch($id)
+	protected function fetch()
 	{
-		$row = \DB::table("modules")
-			->whereId($id)
-			->where('install', true)
-			->first();
+		$builder = \DB::table("modules")->whereId($this->id);
+		if( $this->is_install )
+		{
+			$builder->where('install', true);
+		}
 
+		$row = $builder->first();
 		if( !$row )
 		{
-			throw new NotFoundException("Module '{$id}' not found.");
+			throw new NotFoundException("ModuleComponent '{$this->id}' not found");
 		}
 
 		$name_space = empty($row->name_space) ? ('MD\\' . $row->name) : trim($row->name_space, '\\');
 		$class = $name_space . '\\Module';
 		if( !class_exists($class, true) )
 		{
-			throw new NotFoundException("Module '{$row->name}' not found.");
+			throw new NotFoundException("ModuleComponent '{$row->name}' not found");
 		}
 
 		/**
-		 * @var ModuleInstance $module
+		 * @var ModuleConfig $module
 		 */
 		$module = new $class();
 		if( $module->name !== $row->name )
 		{
 			throw new \InvalidArgumentException("Failure config data for module '{$row->name}'");
 		}
+		if( $this->is_install && $module->version !== $row->version )
+		{
+			throw new \InvalidArgumentException("The current version of the '{$row->name}' module does not match the installed version of the module");
+		}
 
-		return $this->load( (int) $row->id, $module );
+		return $this->load( $row->id, $module );
 	}
 }

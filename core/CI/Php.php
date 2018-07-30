@@ -308,7 +308,20 @@ class Php
 		$tab = $this->pretty ? str_repeat("\t", $printLevel) : "";
 		$out = $this->array_open;
 		$first = true;
-		$j = 0;
+
+		$is_array = is_array($values);
+		if($is_array)
+		{
+			$i = 0;
+			foreach(array_keys($values) as $key)
+			{
+				if( $key !== $i ++ )
+				{
+					$is_array = false;
+					break;
+				}
+			}
+		}
 
 		foreach( $values as $key => $value )
 		{
@@ -326,13 +339,9 @@ class Php
 				$out .= "\n\t" . $tab;
 			}
 
-			if( $j === $key )
+			if( ! $is_array )
 			{
-				++ $j;
-			}
-			else
-			{
-				$out .= $this->string( $key ) . ' => ';
+				$out .= (is_int($key) ? $key : $this->string( $key )) . ' => ';
 			}
 
 			$out .= $this->fromType( $value, $level + 1, $printLevel + 1 );

@@ -2,7 +2,7 @@
 
 namespace EApp;
 
-use EApp\CI\Log;
+use EApp\CI\Log as CiLog;
 use EApp\Config\QueryConfig;
 use EApp\DB\Manager as DataBaseManager;
 use EApp\Event\EventManager;
@@ -11,7 +11,9 @@ use EApp\Http\Response;
 use EApp\Proto\Controller;
 use EApp\Proto\Router;
 use EApp\Support\Exceptions\NotFoundException;
-use EApp\Support\Interfaces\ControllerContentOutput;
+use EApp\Support\Exceptions\PageNotFoundException;
+use EApp\Support\Str;
+use EApp\System\Interfaces\ControllerContentOutput;
 use EApp\Support\Interfaces\SingletonCompletable;
 use EApp\Support\Traits\SingletonInstance;
 use EApp\System\Events\BootEvent;
@@ -32,7 +34,7 @@ use EApp\System\Terminal;
  *
  * Class Els
  *
- * @property Log Log
+ * @property \EApp\CI\Log Log
  * @property Prop Config
  * @property \EApp\CI\Php Php
  * @property \EApp\CI\Uri Uri
@@ -275,17 +277,38 @@ final class App
 
 		if( $controller === null )
 		{
-			throw new \Exception("Page not found", $web_router_found ? 404 : 500 );
+			throw new PageNotFoundException("", $web_router_found ? 404 : 500 );
 		}
 
 		$this->changeController($controller);
 
+		$ready = $this->Controller->ready();
+		if( ! $ready && ! $web_page_404 && $web_router_404 !== false )
+		{
+			$controller = $this->readyController($web_router_404);
+			if( $controller !== null )
+			{
+				$this->changeController($controller);
+				$ready = $this->Controller->ready();
+			}
+		}
+
+		if( !$ready )
+		{
+			throw new \Exception( "Can't load route settings" . ( $this->Controller->hasLogs() ? ": " . $this->Controller->getLastLog() : "" ), 500 );
+		}
+
 		$cacheable = $this->Controller->cacheable();
+		if($cacheable && $this->Controller instanceof ControllerContentOutput)
+		{
+			$cacheable = false;
+		}
+
 		$cache = false;
 
 		if( $cacheable )
 		{
-			$cacheID = $this->Controller->id();
+			$cacheID = $this->Controller->getId();
 			if( !$cacheID )
 			{
 				$cacheable = false;
@@ -302,45 +325,15 @@ final class App
 					EventManager::dispatch('onSystem', new ReadyEvent($this, true));
 
 					$view = $this->View;
-					$view->set( "fromCache", true );
+					$view->set( "from_cache", true );
 
 					EventManager::dispatch('onSystem', new PreRenderEvent($this, true));
 
-					ob_start();
-					\E\IncludeFile( $cache->path(), ["els" => $this, "view" => $view] );
-					$html = ob_get_contents();
-					ob_end_clean();
-
-					$response
-						->setBody($view->replaceDelay( $html ))
-						->send()
-					;
+					\E\IncludeFile( $cache->path(), ["app" => $this, "view" => $view] );
 
 					return $result_type;
 				}
 			}
-		}
-
-		$ready = $this->Controller->ready();
-		if( !$ready )
-		{
-			$cacheable = false;
-			$cache = false;
-
-			if( ! $web_page_404 && $web_router_404 !== false )
-			{
-				$controller = $this->readyController($web_router_404);
-				if( $controller !== null )
-				{
-					$this->changeController($controller);
-					$ready = $this->Controller->ready();
-				}
-			}
-		}
-
-		if( !$ready )
-		{
-			throw new \Exception( "Can't load route settings" . ( $this->Controller->hasLogs() ? ": " . $this->Controller->getLastLog() : "" ), 500 );
 		}
 
 		$outCache = "\n";
@@ -392,6 +385,8 @@ final class App
 
 		$this->Controller->complete();
 
+		$protected = ["package", "template", "controller", "from_cache"];
+
 		$view = $this->View;
 		$data = $this->Controller->pageData();
 		$template = isset( $data["template"] ) ? $data["template"] : "main";
@@ -401,14 +396,23 @@ final class App
 			$view->usePackage($data['package']);
 		}
 
-		$view->setData( $data );
+		$view
+			->setKeysAsProtected($protected)
+			->set($data);
 
 		$Ctrl         = $this->Controller->properties();
-		$Ctrl['id']   = $this->Controller->id();
+		$Ctrl['id']   = $this->Controller->getId();
 		$Ctrl['name'] = $this->Controller->name();
 		$view->set( 'controller', $Ctrl );
 
-		EventManager::dispatch('onSystem', new PreRenderEvent($this));
+		$onPreRender = new PreRenderEvent($this, false, $cacheable);
+		EventManager::dispatch('onSystem', $onPreRender);
+
+		if($cacheable && $onPreRender->getParam("cacheable") === false) {
+			$cacheable = false;
+		}
+
+		unset($onPreRender);
 
 		$outPage = $view->getTpl( $template );
 
@@ -424,10 +428,12 @@ final class App
 				);
 			};
 
-			$view->set('fromCache', null);
+			$all = $view->toArray();
+			unset($all["from_cache"]);
 
-			$outCache .= '$view->setData(';
-			$outCache .= $php->assoc( $view->getData() ) . '); ?>';
+			$outCache .= '$view->setKeysAsProtected("' . implode('", "', $protected) . "\");\n";
+			$outCache .= '$view->set(';
+			$outCache .= $php->assoc( $view->toArray() ) . '); ob_start(); ?>';
 			$outCache .= $escape( $outPage );
 
 			$view->eachPluginData( $outCache, function( & $info ) use ( $escape, $php ) {
@@ -439,11 +445,19 @@ final class App
 
 				else if( $info["cache"] == "plugin" )
 				{
+					$name = Str::snake($info["name"]);
+					$id = $name;
+					if( isset($info["cacheData"]["id"]) )
+					{
+						$id = $info["cacheData"]["id"];
+						unset($info["cacheData"]["id"]);
+					}
+
 					$str  = '<?php ';
-					$str .= "\n\$cache = new \\EApp\\Cache( " . $php->string( $info["driver"] ) . ", ";
-					$str .= $php->string( 'plugin_' . strtolower( $info["name"] ) ) . ", " . $php->php( $info["cacheData"] );
+					$str .= "\n\$cache = new \\EApp\\Cache( " . $php->string( $id ) . ", ";
+					$str .= $php->string( 'plugin_' . $name ) . ", " . $php->php( $info["cacheData"] );
 					$str .= " );\nif( \$cache->ready() ) echo \$cache->getContentData();\nelse {\n\t";
-					$str .= "\$cacheData = \$view->getPlugin( " . $php->string( $info["alias"] ) ;
+					$str .= "\$cacheData = \$view->getPlugin( " . $php->string( $info["name"] ) ;
 					$str .= ", " . $php->php( $info["data"] ) . ", true );\n\t";
 					$str .= "\$cache->write( \$cacheData );\n\techo \$cacheData;\n}\n";
 					$str .= 'unset( $cache, $cacheData ); ?>';
@@ -460,9 +474,13 @@ final class App
 				}
 			});
 
-			$outCache .= '<?php \\EApp\\Event\\EventManager::dispatch("onSystem", new \\EApp\\System\\Events\\CompleteEvent($app, ' . var_export($content_type, true) . ', true));';
+			$outCache .= '<?php ' . "\n" .
+				'$html = ob_get_contents(); ob_end_clean();' . "\n" .
+				'$app->Response->setBody($view->replaceDelay( $html ));' . "\n" .
+				'\\EApp\\Event\\EventManager::dispatch("onSystem", new \\EApp\\System\\Events\\CompleteEvent($app, ' . var_export($content_type, true) . ', true));' . "\n" .
+				'$app->Response->send();';
 
-			if( !$cache->write( $outCache, true ) )
+			if( !$cache->writePhp($outCache) )
 			{
 				$this->Log->line( "Can't write page cache" );
 			}
@@ -519,6 +537,9 @@ final class App
 				return false;
 			}
 		}
+		else {
+			return false;
+		}
 
 		return true;
 	}
@@ -527,6 +548,10 @@ final class App
 	{
 		if( !is_array($prop) )
 		{
+			if(isset($this->ci["Config"])) {
+				return $this->ci["Config"];
+			}
+
 			$cache = new Cache('config');
 			if( $cache->ready() )
 			{
@@ -563,7 +588,7 @@ final class App
 		{
 			$init = true;
 			$ci = Prop::file("ci");
-			$this->ci['Log'] = Log::getInstance();
+			$this->ci['Log'] = CiLog::getInstance();
 			$this->ci['Response'] = new Response();
 			$this->ci['Request'] = Request::createFromGlobals();
 		}
@@ -730,12 +755,12 @@ final class App
 
 	private function readyController( $item, $type = "404", $mask = '', $match = null )
 	{
-		$module = Module::cache($item['id']);
+		$module = Module::cache($item['module_id']);
 		$class  = $module->get('name_space') . 'Router';
 
 		/** @var Router $router */
 
-		$router = new $class( $module, $item['properties'], $type, $mask, $match );
+		$router = new $class( $module, $item['properties'], $type, $mask, $match, $item['id'] );
 
 		if( $router instanceof Router )
 		{

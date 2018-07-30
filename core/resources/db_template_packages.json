@@ -15,6 +15,17 @@
 		},
 		{
 			"name": "title"
+		},
+		{
+			"name": "version"
+		},
+		{
+			"name": "readme",
+			"type": "text/longtext"
+		},
+		{
+			"name": "license",
+			"type": "text/longtext"
 		}
 	],
 	"primaryKey": "id",

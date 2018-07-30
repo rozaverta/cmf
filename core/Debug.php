@@ -44,6 +44,7 @@ final class Debug
 		return
 			[
 				'timing' => self::timing(),
+				'memory' => memory_get_usage( true ),
 				'db-timing' => self::dbTiming(),
 				'db-queries' => self::dbQueries()
 			];

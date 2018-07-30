@@ -1,0 +1,30 @@
+{
+	"type": "#/data_base_table",
+	"name": "event_callback",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "module_id",
+			"type": "integer"
+		},
+		{
+			"name": "class_name"
+		},
+		{
+			"name": "priority",
+			"type": "integer/smallint"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_module_id",
+			"fields": [
+				"module_id"
+			]
+		}
+	]
+}

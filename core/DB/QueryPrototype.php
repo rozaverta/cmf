@@ -3,6 +3,7 @@
 namespace EApp\DB;
 
 use EApp\DB\Query\Builder;
+use EApp\DB\Schema\Table;
 use EApp\Support\CollectionRecorder;
 use InvalidArgumentException;
 use EApp\Support\Collection;
@@ -31,7 +32,7 @@ abstract class QueryPrototype
 	protected $valid_columns = [];
 
 	/**
-	 * @var TableSchema
+	 * @var Table
 	 */
 	protected $table_schema;
 
@@ -45,7 +46,7 @@ abstract class QueryPrototype
 
 	public function __construct()
 	{
-		$this->table_schema = TableSchema::cache($this->getTableName());
+		$this->table_schema = Table::cache($this->getTableName());
 		$this->initialisation();
 	}
 

@@ -3,6 +3,7 @@
 namespace EApp\DB;
 
 use EApp\DB\Query\Builder;
+use EApp\DB\Schema\Table;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Interfaces\Arrayable;
 use EApp\Support\Traits\Get;
@@ -37,7 +38,7 @@ abstract class QueryRecordPrototype implements Arrayable
 	protected $result;
 
 	/**
-	 * @var TableSchema
+	 * @var Table
 	 */
 	protected $table_schema;
 
@@ -50,7 +51,7 @@ abstract class QueryRecordPrototype implements Arrayable
 	public function __construct( $id )
 	{
 		$this->id = (int) $id;
-		$this->table_schema = TableSchema::cache($this->getTableName());
+		$this->table_schema = Table::cache($this->getTableName());
 		$table = $this->table_schema->getTableName();
 
 		// init fields & data info

@@ -9,14 +9,14 @@
 namespace EApp\SecurityFilter;
 
 use EApp\DB\QueryRecordPrototype;
-use EApp\DB\TableSchema;
+use EApp\DB\Schema\Table;
 use EApp\SecurityFilter\Exceptions\ValidateException;
 use EApp\Support\Json;
 
 class TableSchemaFilter
 {
 	/**
-	 * @var TableSchema
+	 * @var \EApp\DB\Schema\Table
 	 */
 	protected $table;
 
@@ -27,7 +27,7 @@ class TableSchemaFilter
 
 	protected $field_rules = [];
 
-	public function __construct( TableSchema $table )
+	public function __construct( Table $table )
 	{
 		$this->table = $table;
 		$this->filter = new Filter();
@@ -184,7 +184,7 @@ class TableSchemaFilter
 		if( $row["type"] === "json" )
 		{
 			try {
-				$value = TableSchema::toJsonArray($value);
+				$value = Table::toJsonArray($value);
 			}
 			catch( \InvalidArgumentException $e ) {
 				throw new ValidateException(isset($row['title']) ? $row['title'] : null, "Invalid json data");

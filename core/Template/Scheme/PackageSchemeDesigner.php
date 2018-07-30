@@ -19,7 +19,7 @@ class PackageSchemeDesigner
 	public $id;
 
 	/**
-	 * ModuleInstance identifier.
+	 * ModuleConfig identifier.
 	 *
 	 * @var int
 	 */
@@ -38,6 +38,27 @@ class PackageSchemeDesigner
 	 * @var string
 	 */
 	public $title;
+
+	/**
+	 * Package version.
+	 *
+	 * @var string
+	 */
+	public $version;
+
+	/**
+	 * Package readme.md data text.
+	 *
+	 * @var string
+	 */
+	public $readme = "";
+
+	/**
+	 * Package license.
+	 *
+	 * @var string
+	 */
+	public $license = "";
 
 	public function __construct()
 	{

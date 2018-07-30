@@ -11,18 +11,25 @@ namespace EApp\Template;
 use EApp\App;
 use EApp\Cache;
 use EApp\Component\Module;
+use EApp\ModuleCore;
 use EApp\Support\Traits\Get;
+use EApp\Support\Traits\GetIdentifier;
 
 class Package
 {
 	use Get;
+	use GetIdentifier;
 
 	protected $items = [];
+
 	private $tpl = [];
+
+	private $from_cache = false;
 
 	public function __construct( $id, $cached = true )
 	{
-		$id = (int) $id;
+		$this->id = (int) $id;
+		$this->from_cache = $cached;
 
 		if( !$cached )
 		{
@@ -41,18 +48,33 @@ class Package
 		}
 	}
 
-	public function getData()
-	{
-		return $this->items;
-	}
-
 	/**
-	 * @return Module | null
+	 * @return \EApp\Component\Module
 	 */
 	public function getModule()
 	{
 		$module_id = $this->get("module_id");
-		return $module_id > 0 ? Module::cache($module_id) : null;
+		return $module_id > 0 ? Module::cache($module_id) : new ModuleCore();
+	}
+
+	/**
+	 * @param string $name
+	 * @return Template
+	 */
+	public function getTemplate($name)
+	{
+		if( !$this->from_cache )
+		{
+			return new Template( $this, $name, false );
+		}
+
+		static $load = [];
+		if( !isset($load[$name]) )
+		{
+			$load[$name] = new Template($this, $name);
+		}
+
+		return $load[$name];
 	}
 
 	/**

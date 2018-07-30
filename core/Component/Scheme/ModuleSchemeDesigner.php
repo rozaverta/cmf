@@ -14,14 +14,14 @@ use EApp\Support\Interfaces\Arrayable;
 class ModuleSchemeDesigner implements Arrayable
 {
 	/**
-	 * Module unique identifier in the database table.
+	 * ModuleComponent unique identifier in the database table.
 	 *
 	 * @var int
 	 */
 	public $id;
 
 	/**
-	 * Module name (base directory for namespace)
+	 * ModuleComponent name (base directory for namespace)
 	 *
 	 * @var string
 	 */
@@ -58,7 +58,7 @@ class ModuleSchemeDesigner implements Arrayable
 		}
 
 		/**
-		 * @var \EApp\Component\ModuleInstance $module
+		 * @var \EApp\Component\ModuleConfig $module
 		 */
 
 		$module = new $class();

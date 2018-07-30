@@ -12,7 +12,7 @@ use EApp\App;
 use EApp\DB\QueryException;
 use EApp\Event\EventManager;
 use EApp\Prop;
-use EApp\Support\Interfaces\ControllerContentOutput;
+use EApp\System\Interfaces\ControllerContentOutput;
 use EApp\System\Events\ExceptionEvent;
 use EApp\Component\Module as SystemModule;
 

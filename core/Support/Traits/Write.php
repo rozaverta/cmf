@@ -9,10 +9,11 @@
 namespace EApp\Support\Traits;
 
 use EApp\App;
+use EApp\Text;
 
 trait Write
 {
-	protected function _write( $file, $data, $attach = false )
+	protected function writeFileContent( $file, $data, $attach = false )
 	{
 		$php = preg_match('/\.[a-z0-9]+$/', $file, $m) && strtolower($m[0]) === strtolower('.php');
 		$callable = false;
@@ -29,7 +30,7 @@ trait Write
 			}
 			else
 			{
-				App::Log()->line(["Content data must be string for write to file '%s'", $file]);
+				App::Log()->line(new Text("Content data must be string for write to file '%s'", $file));
 				return false;
 			}
 		}
@@ -101,11 +102,75 @@ trait Write
 		return $get;
 	}
 
-	protected function _makeDir( $dir )
+	protected function removeFile( $file )
+	{
+		if( !file_exists($file) )
+		{
+			return true;
+		}
+		if( !is_file($file) )
+		{
+			return false;
+		}
+		if( @ unlink($file) )
+		{
+			return true;
+		}
+
+		App::Log()->lastPhp();
+		return false;
+	}
+
+	protected function makeDir( $dir )
 	{
 		$dir = rtrim( $dir, DIRECTORY_SEPARATOR );
-		if( ! file_exists( $dir ) ) {
-			@ mkdir( $dir, 0777, true );
+		if( ! file_exists( $dir ) )
+		{
+			if( @ mkdir( $dir, 0777, true ) )
+			{
+				return true;
+			}
+
+			App::Log()->lastPhp();
+			return false;
 		}
+		else
+		{
+			return is_dir($dir);
+		}
+	}
+
+	protected function dirIsWritable( $dir, $make_file = false )
+	{
+		if( !is_dir($dir) || !is_writeable($dir) )
+		{
+			return false;
+		}
+
+		if( !$make_file )
+		{
+			return true;
+		}
+
+		$file = @ tempnam($dir, 'tmp_');
+		if( !$file )
+		{
+			return false;
+		}
+
+		$data = md5($file);
+		$file_open = @ fopen($file, "a");
+		$test = @ ( $file_open && fwrite($file_open, $data) && fflush($file_open) && fclose($file_open) );
+		if( file_exists($file) )
+		{
+			$test = $test && @ file_get_contents($file) === $data;
+			$test = @ unlink($file) && $test;
+		}
+		else
+		{
+			$test = false;
+		}
+
+		return $test;
 	}
 }

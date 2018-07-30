@@ -9,9 +9,10 @@
 
 namespace EApp\Proto;
 
-use EApp\App;
+use EApp\CI\View;
 use EApp\Support\Traits\Get;
 use EApp\Support\Traits\Compare;
+use EApp\Plugin\Interfaces\PluginPrepareProperties;
 
 abstract class Plugin
 {
@@ -19,11 +20,17 @@ abstract class Plugin
 	use Compare;
 
 	protected $items = [];
+
 	protected $cacheType = "nocache";
+
 	protected $cacheData = [];
 
-	public function __construct( $data )
+	protected $view;
+
+	public function __construct( $data, View $view )
 	{
+		$this->view = $view;
+
 		if( ! is_array( $data ) )
 		{
 			return;
@@ -43,20 +50,9 @@ abstract class Plugin
 			unset( $data["cache"], $data["time"] );
 		}
 
-		if( ! isset($data["tpl"]) )
+		if( $this instanceof PluginPrepareProperties )
 		{
-			$tpl = str_replace( "\\", '.', get_class($this) );
-			$tpl = strtolower( trim($tpl, ".") );
-			if( substr( $tpl, 0, 7 ) == 'plugin.' )
-			{
-				$tpl = substr( $tpl, 7 );
-			}
-			$data["tpl"] = $tpl;
-		}
-
-		if( method_exists( $this, "filterData" ) )
-		{
-			$cache = $this->filterData( $data );
+			$cache = $this->prepareProperties( $data );
 			if( is_array( $cache ) )
 			{
 				foreach( $cache as $key => $value )
@@ -83,9 +79,27 @@ abstract class Plugin
 		return $this->cacheData;
 	}
 
+	public function getTplName()
+	{
+		$tpl = $this->get("tpl");
+
+		if(!$tpl)
+		{
+			$tpl = str_replace( "\\", '.', get_class($this) );
+			$tpl = strtolower( trim($tpl, ".") );
+			if( substr( $tpl, 0, 7 ) == 'plugin.' )
+			{
+				$tpl = substr( $tpl, 7 );
+			}
+			$this->items["tpl"] = $tpl;
+		}
+
+		return $tpl;
+	}
+
 	protected function render( array $data )
 	{
-		return App::View()->getTpl( $this->get("tpl"), $data );
+		return $this->view->getTpl( $this->getTplName(), $data );
 	}
 
 	protected function cacheValue( $name, $value )

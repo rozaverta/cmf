@@ -1,27 +1,46 @@
 <?php
-
-namespace EApp\Config\Scheme;
-use EApp\App;
-use EApp\Support\Json;
-
 /**
  * Created by IntelliJ IDEA.
  * User: GoshaV [Maniako] <gosha@rozaverta.com>
  * Date: 18.04.2017
  * Time: 1:20
  */
+
+namespace EApp\Config\Scheme;
+
+use EApp\App;
+use EApp\Component\Module;
+use EApp\ModuleCore;
+use EApp\SecurityFilter\ConfigFilter;
+use EApp\Support\Json;
+
 class PropertySchemeDesigner
 {
 	public $name;
+
 	public $type;
+
 	public $value;
+
+	public $raw_value;
+
 	public $default_value;
+
+	public $module_id;
+
+	protected $cache_value = null;
+
+	protected $cache_data;
+
+	protected $filter = [];
 
 	protected $is_null = false;
 
 	public function __construct()
 	{
+		$this->module_id = (int) $this->module_id;
 		$this->value = trim($this->value);
+		$this->raw_value = $this->value;
 
 		if( !strlen($this->value) )
 		{
@@ -33,12 +52,13 @@ class PropertySchemeDesigner
 			}
 		}
 
-		if( $this->is_null )
+		if( preg_match('/^(.*?)\((.*?)\)$/', $this->type, $m) )
 		{
-			if( $this->type === 'integer' ) $this->value = '0';
-			else if( $this->type === 'boolean' ) $this->value = 'FALSE';
-			else if( $this->type === 'json' ) $this->value = '{}';
+			$this->type = $m[1];
+			$this->filter = $this->parseJson($m[2], "filter properties");
 		}
+
+		$this->filter["name"] = $this->type;
 	}
 
 	public function isNull()
@@ -56,41 +76,40 @@ class PropertySchemeDesigner
 		return $this->type;
 	}
 
+	public function getFilter()
+	{
+		return $this->filter;
+	}
+
 	public function getValue()
 	{
-		if( $this->type === 'integer' )
+		if( $this->value !== $this->cache_value )
 		{
-			return (int) $this->value;
+			$filter = new ConfigFilter( $this->module_id > 0 ? Module::cache($this->module_id) : new ModuleCore() );
+			$this->cache_value = $this->value;
+			$this->cache_data = $filter->filter($this->cache_value, $this->filter, $this->name);
 		}
 
-		if( $this->type === 'boolean' )
-		{
-			return strtoupper($this->value) === 'TRUE';
-		}
-
-		if( $this->type === 'json' )
-		{
-			try {
-				$get = Json::parse( $this->value, true );
-				if( !is_array($get) )
-				{
-					$get = [];
-				}
-			}
-			catch( \InvalidArgumentException $e ) {
-				App::Log("Cannot ready json config value '{$this->name}'");
-				App::Log($e);
-				$get = [];
-			}
-
-			return $get;
-		}
-
-		return $this->value;
+		return $this->cache_data;
 	}
 
 	public function getTextValue()
 	{
 		return $this->value;
+	}
+
+	protected function parseJson( $value, $type )
+	{
+		$result = null;
+
+		try {
+			$result = Json::parse( $value, true );
+		}
+		catch( \InvalidArgumentException $e ) {
+			App::Log("Cannot ready json config {$type} '{$this->name}'");
+			App::Log($e);
+		}
+
+		return is_array($result) ? $result : [];
 	}
 }

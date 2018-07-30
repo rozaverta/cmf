@@ -42,11 +42,6 @@ class DocComments
 		return $this->method_name;
 	}
 
-	public function getAll()
-	{
-		return $this->items;
-	}
-
 	private function getComments( $text )
 	{
 		$text = str_replace(["\r\n", "\r"], "\n", $text);

@@ -9,6 +9,7 @@
 namespace EApp\Event;
 
 use EApp\Cache;
+use EApp\Prop;
 use EApp\Support\Exceptions\NotFoundException;
 
 final class EventManager
@@ -17,7 +18,7 @@ final class EventManager
 	 * Get event manager element from cache
 	 *
 	 * @param $name
-	 * @return Dispatcher
+	 * @return \EApp\Event\Dispatcher
 	 * @throws \Exception
 	 */
 	public static function dispatcher($name)
@@ -26,25 +27,34 @@ final class EventManager
 
 		if(! isset($all[$name]))
 		{
-			$cache = new Cache($name, 'events');
-
-			if(! $cache->ready())
+			// system has been installed
+			// use default mode
+			if(Prop::cache("system")->get("install"))
 			{
-				$event = new EventFactory($name);
-				if( $event->load() === false )
-				{
-					throw new NotFoundException("Event '{$name}' is not registered in system");
-				}
+				$cache = new Cache($name, 'events');
 
-				$data = $event->getContentData();
-				if(! $cache->write($data))
+				if(! $cache->ready())
 				{
-					throw new \Exception("Can't write event file");
+					$event = new EventFactory($name);
+					if( $event->load() === false )
+					{
+						throw new NotFoundException("Event '{$name}' is not registered in system");
+					}
+
+					$data = $event->getContentData();
+					if(! $cache->write($data))
+					{
+						throw new \Exception("Can't write event file");
+					}
+				}
+				else
+				{
+					$data = $cache->getContentData();
 				}
 			}
 			else
 			{
-				$data = $cache->getContentData();
+				$data = (new EventFactory($name))->getContentData();
 			}
 
 			$manager = new Dispatcher(

@@ -6,7 +6,7 @@
  * Time: 13:29
  */
 
-namespace EApp\Support\Interfaces;
+namespace EApp\System\Interfaces;
 
 interface ControllerContentOutput
 {

@@ -12,7 +12,7 @@ use EApp\App;
 use EApp\Cache;
 use EApp\Component\QueryModules;
 use EApp\Prop;
-use EApp\System\Console\ClassReader;
+use EApp\System\Files\Php\ClassReader;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -55,7 +55,7 @@ class Terminal
 		if( $this->wait )
 		{
 			$out = new ConsoleOutput();
-			$out->writeln('<info>Warning!</> System is update, please wait');
+			$out->writeln('<info>Warning!</info> System is update, please wait');
 			return 0;
 		}
 
@@ -180,7 +180,7 @@ class Terminal
 			return $load;
 		}
 
-		$load = $this->load( CORE_DIR . "Console" );
+		$load = $this->load( CORE_DIR . "System" . DIRECTORY_SEPARATOR . "ConsoleCommands" );
 		if( $load === false )
 		{
 			throw new \Exception("Default commands not registered");
@@ -193,7 +193,7 @@ class Terminal
 				         ->get() as $module )
 			{
 				/** @var \EApp\Component\Scheme\ModuleSchemeDesigner $module */
-				$count = $this->load( $module->path . "Console" );
+				$count = $this->load( $module->path . "ConsoleCommands" );
 				if( $count !== false )
 				{
 					$load += $count;

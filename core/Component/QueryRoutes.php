@@ -21,7 +21,7 @@ class QueryRoutes extends QueryPrototype
 	{
 		parent::initialisation();
 		unset( $this->valid_columns["install"] );
-		$this->columns = ["m.id", "t.path", "t.properties"];
+		$this->columns = ["t.id", "t.module_id", "t.path", "t.properties"];
 		$this->orderBy("position");
 	}
 
@@ -41,6 +41,7 @@ class QueryRoutes extends QueryPrototype
 			->leftJoin("modules as m", function(JoinClause $join) {
 				$join->on("m.id", "=", "t.module_id");
 			})
+			->whereNotNull("m.id")
 			->where("m.install", true);
 
 		return parent::prepare( $builder );

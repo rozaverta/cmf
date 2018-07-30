@@ -6,7 +6,7 @@
  * Time: 21:50
  */
 
-namespace EApp\System\Console;
+namespace EApp\System\Files\Php;
 
 use EApp\Support\Traits\Get;
 use EApp\System\Files\Php\DocComments;

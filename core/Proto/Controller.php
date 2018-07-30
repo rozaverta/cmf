@@ -10,18 +10,20 @@ namespace EApp\Proto;
 
 use EApp\Prop;
 use EApp\Component\Module;
-use EApp\Support\Traits\Logs;
+use EApp\Support\Interfaces\Loggable;
+use EApp\Support\Traits\GetIdentifier;
+use EApp\Support\Traits\LoggableTrait;
 use EApp\Support\Traits\Get;
 
-abstract class Controller
+abstract class Controller implements Loggable
 {
-	use Logs;
+	use LoggableTrait;
 	use Get;
+	use GetIdentifier;
 
 	protected $items = [];
 	protected $name = false;
 	protected $cacheable = false;
-	protected $id = 1;
 
 	/**
 	 * @var \EApp\Prop
@@ -61,7 +63,8 @@ abstract class Controller
 		unset($data['id'], $data['cacheable']);
 
 		$this->module = $module;
-		$this->properties = new Prop($data);
+		$this->properties = new Prop();
+		$this->items = $data;
 	}
 
 	public function name()
@@ -85,11 +88,6 @@ abstract class Controller
 		return $this->cacheable;
 	}
 
-	public function id()
-	{
-		return $this->id;
-	}
-
 	public function module()
 	{
 		return $this->module;
@@ -109,5 +107,22 @@ abstract class Controller
 	public function pageData()
 	{
 		return $this->pageData;
+	}
+
+	/**
+	 * Check support method for other module
+	 *
+	 * @param string | Module $name
+	 * @param string $method
+	 * @return bool
+	 */
+	public function supportPortalMethod( $name, $method )
+	{
+		if( $name instanceof Module )
+		{
+			$name = $name->get("key");
+		}
+
+		return $this->module->support($name) && method_exists($this, $method);
 	}
 }

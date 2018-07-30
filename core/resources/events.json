@@ -1,6 +1,6 @@
 {
 	"type": "#/events",
-	"item": [
+	"items": [
 		{
 			"name": "onSystem",
 			"title": "Progress system events"

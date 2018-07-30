@@ -8,9 +8,9 @@
 
 namespace EApp;
 
-use EApp\Component\ModuleInstance;
+use EApp\Component\ModuleConfig;
 
-class ModuleCoreInstance extends ModuleInstance
+class ModuleCoreConfig extends ModuleConfig
 {
 	public $name = "@core";
 }

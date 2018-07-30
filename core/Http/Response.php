@@ -105,6 +105,16 @@ class Response
 		$this->cookies = new ResponseCookieCollection();
 	}
 
+	public function preventDefault()
+	{
+		if ($this->isLocked())
+		{
+			throw new LockedResponseException('Response is locked');
+		}
+		$this->sent = true;
+		return $this;
+	}
+
 	/**
 	 * Get the HTTP protocol version
 	 *

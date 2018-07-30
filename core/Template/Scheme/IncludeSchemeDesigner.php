@@ -21,14 +21,14 @@ class IncludeSchemeDesigner
 	public $id;
 
 	/**
-	 * ModuleInstance identifier.
+	 * ModuleConfig identifier.
 	 *
 	 * @var int
 	 */
 	public $module_id;
 
 	/**
-	 * ModuleInstance name.
+	 * ModuleConfig name.
 	 *
 	 * @var string
 	 */

@@ -1,0 +1,10 @@
+{
+	"type": "#/version_migration",
+	"versions": {
+		"0.-install": {
+			"version": "0.0.1",
+			"database_tables_renamed": {},
+			"actions": []
+		}
+	}
+}
