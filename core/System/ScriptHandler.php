@@ -11,10 +11,19 @@ namespace EApp\System;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Script\Event;
 use Composer\Installer\PackageEvent;
 
 class ScriptHandler
 {
+	public static function initEvent(Event $event)
+	{
+		if( $event->getName() === "cmf-init" )
+		{
+			(new Script\Init($event->getIO()))->run();
+		}
+	}
+
 	public static function packageEvent(PackageEvent $event)
 	{
 		static $names = [
