@@ -15,7 +15,7 @@ class Init extends AbstractScript
 		$io = $this->getIO();
 		$io->write("<info>BASE_DIR:</info> " . $this->getBaseDir());
 
-		if( $io->askConfirmation("Add index and hosts files (y/n)? ") )
+		if( $io->askConfirmation("Init Elastic-CMF (y/n)? ") )
 		{
 			$this->create();
 		}
@@ -66,7 +66,7 @@ include BASE_DIR . "vendor/autoload.php";
 		// create content for hosts file (empty)
 
 		$this->createFile("hosts", $hosts_name, '<?php defined("ELS_CMS") || exit;
-$hosts = [' . ($default_host ? (var_export($default_host) . ' => []') : '') . '];
+$hosts = [' . ($default_host ? (var_export($default_host, true) . ' => []') : '') . '];
 ');
 
 		// create content for htaccess file
@@ -128,7 +128,7 @@ RewriteRule ^(.*)$ /index.php?q=$1 [L,QSA]
 			{
 				$this
 					->getIO()
-					->write("<error>Info: </error> the {$type} file was successfully created");
+					->write("<info>Info: </info> the {$type} file was successfully created");
 			}
 			else if( file_exists($file) )
 			{
@@ -164,7 +164,7 @@ RewriteRule ^(.*)$ /index.php?q=$1 [L,QSA]
 			$index_name = $name .".php";
 		}
 
-		if( strlen($index_name) > 25 || ! preg_match('/^[a-z][a-z0-9\-]+[a-z0-9]$/', $index_name) )
+		if( strlen($index_name) > 25 || ! preg_match('/^[a-z][a-z0-9.\-]+[a-z0-9]$/', $index_name) )
 		{
 			$this
 				->getIO()
