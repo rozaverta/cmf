@@ -9,11 +9,11 @@
 namespace EApp\Proto;
 
 use EApp\App;
-use EApp\DB\QueryException;
+use EApp\Database\QueryException;
 use EApp\Event\EventManager;
 use EApp\Prop;
 use EApp\System\Interfaces\ControllerContentOutput;
-use EApp\System\Events\ExceptionEvent;
+use EApp\System\Events\ThrowableEvent;
 use EApp\Component\Module as SystemModule;
 
 abstract class JsonController extends Controller implements ControllerContentOutput
@@ -28,7 +28,7 @@ abstract class JsonController extends Controller implements ControllerContentOut
 		App::Response()->header("Content-Type", "application/json; charset=utf-8");
 		EventManager::listen(
 			"onSystemException",
-			function( ExceptionEvent $event )
+			function( ThrowableEvent $event )
 			{
 				$code = $event->exception->getCode();
 				if( ! $event->app->loadIs('Controller') || $event->app->Controller !== $this || in_array( $code, [403, 404, 500] ) )

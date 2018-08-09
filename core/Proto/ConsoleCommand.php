@@ -8,31 +8,59 @@
 
 namespace EApp\Proto;
 
+use EApp\Prop;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class ConsoleCommand extends Command
 {
-	protected $docs = [];
+	/**
+	 * @var Prop
+	 */
+	protected $docs;
+
+	/**
+	 * @var InputInterface
+	 */
+	protected $input;
+
+	/**
+	 * @var OutputInterface
+	 */
+	protected $output;
 
 	public function __construct( array $docs = [] )
 	{
-		$this->docs = $docs;
-		parent::__construct( $this->docs["name"] );
+		$this->docs = new Prop($docs);
+		parent::__construct( $docs["name"] );
+		$this->init();
 	}
 
 	protected function configure()
 	{
 		// the short description shown while running "php bin/console list"
-		if( isset($this->docs["description"]) )
+		if( $this->docs->getIs("description") )
 		{
 			$this->setDescription($this->docs["description"]);
 		}
 
 		// the full command description shown when running the command with
 		// the "--help" option
-		if( isset($this->docs["help"]) )
+		if( $this->docs->getIs("help") )
 		{
-			$this->setHelp( 'Hello world help text :)' );
+			$this->setHelp($this->docs["help"]);
 		}
 	}
+
+	protected function execute( InputInterface $input, OutputInterface $output )
+	{
+		$this->input = $input;
+		$this->output = $output;
+		$this->exec();
+	}
+
+	protected function init() {}
+
+	abstract protected function exec();
 }

@@ -300,7 +300,7 @@ class Cache
 				}
 				else if( $convert === "php" )
 				{
-					$data = App::Php()->data( $data );
+					$data = App::PhpExport()->data( $data );
 				}
 				else
 				{

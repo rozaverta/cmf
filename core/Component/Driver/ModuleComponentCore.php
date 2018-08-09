@@ -75,7 +75,7 @@ class ModuleComponentCore extends ModuleComponentAbstract
 
 		$dispatcher
 			->dispatch(
-				new Events\ModuleInstallEvent($this, [
+				new Events\ModuleInstallDriverEvent($this, [
 					"id" => 0,
 					"manifest" => $manifest,
 					"config" => $conf

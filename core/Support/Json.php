@@ -9,6 +9,7 @@
 namespace EApp\Support;
 
 use Closure;
+use EApp\Support\Interfaces\Arrayable;
 use EApp\Support\Interfaces\Jsonable;
 use InvalidArgumentException;
 
@@ -67,13 +68,14 @@ class Json
 			$data = $data();
 		}
 
-		if( is_object($data) )
-		{
-			return get_object_vars($data);
-		}
-		else if( $data instanceof Jsonable )
+		if( $data instanceof Jsonable )
 		{
 			$data = $data->toJson();
+		}
+
+		if( is_object($data) )
+		{
+			return $data instanceof Arrayable ? $data->toArray() : get_object_vars($data);
 		}
 
 		if( is_string($data) )

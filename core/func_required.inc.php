@@ -52,7 +52,7 @@ else
 		}
 	}
 
-	if( PHP_VERSION >= 5.4 && ! $prop->equiv('unescaped_unicode', false) )
+	if( ! $prop->equiv('unescaped_unicode', false) )
 	{
 		$encode_options = $encode_options | JSON_UNESCAPED_UNICODE;
 	}
@@ -61,7 +61,7 @@ else
 define("JSON_DECODE_OPTIONS", $decode_options);
 define("JSON_ENCODE_OPTIONS", $encode_options);
 
-namespace EApp\DB;
+namespace EApp\Database;
 
 use PDO;
 
@@ -122,12 +122,15 @@ function Tap($value, $callback = null)
  */
 function DataGet($target, $key, $default = null)
 {
-	if (is_null($key))
+	if( is_null($key) )
 	{
 		return $target;
 	}
 
-	$key = is_array($key) ? $key : explode('.', $key);
+	if( !is_array($key) )
+	{
+		$key = explode(".", $key);
+	}
 
 	while (! is_null($segment = array_shift($key)))
 	{
@@ -180,7 +183,7 @@ function Debug()
 		}
 	}
 
-	header('Content-Type: text/plain; charset=utf-8');
+	headers_sent() || header('Content-Type: text/plain; charset=utf-8');
 	if( $num > 0 )
 	{
 		foreach( func_get_args() as $data )
@@ -193,7 +196,7 @@ function Debug()
 		echo $get;
 	}
 
-	exit();
+	exit;
 }
 
 function Path( $path, $isDir = false, array $extended = [] )
@@ -236,7 +239,7 @@ function Path( $path, $isDir = false, array $extended = [] )
 	return $prefix . ltrim( $path, DIRECTORY_SEPARATOR ) . ( $isDir ? DIRECTORY_SEPARATOR : ".php" );
 }
 
-function IncludeFile( $file, $extract = null, $fatal = false, $once = false )
+function IncludeFile( string $file, $extract = null, $fatal = false, $once = false )
 {
 	if( is_array($extract) )
 	{
@@ -267,10 +270,12 @@ function IncludeFile( $file, $extract = null, $fatal = false, $once = false )
 /**
  * @param $file
  * @param string $getName
- * @return mixed | array
+ * @param string $empty_result
+ * @return array|mixed
  */
-function IncludeContentFile( $file, $getName = 'data' )
+function IncludeContentFile( $file, $getName = 'data', $empty_result = "" )
 {
+	/** @noinspection PhpIncludeInspection */
 	include $file;
-	return $getName && isset( ${$getName} ) ? ${$getName} : "";
+	return $getName && isset( ${$getName} ) ? ${$getName} : $empty_result;
 }

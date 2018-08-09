@@ -34,6 +34,11 @@ class Text
 		}
 	}
 
+	public static function createInstance( $text, ... $args )
+	{
+		return new Text( $text, ... $args );
+	}
+
 	public function __toString()
 	{
 		return $this->replace === false ? $this->text : vsprintf($this->text, $this->replace);

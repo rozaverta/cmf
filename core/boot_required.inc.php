@@ -13,61 +13,15 @@ if( ! defined("BASE_DIR") ) {
 
 // base constants
 
+define("CORE_DIR", __DIR__ . DIRECTORY_SEPARATOR );
+
 defined("ELS_CMS")          || define( "ELS_CMS"        , true );
 defined("NOW_MICROTIME")    || define( "NOW_MICROTIME"  , microtime(true) );
 defined("NOW_TIME")         || define( "NOW_TIME"       , time() );
-defined("BASE_ENCODING")    || define( "BASE_ENCODING"  , "UTF-8" );
-defined("BASE_PROTOCOL")    || define( "BASE_PROTOCOL"  , isset( $_SERVER['HTTPS'] ) && strtolower($_SERVER['HTTPS']) == 'on' || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' ? 'https' : 'http' );
-defined("CONSOLE_MODE")     || define( "CONSOLE_MODE"   , function_exists("php_sapi_name") && php_sapi_name() == 'cli' );
-
-$is_ref = false;
-if( isset($_SERVER['HTTP_REFERER'], $_SERVER["HTTP_HOST"]) )
-{
-	$ref = BASE_PROTOCOL . "://" . $_SERVER["HTTP_HOST"];
-	if( $ref === $_SERVER['HTTP_REFERER'] || strpos($_SERVER['HTTP_REFERER'], $ref . "/") === 0 )
-	{
-		$is_ref = true;
-	}
-}
-
-define("APP_HOST_REFERER", $is_ref);
-unset($is_ref, $ref);
-
-define("CORE_DIR", __DIR__ . DIRECTORY_SEPARATOR );
-
-// detect hosts and load or create application constants
-
-$file = BASE_DIR . "host.php";
-if( file_exists($file) )
-{
-	include $file;
-	if( ! defined("APP_HOST") )
-	{
-		$message = "The selected domain is not installed or the configuration file is not specified host ID";
-		if( CONSOLE_MODE )
-		{
-			$message .= "\n";
-		}
-		else if( ! headers_sent() )
-		{
-			header("Content-Type: text/plain; charset=utf-8");
-		}
-
-		echo $message;
-		exit();
-	}
-}
-else
-{
-	define( "APP_HOST"    , ( empty($_SERVER['HTTP_HOST']) ? 'localhost' : $_SERVER['HTTP_HOST'] ) );
-	define( "APP_DIR"     , BASE_DIR . "application" . DIRECTORY_SEPARATOR );
-	define( "ASSETS_DIR"  , BASE_DIR . "assets" . DIRECTORY_SEPARATOR );
-	define( "ASSETS_PATH" , "/assets/" );
-}
 
 // class alias
 
-class_alias('EApp\\DB\\Manager', 'DB', true);
+class_alias('EApp\\Database\\Manager', 'DB', true);
 
 // Обработка ошибок
 
@@ -99,9 +53,14 @@ set_exception_handler(static function( $exception )
 		}
 	}
 
+	function exc_cmd()
+	{
+		return defined("CONSOLE_MODE") ? CONSOLE_MODE : function_exists("php_sapi_name") && php_sapi_name() == 'cli';
+	}
+
 	function exc_print( $text, array $args = [])
 	{
-		if( CONSOLE_MODE )
+		if( exc_cmd() )
 		{
 			$text .= "\n";
 		}
@@ -121,7 +80,7 @@ set_exception_handler(static function( $exception )
 
 	function exc_db($exception)
 	{
-		if( exc_has_app() && $exception instanceof \EApp\DB\QueryException )
+		if( exc_has_app() && $exception instanceof \EApp\Database\QueryException )
 		{
 			$app = \EApp\App::getInstance();
 			$app->Log->line("Error sql query: " . $exception->getSql());
@@ -183,8 +142,7 @@ set_exception_handler(static function( $exception )
 
 		try {
 			\EApp\Event\EventManager::dispatch(
-				'onSystemException',
-				new \EApp\System\Events\ExceptionEvent( $app, $exception ),
+				new \EApp\System\Events\ThrowableEvent($exception),
 				function( $result ) use ( & $output ) {
 					if( $result instanceof \Closure )
 					{
@@ -197,14 +155,14 @@ set_exception_handler(static function( $exception )
 					}
 				});
 		}
-		catch(\EApp\DB\QueryException $e) {
+		catch(\EApp\Database\QueryException $e) {
 			exc_db($e);
 		}
 
 		try {
 			$app->close();
 		}
-		catch(\EApp\DB\QueryException $e) {
+		catch(\EApp\Database\QueryException $e) {
 			exc_db($e);
 		}
 	}
@@ -220,7 +178,7 @@ set_exception_handler(static function( $exception )
 		exit();
 	}
 
-	if( CONSOLE_MODE )
+	if( exc_cmd() )
 	{
 		$response->setBody( sprintf( "\033[31;31m%s\033[0m", $title . ( $code ? " [{$code}]:" : ':' ) ) . " " . $message . PHP_EOL );
 	}
@@ -300,10 +258,36 @@ EOT;
 	try {
 		$response->send(true);
 	}
-	catch(\EApp\DB\QueryException $e) {
+	catch(\EApp\Database\QueryException $e) {
 		exc_db($e);
-		exc_print((CONSOLE_MODE ? "\033[31;31m%s (%s)\033[0m" : "%s (%s)") . ": %s", [$title, $code, $message]);
+		exc_print((exc_cmd() ? "\033[31;31m%s (%s)\033[0m" : "%s (%s)") . ": %s", [$title, $code, $message]);
 	}
 
-	exit();
+	exit;
 });
+
+// detect hosts
+
+$hosts = \EApp\Hosts::getInstance();
+
+if( $hosts->reload() )
+{
+	if( $hosts->getStatus() === "redirect" )
+	{
+		$hosts->isCmd() || exit;
+	}
+	else
+	{
+		$hosts->define();
+	}
+}
+else if( ! $hosts->isCmd() )
+{
+	headers_sent() || header("Content-Type: text/plain; charset=utf-8");
+	echo "The selected domain is not installed or the configuration file is not specified host ID";
+	exit;
+}
+
+defined("CONSOLE_MODE")     || define( "CONSOLE_MODE"   , $hosts->isCmd() );
+defined("BASE_ENCODING")    || define( "BASE_ENCODING"  , "UTF-8" );
+defined("BASE_PROTOCOL")    || define( "BASE_PROTOCOL"  , CONSOLE_MODE || ! $hosts->isServerSsl() ? "http" : "https" );

@@ -9,6 +9,7 @@
 namespace EApp\Event;
 
 use EApp\Cache;
+use EApp\Event\Interfaces\EventInterface;
 use EApp\Prop;
 use EApp\Support\Exceptions\NotFoundException;
 
@@ -80,9 +81,9 @@ final class EventManager
 		return self::dispatcher($name)->listen($callback, $priority);
 	}
 
-	public static function dispatch($name, $event = [], \Closure $callback = null)
+	public static function dispatch(EventInterface $event, \Closure $callback = null)
 	{
-		return self::dispatcher($name)->dispatch($event, $callback);
+		return self::dispatcher($event->getName())->dispatch($event, $callback);
 	}
 
 	public static function isRun($name)

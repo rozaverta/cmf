@@ -113,12 +113,12 @@ class Dispatcher
 		return in_array($name, $this->registered);
 	}
 
-	public function aborted()
+	public function isAborted()
 	{
 		return $this->aborted;
 	}
 
-	public function completable()
+	public function isCompletable()
 	{
 		return count($this->complete) > 0;
 	}
@@ -134,11 +134,11 @@ class Dispatcher
 	/**
 	 * Dispatch events
 	 *
-	 * @param EventInterface|array $event
+	 * @param EventInterface $event
 	 * @param \Closure|null $callback
 	 * @return Collection
 	 */
-	public function dispatch($event = [], \Closure $callback = null)
+	public function dispatch(EventInterface $event, \Closure $callback = null)
 	{
 		if( $this->isRun() )
 		{
@@ -166,11 +166,7 @@ class Dispatcher
 			return $dispatch;
 		}
 
-		if( !$event instanceof EventInterface )
-		{
-			$event = new Event($this->name, $event);
-		}
-		else if( $event->getName() !== $this->name )
+		if( $event->getName() !== $this->name )
 		{
 			throw new \InvalidArgumentException("The name of the Event does not match the name of the Dispatcher");
 		}
@@ -180,23 +176,26 @@ class Dispatcher
 
 		foreach( clone $this->callbacks as $call )
 		{
+			if( $event->isPropagationStopped() )
+			{
+				$this->aborted = true;
+				break;
+			}
+
 			try
 			{
-				$result = call_user_func( $call, $event );
+				$result = $call($event);
 			}
 			catch( EventAbortException $e )
 			{
-				$this->aborted = true;
-				break;
+				continue;
 			}
 
-			if( $isCall && $callback($result) === false )
+			if( $isCall )
 			{
-				$this->aborted = true;
-				break;
+				$callback($result);
 			}
-
-			if( $this->completable && $result instanceof \Closure )
+			else if( $this->completable && $result instanceof \Closure )
 			{
 				$this->complete[] = $result;
 			}

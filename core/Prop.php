@@ -64,17 +64,28 @@ class Prop implements ArrayAccess, Countable, Arrayable
 	}
 
 	/**
+	 * @param array $an_array
+	 * @return static
+	 */
+	public function __set_state($an_array)
+	{
+		return new static($an_array["items"] ?? []);
+	}
+
+	/**
 	 * Get array data from file
 	 *
 	 * @param $name
+	 * @param bool $exists
 	 * @return array
 	 */
-	public static function file( $name )
+	public static function file( $name, & $exists = false )
 	{
 		$file = APP_DIR . "config" . DIRECTORY_SEPARATOR . $name . '.php';
 		if( file_exists( $file ) )
 		{
 			$data = \E\IncludeContentFile($file);
+			$exists = true;
 		}
 
 		if( ! isset( $data ) || ! is_array( $data ) )

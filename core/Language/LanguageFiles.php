@@ -14,36 +14,30 @@ use EApp\Prop;
 
 class LanguageFiles extends Language implements I18Interface
 {
-	public $keys = [];
-
-	public $lines = [];
-
 	protected $i18 = [];
 
 	protected $i18_default = false;
 
-	protected $packages = [];
-
-	function loadDefaultPackage()
+	protected function loadPackage( string $package_name )
 	{
-		$this->lines = Prop::file('language/' . $this->language);
-		$this->i18 = Prop::file('language/i18/' . $this->language);
-		$this->i18_default = isset($this->i18['default']);
-	}
+		$lines = Prop::file('language/' . $this->language . '/' . $package_name, $exists);
 
-	function loadPackage( $package_name )
-	{
-		$lines = Prop::file('language/' . $this->language . '/' . $package_name);
-		if(!count($lines))
+		if($exists && $package_name === "default")
 		{
-			return false;
+			$this->i18[$package_name] = array_filter(
+					Prop::file('language/i18/' . $this->language),
+					static function( $item ) {
+						return $item instanceof \Closure;
+					}
+				);
+
+			$this->i18_default = isset($this->i18['default']);
 		}
 
-		$this->lines += $lines;
-		return true;
+		return $exists ? $lines : false;
 	}
 
-	public function i18( $number, array $array )
+	public function i18( int $number, array $array ): string
 	{
 		if( $this->i18_default )
 		{
@@ -60,15 +54,15 @@ class LanguageFiles extends Language implements I18Interface
 		}
 	}
 
-	public function i18Invoke( $key, $number )
+	public function i18Invoke( int $number, string $name, array $replace = [] ): string
 	{
-		if( isset($this->i18[$key]) )
+		if( isset($this->i18[$name]) )
 		{
-			return $this->i18[$key]($number);
+			return $this->i18[$name]($number, $replace);
 		}
 		else
 		{
-			return $key;
+			return $name;
 		}
 	}
 }

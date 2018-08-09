@@ -8,16 +8,21 @@
 
 namespace EApp\System\Events;
 
-use EApp\App;
 use EApp\Template\Template;
 
+/**
+ * Class RenderCompleteEvent
+ *
+ * @property Template $template
+ * @property string $body
+ *
+ * @package EApp\System\Events
+ */
 class RenderCompleteEvent extends SystemEvent
 {
-	public function __construct( App $app, Template $template, $body )
+	public function __construct( Template $template, string $body )
 	{
-		parent::__construct( $app );
-		$this->params['template'] = $template;
-		$this->params['body'] = $body;
+		parent::__construct(compact('template', 'body'));
 		$this->params_allowed[] = "body";
 	}
 }

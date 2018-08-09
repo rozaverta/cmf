@@ -15,14 +15,14 @@ interface EventInterface
 	 *
 	 * @return string
 	 */
-	public function getName();
+	public function getName(): string;
 
 	/**
 	 * Get all events parameters
 	 *
 	 * @return array
 	 */
-	public function getParams();
+	public function getParams(): array;
 
 	/**
 	 * Get event parameter by name
@@ -30,5 +30,19 @@ interface EventInterface
 	 * @param string $name parameter name
 	 * @return mixed
 	 */
-	public function getParam( $name );
+	public function getParam( string $name );
+
+	/**
+	 * Prevents the event from being passed to further listeners
+	 *
+	 * @return mixed
+	 */
+	public function stopPropagation();
+
+	/**
+	 * Checks if stopPropagation has been called
+	 *
+	 * @return bool
+	 */
+	public function isPropagationStopped(): bool;
 }

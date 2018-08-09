@@ -8,10 +8,10 @@
 
 namespace EApp\Template\Scheme;
 
-
 use EApp\Component\Module;
+use EApp\Database\Schema\SchemeDesigner;
 
-class IncludeSchemeDesigner
+class IncludeSchemeDesigner extends SchemeDesigner
 {
 	/**
 	 * Plugin unique identifier.

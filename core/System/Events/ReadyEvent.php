@@ -8,13 +8,17 @@
 
 namespace EApp\System\Events;
 
-use EApp\App;
-
+/**
+ * Class ReadyEvent
+ *
+ * @property bool $cache
+ *
+ * @package EApp\System\Events
+ */
 class ReadyEvent extends SystemEvent
 {
-	public function __construct( App $app, $cache = false )
+	public function __construct( bool $cache = false )
 	{
-		parent::__construct( $app );
-		$this->params['cache'] = $cache;
+		parent::__construct(compact('cache'));
 	}
 }

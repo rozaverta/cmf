@@ -14,7 +14,7 @@ use EApp\Support\Interfaces\Jsonable;
 use EApp\Support\Interfaces\Loggable;
 use EApp\Support\Json;
 use EApp\Support\Traits\Write;
-use EApp\System\Files\FileResource;
+use EApp\System\Fs\FileResource;
 use EApp\Text;
 
 trait ResourceBackup

@@ -15,13 +15,16 @@ use EApp\Language\Interfaces\TextInterface;
 use EApp\Language\Interfaces\TransliterationInterface;
 use EApp\Language\Language;
 use EApp\Language\LanguageFiles;
+use EApp\Prop;
 use EApp\Support\Interfaces\SingletonCompletable;
 use EApp\Support\Str;
 use EApp\Support\Traits\SingletonInstance;
 use EApp\System\Events\LanguageEvent;
+use EApp\System\Events\LanguageLoadEvent;
 
 /**
  * Class Json
+ *
  * @package CI
  * @method static Lang getInstance()
  */
@@ -34,7 +37,7 @@ final class Lang implements SingletonCompletable
 	 *
 	 * @var string
 	 */
-	private $language = null;
+	private $language = "en";
 
 	/**
 	 * @var Language | I18Interface | TextInterface | TransliterationInterface
@@ -44,14 +47,23 @@ final class Lang implements SingletonCompletable
 	private $lang_i18 = false;
 	private $lang_transliteration = false;
 	private $lang_text = false;
-	private $lang_default = false;
+	private $lang_default = "en";
+	private $lang_is_default = true;
+	private $lang_init = false;
+
+	private $package_context = "default";
 
 	protected function __construct()
 	{
 		// set default
-		$this->language = App::Config("language", "en");
+		$this->language = Prop::cache("system")->getOr("language", $this->lang_default);
+		$this->lang_default = $this->language;
 	}
 
+	/**
+	 * @inheritdoc
+	 * @throws \Exception
+	 */
 	public function instanceComplete( App $app )
 	{
 		static $complete = false;
@@ -61,58 +73,67 @@ final class Lang implements SingletonCompletable
 		}
 
 		$complete = true;
-		$language = $this->language;
-		$this->language = null;
-
-		EventManager::dispatch(
-			'onLanguage',
-			new LanguageEvent($this, $language, 'onLanguage'),
-			function ( $result ) {
-				return is_string($result) && $this->reload($result) ? false : null;
-			});
-
-		if( $this->language === null )
-		{
-			$this->reload($language);
-		}
+		$event = new LanguageEvent($this);
+		EventManager::dispatch($event);
+		$this->reload($event->getParam("language"));
 	}
 
-	public function text( $text )
-	{
-		if( $this->lang_text )
-		{
-			return $this->lang->transliterate($text);
-		}
-		else
-		{
-			return $text;
-		}
-	}
-
-	public function current()
+	/**
+	 * Get current language key
+	 *
+	 * @return string
+	 */
+	public function getCurrent(): string
 	{
 		return $this->language;
 	}
 
-	public function currentIsDefault()
+	/**
+	 * Get default language key
+	 *
+	 * @return string
+	 */
+	public function getDefault(): string
 	{
 		return $this->lang_default;
 	}
 
-	public function load( $name )
+	/**
+	 * Current language is default
+	 *
+	 * @return bool
+	 */
+	public function currentIsDefault(): bool
 	{
-		return $this->lang->load($name);
+		return $this->lang_is_default;
 	}
 
-	public function reload( $language )
+	/**
+	 * Load language package
+	 *
+	 * @param string $package_name
+	 * @return bool
+	 */
+	public function load( string $package_name ): bool
+	{
+		return $this->lang->load($package_name);
+	}
+
+	/**
+	 * Set new language key and reload all packages
+	 *
+	 * @param string $language
+	 * @return bool
+	 */
+	public function reload( string $language ): bool
 	{
 		$language = trim( $language );
-		if( ! $language )
+		if( ! self::valid($language) )
 		{
 			return false;
 		}
 
-		if( $this->language === $language )
+		if( $this->language === $language && $this->lang_init )
 		{
 			return true;
 		}
@@ -120,15 +141,16 @@ final class Lang implements SingletonCompletable
 		$packages = is_null($this->lang) ? [] : $this->lang->packages();
 		$this->language = $language;
 		$this->lang = null;
+		$this->lang_init = true;
 
+		$event = new LanguageLoadEvent($this);
 		EventManager::dispatch(
-			'onLanguageLoad',
-			new LanguageEvent($this, $language, 'onLanguageLoad'),
-			function ( $result ) {
+			$event,
+			function( $result ) use($event) {
 				if( $result instanceof Language )
 				{
 					$this->lang = $result;
-					return false;
+					$event->stopPropagation();
 				}
 			});
 
@@ -140,7 +162,7 @@ final class Lang implements SingletonCompletable
 		$this->lang_i18 = $this->lang instanceof I18Interface;
 		$this->lang_transliteration = $this->lang instanceof TransliterationInterface;
 		$this->lang_text = $this->lang instanceof TextInterface;
-		$this->lang_default = $this->lang->isDefault();
+		$this->lang_is_default = $this->lang === $this->lang_default;
 
 		foreach($packages as $package)
 		{
@@ -150,30 +172,113 @@ final class Lang implements SingletonCompletable
 		return true;
 	}
 
-	public function item( $name, $default = '' )
+	/**
+	 * Set current package for ready next item
+	 *
+	 * @param string $context package name
+	 * @return $this
+	 */
+	public function then( string $context = "default" )
 	{
-		return isset( $this->lang->keys[$name] ) ? $this->lang->keys[$name] : $default;
+		$this->package_context = $context;
+		return $this;
 	}
 
-	public function line( $text )
+	/**
+	 * Get item
+	 *
+	 * @param string $name
+	 * @param string $default
+	 * @return string|array
+	 */
+	public function item( string $name, $default = '' )
 	{
-		if( $this->lang_default )
+		return $this->lang->item($name, $this->getThen(), $default);
+	}
+
+	/**
+	 * Get line (convert item to string)
+	 *
+	 * @param string $text
+	 * @return string
+	 */
+	public function line( string $text ): string
+	{
+		$line = $this->lang->item($text, $this->getThen(), $text);
+		return is_array($line) ? reset($line) : (string) $line;
+	}
+
+	/**
+	 * Get line and replace values
+	 *
+	 * @param string $text
+	 * @param array ...$replace
+	 * @return string
+	 */
+	public function replace( string $text, ... $replace ): string
+	{
+		$then = $this->package_context;
+		return $this->format(
+			$this->line($text),
+			$then,
+			count($replace) === 1 && is_array($replace[0]) ? $replace[0] : $replace
+		);
+	}
+
+	public function i18n( int $number, $string, array $replace = [] ): string
+	{
+		$then = $this->getThen();
+
+		if( ! is_array( $string ) )
 		{
-			return $text;
+			if( $this->lang->itemIs($string, $then) )
+			{
+				$string = $this->lang->item($string, $then);
+			}
+			else if( $this->lang_i18 )
+			{
+				return $this->lang->i18Invoke($number, $string, $replace);
+			}
 		}
 
-		if( isset( $this->lang->lines[$text] ) )
+		if( is_array( $string ) )
 		{
-			return $this->lang->lines[$text];
+			if( $this->lang_i18 )
+			{
+				$string = $this->lang->i18($number, $string);
+			}
+			else
+			{
+				$string = (string) reset($string);
+			}
 		}
 
-		$lower = Str::lower( $text );
-		$lower = trim( $lower );
-		$lower = preg_replace( '/\s{2,}/', " ", $lower );
-
-		if( isset( $this->lang->lines[$lower] ) )
+		$pos = strpos( $string, "%d" );
+		if( $pos !== false )
 		{
-			return $this->lang->lines[$lower];
+			$string = substr_replace( $string, $number, $pos, 2 );
+		}
+
+		if( ! empty($replace) )
+		{
+			$string = $this->format( $string, $then, $replace );
+		}
+
+		return $string;
+	}
+
+	/**
+	 * Get text block
+	 *
+	 * @param string $text
+	 * @return string
+	 */
+	public function text( string $text ): string
+	{
+		$then = $this->getThen();
+		if( $this->lang_text )
+		{
+			return $this->lang->text($text, $then);
 		}
 		else
 		{
@@ -181,18 +286,46 @@ final class Lang implements SingletonCompletable
 		}
 	}
 
-	public function replace( $text, $replace )
+	/**
+	 * Transliterate string
+	 *
+	 * @param string $word
+	 * @param bool $latinOnly
+	 * @return string
+	 */
+	public function transliterate( string $word, $latinOnly = true ): string
 	{
-		if( ! $this->lang_default )
+		if( $this->lang_transliteration )
 		{
-			$text = $this->line( $text );
+			$word = $this->lang->transliterate($word);
+		}
+		else
+		{
+			$word = Str::ascii($word, $this->language);
 		}
 
-		if( !is_array( $replace ) )
+		if( $latinOnly )
 		{
-			$replace = [$replace];
+			$word = preg_replace('/[^\x00-\xff]+/u', '', $word);
+			$word = trim( preg_replace('/\s+/', ' ', $word ) );
 		}
 
+		return $word;
+	}
+
+	/**
+	 * Validate language key
+	 *
+	 * @param string $language
+	 * @return bool
+	 */
+	public static function valid( string $language ): bool
+	{
+		return strlen($language) >= 2 && preg_match('/^[a-z]{2}(?:_[a-zA-Z]{2,5})?(?:\-[a-zA-Z0-9_]+)?$/', $language);
+	}
+
+	private function format( string $text, string $then, array $replace ): string
+	{
 		$new_text = "";
 		$num = 0;
 		$len = count($replace);
@@ -225,10 +358,13 @@ final class Lang implements SingletonCompletable
 
 			else if( $text[0] == "d" )
 			{
-				$i18n = $num < $len ? @ (int) $replace[$num++] : 0;
+				$i18n = $num < $len ? @ $replace[$num++] : 0;
 				if( preg_match( '/^d-\((.*?)\)/', $text, $m ) )
 				{
-					$new_text .= $this->i18n( $i18n, trim( $m[1] ) );
+					$new_text .= $this
+						->then($then)
+						->i18n( (int) $i18n, trim( $m[1] ) );
+
 					$text = substr( $text, strlen( $m[0] ) );
 				}
 				else
@@ -254,7 +390,10 @@ final class Lang implements SingletonCompletable
 					$val = (int) $val;
 					if( preg_match( '/^-\((.*?)\)/', $text, $m ) )
 					{
-						$val = $this->i18n( $val, $m[1] );
+						$val = $this
+							->then($then)
+							->i18n( $val, $m[1] );
+
 						$text = substr( $text, strlen( $m[0] ) );
 					}
 					$new_text .= $val;
@@ -265,64 +404,10 @@ final class Lang implements SingletonCompletable
 		return $new_text;
 	}
 
-	public function i18n( $number, $string, $replace = null )
+	private function getThen()
 	{
-		if( ! is_array( $string ) )
-		{
-			if( isset( $this->lang->keys[$string] ) )
-			{
-				$string = $this->lang->keys[$string];
-			}
-			else if( $this->lang_i18 )
-			{
-				return $this->lang->i18Invoke($replace, $number);
-			}
-		}
-
-		$number = (int) $number;
-		if( is_array( $string ) )
-		{
-			if( $this->lang_i18 )
-			{
-				$string = $this->lang->i18($number, $string);
-			}
-			else
-			{
-				$string = reset($string);
-			}
-		}
-
-		$pos = strpos( $string, "%d" );
-		if( $pos !== false )
-		{
-			$string = substr_replace( $string, $number, $pos, 2 );
-		}
-
-		if( $replace )
-		{
-			$string = $this->replace( $string, $replace );
-		}
-
-		return $string;
-	}
-
-	public function transliterate( $word, $latinOnly = true )
-	{
-		if( $this->lang_transliteration )
-		{
-			$word = $this->lang->transliterate($word);
-		}
-		else
-		{
-			$word = Str::ascii($word, $this->language);
-		}
-
-		if( $latinOnly )
-		{
-			$word = preg_replace('/[^\x00-\xff]+/u', '', $word);
-			$word = trim( preg_replace('/\s+/', ' ', $word ) );
-		}
-
-		return $word;
+		$then = $this->package_context;
+		$this->package_context = "default";
+		return $then;
 	}
 }

@@ -10,7 +10,7 @@ namespace EApp\Language\Interfaces;
 
 interface I18Interface
 {
-	public function i18( $number, array $array );
+	public function i18( int $number, array $array ): string;
 
-	public function i18Invoke( $key, $number );
+	public function i18Invoke( int $number, string $name, array $replace = [] ): string;
 }

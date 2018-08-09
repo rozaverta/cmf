@@ -10,15 +10,15 @@ namespace EApp\Component\Driver;
 
 use EApp\Component\Driver\Tools\FileConfig;
 use EApp\Config\Driver\ConfigFactory;
-use EApp\DB\Connection;
-use EApp\DB\Query\Expression;
+use EApp\Database\Connection;
+use EApp\Database\Query\Expression;
 use EApp\Event\Dispatcher;
 use EApp\Event\Driver\EventCallback;
 use EApp\Event\Driver\EventFactory;
 use EApp\Support\Interfaces\Loggable;
 use EApp\Support\Traits\LoggableTrait;
 use EApp\System\Interfaces\SystemDriver;
-use EApp\System\Files\FileResource;
+use EApp\System\Fs\FileResource;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Text;
 use InvalidArgumentException;
@@ -52,7 +52,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 	protected $name_space = "";
 
 	/**
-	 * @var null | \EApp\System\Files\FileResource
+	 * @var null | \EApp\System\Fs\FileResource
 	 */
 	protected $manifest = null;
 
@@ -94,7 +94,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 
 	/**
 	 * @param null|string $name_space
-	 * @return \EApp\System\Files\FileResource
+	 * @return \EApp\System\Fs\FileResource
 	 * @throws \EApp\Support\Exceptions\NotFoundException | \InvalidArgumentException
 	 */
 	protected function getManifest( $name_space = null )

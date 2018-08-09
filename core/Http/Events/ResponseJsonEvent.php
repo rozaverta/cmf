@@ -8,21 +8,27 @@
 
 namespace EApp\Http\Events;
 
-use EApp\Event\Interfaces\EventInterface;
 use EApp\Http\Response;
+use JsonSerializable;
 
-class ResponseJsonEvent extends ResponseSendEvent implements EventInterface
+/**
+ * Class ResponseJsonEvent
+ *
+ * @property array|JsonSerializable $json       The data to encode as JSON
+ * @property string $prefix                     The name of the JSON-P function prefix
+ *
+ * @package EApp\Http\Events
+ */
+class ResponseJsonEvent extends ResponseSendEvent
 {
 	public function __construct( Response $response, $json, $prefix )
 	{
-		$this->params = compact('response', 'json', 'prefix');
-	}
-
-	public function setJson( $object )
-	{
-		if( is_object($object) || is_array($object) )
-		{
-			$this->params['object'] = $object;
-		}
+		parent::__construct($response);
+		$this->params['json'] = $json;
+		$this->params['prefix'] = $prefix;
+		$this->params_allowed[] = 'json';
+		$this->params_allowed_type['json'] = static function($value) {
+			return is_array($value) || $value instanceof JsonSerializable;
+		};
 	}
 }

@@ -8,12 +8,9 @@
 
 namespace EApp\System\Events;
 
-use EApp\App;
-
 /**
  * Class CompleteEvent
  *
- * @property \EApp\App $app
  * @property string $content_type
  * @property bool $cache
  *
@@ -21,10 +18,8 @@ use EApp\App;
  */
 class CompleteEvent extends SystemEvent
 {
-	public function __construct( App $app, $content_type, $cache = false )
+	public function __construct( string $content_type, bool $cache = false )
 	{
-		parent::__construct( $app );
-		$this->params['content_type'] = $content_type;
-		$this->params['cache'] = (bool) $cache;
+		parent::__construct(compact('content_type', 'cache'));
 	}
 }

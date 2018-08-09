@@ -8,9 +8,7 @@
 
 namespace EApp\Http\Events;
 
-
-use EApp\Event\Interfaces\EventInterface;
-use EApp\Event\EventParamTrait;
+use EApp\Event\Event;
 use EApp\Http\Response;
 
 /**
@@ -18,27 +16,16 @@ use EApp\Http\Response;
  *
  *
  * @property Response response
- * @property string url
+ * @property string location
  * @property boolean permanent
  * @property boolean refresh
  *
+ * @package EApp\Http\Events
  */
-class ResponseRedirectEvent implements EventInterface
+class ResponseRedirectEvent extends Event
 {
-	use EventParamTrait;
-
-	public function __construct( Response $response, $url, $permanent, $refresh )
+	public function __construct( Response $response, string $location, bool $permanent, bool $refresh )
 	{
-		$this->params = compact( 'response', 'url', 'permanent', 'refresh' );
-	}
-
-	/**
-	 * Get event name
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'onResponseRedirect';
+		parent::__construct('onResponseRedirect', compact('response', 'location', 'permanent', 'refresh'));
 	}
 }

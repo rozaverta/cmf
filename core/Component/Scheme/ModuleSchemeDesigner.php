@@ -8,10 +8,10 @@
 
 namespace EApp\Component\Scheme;
 
+use EApp\Database\Schema\SchemeDesigner;
 use EApp\Support\Exceptions\NotFoundException;
-use EApp\Support\Interfaces\Arrayable;
 
-class ModuleSchemeDesigner implements Arrayable
+class ModuleSchemeDesigner extends SchemeDesigner
 {
 	/**
 	 * ModuleComponent unique identifier in the database table.

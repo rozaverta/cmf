@@ -11,16 +11,21 @@ namespace EApp\Component;
 use EApp\Support\Collection;
 use EApp\Support\Exceptions\ReadyException;
 use EApp\Support\Str;
-use EApp\System\Files\FileResource;
+use EApp\System\Fs\FileResource;
 use ReflectionClass;
 
 abstract class ModuleConfig
 {
 	public $version = "1.0.0";
+
 	public $name  = "";
+
 	public $title = "";
+
 	public $route = false;
+
 	public $support = [];
+
 	public $data = [];
 
 	/**
@@ -32,7 +37,7 @@ abstract class ModuleConfig
 
 	public function __construct()
 	{
-		$this->reflector = new ReflectionClass( get_class($this) );
+		$this->reflector = new ReflectionClass($this);
 
 		// ready manifest json file
 
@@ -71,7 +76,7 @@ abstract class ModuleConfig
 
 	/**
 	 * @param $name
-	 * @return FileResource|null
+	 * @return \EApp\System\Fs\FileResource|null
 	 */
 	public function getResource( $name )
 	{

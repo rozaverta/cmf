@@ -10,7 +10,7 @@ namespace EApp;
 
 use EApp\Support\Interfaces\Arrayable;
 
-class Log implements Arrayable
+class Log implements Arrayable, \JsonSerializable
 {
 	public $text;
 
@@ -28,7 +28,7 @@ class Log implements Arrayable
 	{
 		$this->time = time();
 
-		if( PHP_VERSION >= 7 && $text instanceof \Throwable || $text instanceof \Exception )
+		if( $text instanceof \Throwable )
 		{
 			$this->text = $text->getMessage();
 			$this->messageBounceBack();
@@ -65,7 +65,7 @@ class Log implements Arrayable
 			$this->replace = [];
 			$this->text = preg_replace_callback(
 				'/\'(.*?)\'/',
-				static function($m) {
+				function($m) {
 					$this->replace[] = trim($m[1]);
 					return "'%s'";
 				},
@@ -166,5 +166,18 @@ class Log implements Arrayable
 			"time"    => $this->time,
 			"code"    => $this->code
 		];
+	}
+
+	/**
+	 * Specify data which should be serialized to JSON
+	 *
+	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * which is a value of any type other than a resource.
+	 * @since 5.4.0
+	 */
+	public function jsonSerialize()
+	{
+		return $this->toArray();
 	}
 }

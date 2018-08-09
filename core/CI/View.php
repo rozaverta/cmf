@@ -20,6 +20,7 @@ use EApp\Support\Interfaces\SingletonCompletable;
 use EApp\Support\Str;
 use EApp\Support\Traits\Set;
 use EApp\System\Events\RenderCompleteEvent;
+use EApp\System\Events\RenderGetOnEvent;
 use EApp\System\Events\ShutdownEvent;
 use EApp\System\Events\SystemEvent;
 use EApp\Support\Traits\Get;
@@ -74,14 +75,13 @@ final class View implements SingletonCompletable, ArrayAccess
 	public function __construct( $conf = [] )
 	{
 		$app = App::getInstance();
-		$config = $app->Config;
 		$url = $app->Uri;
 
-		$this->items["language"]   = $app->Lang->current();
-		$this->items["site_name"]  = $config->get( "site_name" );
-		$this->items["page_title"] = isset($conf['page_title']) ? $conf['page_title'] : $this->items["site_name"];
-		$this->items["assets"]     = isset($conf['assets'])     ? $conf['assets']     : $url->base . ltrim( ASSETS_PATH, "/" );
-		$this->items["charset"]    = $this->charset = $config->getOr( "charset", "utf-8" );
+		$this->items["language"]   = $app->Lang->getCurrent();
+		$this->items["site_name"]  = Prop::cache("system")->getOr("site_name", APP_HOST);
+		$this->items["page_title"] = $conf['page_title'] ?? $this->items["site_name"];
+		$this->items["assets"]     = $conf['assets']     ?? $url->base . ltrim( ASSETS_PATH, "/" );
+		$this->items["charset"]    = $this->charset = BASE_ENCODING;
 		$this->items["now"]        = time();
 		$this->items["from_cache"] = false;
 		$this->items["host"]       = $url->host;
@@ -239,7 +239,7 @@ final class View implements SingletonCompletable, ArrayAccess
 			$cache->write($this->packages);
 		}
 
-		$this->usePackage( $app->Config->getOr("package", "main") );
+		$this->usePackage( Prop::cache("system")->getOr("package", "main") );
 
 		$cache = new Cache('includes', 'template');
 		if( $cache->ready() )
@@ -389,6 +389,22 @@ final class View implements SingletonCompletable, ArrayAccess
 		}
 
 		return $found;
+	}
+
+	/**
+	 * Use RenderGetOnEvent event before return item value
+	 *
+	 * @example <?= $view->getOn("content") ?>
+	 *
+	 * @param string $name name or path
+	 * @param string $default default result value
+	 * @return mixed
+	 */
+	public function getOn( string $name, $default = "" )
+	{
+		$event = new RenderGetOnEvent( $name, $this->getPath($name, $default) );
+		EventManager::dispatch($event);
+		return $event->getParam("value");
 	}
 
 	/**
@@ -781,8 +797,8 @@ final class View implements SingletonCompletable, ArrayAccess
 
 			// dispatch render complete event
 			// update body
-			$event = new RenderCompleteEvent( App::getInstance(), $this->template, $body );
-			EventManager::dispatch('onSystem', $event);
+			$event = new RenderCompleteEvent( $this->template, $body );
+			EventManager::dispatch($event);
 			$body = $event->getParam("body");
 
 			$this->template = null;

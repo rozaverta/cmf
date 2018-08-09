@@ -11,6 +11,7 @@ namespace EApp\Support\Traits;
 use EApp\Support\Collection;
 use EApp\Support\Interfaces\Arrayable;
 use EApp\Support\Interfaces\Jsonable;
+use EApp\Support\Interfaces\TypeOfInterface;
 use EApp\Support\Json;
 use JsonSerializable;
 use Traversable;
@@ -110,6 +111,11 @@ trait Set
 	 */
 	public function offsetSet( $offset, $value )
 	{
+		if( $this instanceof TypeOfInterface && ! $this->typeOf($value, $offset) )
+		{
+			throw new \InvalidArgumentException("Invalid data type for offset item");
+		}
+
 		if (is_null($offset))
 		{
 			$this->items[] = $value;

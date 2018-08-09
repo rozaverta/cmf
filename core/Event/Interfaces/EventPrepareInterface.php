@@ -17,14 +17,13 @@ interface EventPrepareInterface
 	 *
 	 * @param string $name event name
 	 */
-	public function __construct($name);
+	public function __construct( string $name );
 
 	/**
 	 * Get event parameter by name
 	 *
 	 * @param Dispatcher $manager
 	 * @return mixed
-	 * @internal param string $name parameter name
 	 */
 	public function prepare( Dispatcher $manager );
 }

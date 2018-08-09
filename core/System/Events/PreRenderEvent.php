@@ -8,8 +8,6 @@
 
 namespace EApp\System\Events;
 
-use EApp\App;
-
 /**
  * Class PreRenderEvent
  *
@@ -21,11 +19,12 @@ use EApp\App;
  */
 class PreRenderEvent extends SystemEvent
 {
-	public function __construct( App $app, $cache = false, $cacheable = false )
+	public function __construct( bool $cache = false, bool $cacheable = false )
 	{
-		parent::__construct( $app );
-		$this->params['cache'] = $cache;
-		$this->params['cacheable'] = ! $cache && $cacheable;
+		parent::__construct([
+			'cache' => $cache,
+			'cacheable' => ! $cache && $cacheable
+		]);
 		$this->params_allowed[] = "cacheable";
 	}
 }

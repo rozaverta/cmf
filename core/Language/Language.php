@@ -14,53 +14,53 @@ use EApp\Text;
 
 abstract class Language
 {
-	public $keys = [];
-
-	public $lines = [];
-
-	protected $packages = [];
+	protected $lines = [];
 
 	protected $language;
 
 	public function __construct( $language )
 	{
 		$this->language = $language;
-		$this->loadDefaultPackage();
+		$this->load("default");
 	}
 
-	abstract function loadPackage( $package_name );
-
-	abstract function loadDefaultPackage();
+	abstract protected function loadPackage( string $package_name );
 
 	public function packages()
 	{
-		return $this->packages;
+		return array_keys($this->lines);
 	}
 
-	public function isDefault()
+	public function loadIs( string $package_name ): bool
 	{
-		return $this->language == 'en';
+		return array_key_exists($package_name, $this->lines);
 	}
 
-	public function loadIs( $package_name )
-	{
-		return in_array($package_name, $this->packages, true);
-	}
-
-	public function load( $package_name )
+	public function load( string $package_name )
 	{
 		if( $this->loadIs($package_name) )
 		{
 			return true;
 		}
 
-		if( ! $this->loadPackage($package_name) )
+		$lines = $this->loadPackage($package_name);
+		if( !is_array($lines) )
 		{
-			App::Log( new Text("Cannot load language package %s", $package_name) );
+			App::Log( Text::createInstance("Cannot load language package %s", $package_name) );
 			return false;
 		}
 
-		$this->packages[] = $package_name;
+		$this->lines[$package_name] = $lines;
 		return true;
+	}
+
+	public function itemIs( string $name, string $context = "default" ): bool
+	{
+		return isset($this->lines[$context][$name]);
+	}
+
+	public function item( string $name, string $context = "default", string $default = "" )
+	{
+		return $this->lines[$context][$name] ?? $default;
 	}
 }

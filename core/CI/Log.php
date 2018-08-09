@@ -14,6 +14,7 @@ use EApp\Text;
 
 /**
  * Class Log
+ *
  * @package CI
  * @method static Log getInstance()
  */
@@ -77,18 +78,11 @@ final class Log
 	}
 
 	/**
-	 * @param \Exception | \Throwable $e
+	 * @param \Throwable $e
 	 * @return bool
-	 * @throws \Exception
 	 */
-	public function exception( $e )
+	public function exception( \Throwable $e )
 	{
-		$valid = PHP_VERSION < 7 ? ($e instanceof \Exception) : ($e instanceof \Throwable);
-		if( !$valid )
-		{
-			trigger_error("Uncaught TypeError: Argument 1 passed to " . __CLASS__ . "::exception() must be an instance of \\Exceptions or \\Error for PHP_VERSION > 7", E_USER_ERROR);
-		}
-
 		$text  = 'exception error: ' . $e->getMessage();
 		$text .= ', file: ' . $e->getFile();
 		$text .= ', line: ' . $e->getLine();

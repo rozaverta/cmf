@@ -8,10 +8,10 @@
 
 namespace EApp\Component\Scheme;
 
-use EApp\Support\Interfaces\Arrayable;
+use EApp\Database\Schema\SchemeDesigner;
 use EApp\Support\Json;
 
-class RouteSchemeDesigner implements Arrayable
+class RouteSchemeDesigner extends SchemeDesigner
 {
 	/**
 	 * ModuleConfig unique identifier in the database table.
@@ -45,12 +45,11 @@ class RouteSchemeDesigner implements Arrayable
 		}
 		else if( ! is_array($this->properties) )
 		{
-			$prop = $this->properties;
-			if( strlen($prop) && $prop[0] === '{' )
+			if( is_string($this->properties) && strlen($this->properties) )
 			{
-				$this->properties = Json::parse($prop, true);
+				$this->properties = Json::getArrayProperties($this->properties, true);
 			}
-			else
+			else if( ! is_array($this->properties) )
 			{
 				$this->properties = [];
 			}
@@ -79,15 +78,5 @@ class RouteSchemeDesigner implements Arrayable
 		{
 			$this->path = trim( $this->path, "/" );
 		}
-	}
-
-	/**
-	 * Get the instance as an array.
-	 *
-	 * @return array
-	 */
-	public function toArray()
-	{
-		return get_object_vars($this);
 	}
 }

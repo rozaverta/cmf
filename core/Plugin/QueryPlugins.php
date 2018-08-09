@@ -8,7 +8,7 @@
 
 namespace EApp\Plugin;
 
-use EApp\DB\QueryPrototype;
+use EApp\Database\QueryPrototype;
 use EApp\Plugin\Scheme\PluginSchemeDesigner;
 
 class QueryPlugins extends QueryPrototype

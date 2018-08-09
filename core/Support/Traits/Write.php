@@ -26,7 +26,7 @@ trait Write
 			}
 			else if( $php )
 			{
-				$data = "\n" . App::Php()->data( $data );
+				$data = "\n" . App::PhpExport()->data( $data );
 			}
 			else
 			{

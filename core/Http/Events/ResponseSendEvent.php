@@ -8,26 +8,20 @@
 
 namespace EApp\Http\Events;
 
-use EApp\Event\Interfaces\EventInterface;
-use EApp\Event\EventParamTrait;
+use EApp\Event\Event;
 use EApp\Http\Response;
 
-class ResponseSendEvent implements EventInterface
+/**
+ * Class ResponseSendEvent
+ *
+ * @property Response $response
+ *
+ * @package EApp\Http\Events
+ */
+class ResponseSendEvent extends Event
 {
-	use EventParamTrait;
-
 	public function __construct( Response $response )
 	{
-		$this->params['response'] = $response;
-	}
-
-	/**
-	 * Get event name
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'onResponseSend';
+		parent::__construct('onResponseSend', compact('response'));
 	}
 }

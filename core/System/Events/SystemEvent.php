@@ -9,25 +9,18 @@
 namespace EApp\System\Events;
 
 use EApp\App;
-use EApp\Event\EventParamTrait;
-use EApp\Event\Interfaces\EventInterface;
+use EApp\Event\Event;
 
-abstract class SystemEvent implements EventInterface
+/**
+ * Abstract class SystemEvent
+ *
+ * @property \EApp\App $app
+ */
+abstract class SystemEvent extends Event
 {
-	use EventParamTrait;
-
-	public function __construct( App $app )
+	public function __construct(array $params = [])
 	{
-		$this->params['app'] = $app;
-	}
-
-	/**
-	 * Get event name
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'onSystem';
+		$params["app"] = App::getInstance();
+		parent::__construct("onSystem", $params);
 	}
 }

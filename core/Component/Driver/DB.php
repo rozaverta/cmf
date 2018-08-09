@@ -15,14 +15,14 @@ use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Type;
 
 use EApp\Component\Module;
-use EApp\DB\Connection;
-use EApp\DB\Schema\TableResource;
+use EApp\Database\Connection;
+use EApp\Database\Schema\TableData;
 use EApp\Event\EventManager;
 use EApp\ModuleCoreConfig;
 use EApp\Prop;
 use EApp\Support\Interfaces\Loggable;
 use EApp\Support\Traits\LoggableTrait;
-use EApp\System\Files\FileResource;
+use EApp\System\Fs\FileResource;
 use EApp\System\Interfaces\SystemDriver;
 use EApp\Text;
 
@@ -97,7 +97,7 @@ class DB implements SystemDriver, Loggable
 		$this->resourceDirIsWritable($module_id, false, true);
 
 		$fileResource = new FileResource( "db_" . $name, null, $this->module );
-		$table = new TableResource( $fileResource );
+		$table = TableData::createInstanceFromResource( $fileResource );
 		$schema = new Schema();
 		$tableDbal = $this->getDbalTable( $table, $schema->createTable( $this->getTablePrefix() . $table->getTableName() ) );
 
@@ -105,7 +105,7 @@ class DB implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\DataBaseCreateTableEvent($this, [
+				new Events\DataBaseCreateTableDriverEvent($this, [
 					"resource" => $fileResource,
 					"table" => $table,
 					"schema" => $tableDbal
@@ -176,8 +176,8 @@ class DB implements SystemDriver, Loggable
 
 		$fileCurrent = new FileResource("db_" . $table_name, null, $this->module, true );
 		$file = new FileResource("db_" . $new_table_name, null, $this->module );
-		$tableCurrent = new TableResource($fileCurrent);
-		$table = new TableResource($file);
+		$tableCurrent = TableData::createInstanceFromResource($fileCurrent);
+		$table = TableData::createInstanceFromResource($file);
 
 		$tableDbalCurrent = $this->getDbalTable($tableCurrent);
 		$tableDbal = $this->getDbalTable($table);
@@ -188,7 +188,7 @@ class DB implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\DataBaseUpdateTableEvent($this, [
+				new Events\DataBaseUpdateTableDriverEvent($this, [
 					"resource_current" => $fileCurrent,
 					"table_current" => $tableCurrent,
 					"resource" => $file,
@@ -268,7 +268,7 @@ class DB implements SystemDriver, Loggable
 		}
 
 		$fileResource = new FileResource( "db_" . $name, null, $this->module, true );
-		$table = new TableResource( $fileResource );
+		$table = TableData::createInstanceFromResource( $fileResource );
 		$schema = new Schema();
 		$schema->dropTable($this->getTablePrefix() . $name);
 
@@ -276,7 +276,7 @@ class DB implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\DataBaseDropTableEvent($this, [
+				new Events\DataBaseDropTableDriverEvent($this, [
 					"resource" => $fileResource,
 					"table" => $table
 				])
@@ -307,7 +307,7 @@ class DB implements SystemDriver, Loggable
 		return $this;
 	}
 
-	protected function getDbalTable( TableResource $table, Table $queryTable = null )
+	protected function getDbalTable( TableData $table, Table $queryTable = null )
 	{
 		if( is_null($queryTable) )
 		{

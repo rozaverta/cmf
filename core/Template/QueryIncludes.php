@@ -8,9 +8,9 @@
 
 namespace EApp\Template;
 
-use EApp\DB\Query\Builder;
-use EApp\DB\Query\JoinClause;
-use EApp\DB\QueryPrototype;
+use EApp\Database\Query\Builder;
+use EApp\Database\Query\JoinClause;
+use EApp\Database\QueryPrototype;
 use EApp\Template\Scheme\IncludeSchemeDesigner;
 
 class QueryIncludes extends QueryPrototype

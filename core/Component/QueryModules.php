@@ -9,7 +9,7 @@
 namespace EApp\Component;
 
 use EApp\Component\Scheme\ModuleSchemeDesigner;
-use EApp\DB\QueryPrototype;
+use EApp\Database\QueryPrototype;
 
 class QueryModules extends QueryPrototype
 {

@@ -8,9 +8,9 @@
 
 namespace EApp\Component;
 
-use EApp\DB\Query\Builder;
-use EApp\DB\Query\JoinClause;
-use EApp\DB\QueryPrototype;
+use EApp\Database\Query\Builder;
+use EApp\Database\Query\JoinClause;
+use EApp\Database\QueryPrototype;
 use EApp\Component\Scheme\RouteSchemeDesigner;
 
 class QueryRoutes extends QueryPrototype

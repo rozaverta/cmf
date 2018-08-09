@@ -10,5 +10,5 @@ namespace EApp\Language\Interfaces;
 
 interface TextInterface
 {
-	public function text( $key );
+	public function text( string $key, string $context = "default" ): string;
 }

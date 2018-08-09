@@ -14,7 +14,8 @@ use EApp\Support\Traits\Get;
 use EApp\Support\Traits\SingletonInstance;
 
 /**
- * Class Php
+ * Class Session
+ *
  * @package CI
  * @method static Session getInstance()
  */

@@ -3,16 +3,23 @@
 namespace EApp;
 
 use EApp\CI\Log as CiLog;
-use EApp\Config\QueryConfig;
-use EApp\DB\Manager as DataBaseManager;
+use EApp\Component\Context;
+use EApp\Component\QueryContext;
+use EApp\Component\Scheme\ContextSchemeDesigner;
+use EApp\Database\Manager as DataBaseManager;
+use EApp\Event\Event;
 use EApp\Event\EventManager;
 use EApp\Http\Request;
 use EApp\Http\Response;
 use EApp\Proto\Controller;
 use EApp\Proto\Router;
+use EApp\Support\Collection;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Exceptions\PageNotFoundException;
 use EApp\Support\Str;
+use EApp\System\Events\ContextEvent;
+use EApp\System\Events\LanguageEvent;
+use EApp\System\Events\SingletonEvent;
 use EApp\System\Interfaces\ControllerContentOutput;
 use EApp\Support\Interfaces\SingletonCompletable;
 use EApp\Support\Traits\SingletonInstance;
@@ -35,24 +42,24 @@ use EApp\System\Terminal;
  * Class Els
  *
  * @property \EApp\CI\Log Log
- * @property Prop Config
- * @property \EApp\CI\Php Php
+ * @property \EApp\CI\PhpExport $PhpExport
  * @property \EApp\CI\Uri Uri
  * @property \EApp\CI\View View
  * @property \EApp\CI\Lang Lang
  * @property \EApp\CI\Session Session
  * @property Controller Controller
+ * @property Context Context
  *
  * @property \EApp\Http\Response Response
  * @property \EApp\Http\Request Request
  *
- * @method static Prop Config(...$args)
  * @method static \EApp\CI\Log Log(...$args)
- * @method static \EApp\CI\Php Php()
+ * @method static \EApp\CI\PhpExport PhpExport()
  * @method static \EApp\CI\Uri Uri()
  * @method static \EApp\CI\View View()
  * @method static \EApp\CI\Lang Lang(...$args)
  * @method static \EApp\CI\Session Session(...$args)
+ * @method static Context Context()
  *
  * @method static \EApp\Http\Response Response()
  * @method static \EApp\Http\Request Request()
@@ -75,7 +82,7 @@ final class App
 	 * Create new Query builder
 	 *
 	 * @param string $table Table name
-	 * @return DB\Query\Builder
+	 * @return Database\Query\Builder
 	 */
 	public function db( $table )
 	{
@@ -112,7 +119,14 @@ final class App
 			throw new \Exception("The website is temporarily unavailable");
 		}
 
-		if( $sys->get("debug") !== false )
+		// debugging
+
+		if( !defined("DEBUG_MODE") )
+		{
+			define("DEBUG_MODE", $sys->get("debug") === false ? "off" : "on" );
+		}
+
+		if( $sys->get("debug") !== false && DEBUG_MODE !== "production" )
 		{
 			@ ini_set( "display_errors", "on" );
 			error_reporting( E_ALL );
@@ -121,6 +135,8 @@ final class App
 				ini_set('html_errors', 'on');
 			}
 		}
+
+		// php init values
 
 		if( $sys->isArray("ini_set") )
 		{
@@ -137,9 +153,7 @@ final class App
 			\E\IncludeFile($file, ['app' => $this]);
 		}
 
-		$uri = $this->Uri;
-
-		EventManager::dispatch('onSystem', new BootEvent($this));
+		EventManager::dispatch(new BootEvent());
 
 		// run
 		// console mode
@@ -154,7 +168,7 @@ final class App
 			$term = new Terminal();
 			$term->loadDefault();
 			$term->run();
-			return $result_type = 'console';
+			return $result_type = 'cli';
 		}
 
 		// web access
@@ -171,6 +185,7 @@ final class App
 
 		// load manifest data
 
+		$uri = $this->Uri;
 		$mnf = new Prop('manifest');
 		$response = $this->Response;
 
@@ -188,9 +203,53 @@ final class App
 			return 'raw';
 		}
 
+		$open = $uri->length > 0 && !$uri->isDir;
+		$path_prefix = "/";
+
+		// load or create context
+
+		$this->loadContext();
+		$context = $this->Context;
+
+		// shift URL path
+		if( $context->isPath() )
+		{
+			$path = $context->getPath();
+
+			// redirect to folder
+			if( $open && ("/" . $path) == $uri->path )
+			{
+				$response
+					->redirect( $uri->makeURL( $uri->path . "/" ) )
+					->send();
+
+				return $result_type = 'redirect';
+			}
+
+			$path_prefix .= $path . "/";
+			$uri->shift(substr_count($path, "/") + 1);
+		}
+
+		// update system language
+		if($context->getType() === "language")
+		{
+			if( $this->loadIs("Lang") )
+			{
+				$this->Lang->reload($context->getName());
+			}
+			else
+			{
+				EventManager::listen("onLanguage", function(Event $event) {
+					if( $event instanceof LanguageEvent ) {
+						$event->setParam("language", $this->Context->getName());
+					}
+				});
+			}
+		}
+
 		// load default page
 
-		EventManager::dispatch('onSystem', new LoadEvent($this));
+		EventManager::dispatch(new LoadEvent());
 
 		// load routers array
 
@@ -200,13 +259,14 @@ final class App
 			$routers = $cache->getContentData();
 		}
 		else {
-			$routers = (new QueryRoutes())->get()->toArray();
+			$routers = (new QueryRoutes())
+				->get()
+				->toArray();
+
 			if( count($routers) ) {
 				$cache->write($routers);
 			}
 		}
-
-		$open = $uri->length > 0 && !$uri->isDir;
 
 		$web_router_404 = false;
 		$web_router_found = false;
@@ -221,6 +281,12 @@ final class App
 
 		foreach($routers as $item)
 		{
+			// if context not use this module
+			if( !$context->hasModuleId($item["module_id"]) )
+			{
+				continue;
+			}
+
 			$type = (string) $item['type'];
 
 			// if controller not found
@@ -239,7 +305,7 @@ final class App
 			}
 
 			// redirect to folder
-			if( $open && $type == "path" && ("/" . $item['path']) == $uri->path )
+			if( $open && $type == "path" && ($path_prefix . $item['path']) == $uri->path )
 			{
 				$response
 					->redirect( $uri->makeURL( $uri->path . "/" ) )
@@ -322,12 +388,12 @@ final class App
 				$cache = new Cache( $cacheID, $cDir, $cData );
 				if( $cache->ready() )
 				{
-					EventManager::dispatch('onSystem', new ReadyEvent($this, true));
+					EventManager::dispatch(new ReadyEvent(true));
 
 					$view = $this->View;
 					$view->set( "from_cache", true );
 
-					EventManager::dispatch('onSystem', new PreRenderEvent($this, true));
+					EventManager::dispatch(new PreRenderEvent(true));
 
 					\E\IncludeFile( $cache->path(), ["app" => $this, "view" => $view] );
 
@@ -358,11 +424,11 @@ final class App
 		{
 			foreach( $response->headers() as $name => $value )
 			{
-				$outCache .= '$app->Response->header(' . $this->Php->string( $name ) . ', ' . $this->Php->string( $value ) . ");\n";
+				$outCache .= '$app->Response->header(' . $this->PhpExport->string( $name ) . ', ' . $this->PhpExport->string( $value ) . ");\n";
 			}
 		}
 
-		EventManager::dispatch('onSystem', new ReadyEvent($this));
+		EventManager::dispatch(new ReadyEvent());
 
 		// custom output data
 		if( ! $cacheable )
@@ -405,8 +471,8 @@ final class App
 		$Ctrl['name'] = $this->Controller->name();
 		$view->set( 'controller', $Ctrl );
 
-		$onPreRender = new PreRenderEvent($this, false, $cacheable);
-		EventManager::dispatch('onSystem', $onPreRender);
+		$onPreRender = new PreRenderEvent(false, $cacheable);
+		EventManager::dispatch($onPreRender);
 
 		if($cacheable && $onPreRender->getParam("cacheable") === false) {
 			$cacheable = false;
@@ -419,7 +485,7 @@ final class App
 		// write page cache
 		if( $cacheable )
 		{
-			$php = $this->Php;
+			$php = $this->PhpExport;
 			$escape = static function( $value ) {
 				return str_replace(
 					[ '<?', '?>' ],
@@ -477,7 +543,7 @@ final class App
 			$outCache .= '<?php ' . "\n" .
 				'$html = ob_get_contents(); ob_end_clean();' . "\n" .
 				'$app->Response->setBody($view->replaceDelay( $html ));' . "\n" .
-				'\\EApp\\Event\\EventManager::dispatch("onSystem", new \\EApp\\System\\Events\\CompleteEvent($app, ' . var_export($content_type, true) . ', true));' . "\n" .
+				'\\EApp\\Event\\EventManager::dispatch("onSystem", new \\EApp\\System\\Events\\CompleteEvent(' . var_export($content_type, true) . ', true));' . "\n" .
 				'$app->Response->send();';
 
 			if( !$cache->writePhp($outCache) )
@@ -492,7 +558,7 @@ final class App
 
 		// complete dispatcher
 
-		EventManager::dispatch('onSystem', new CompleteEvent($this, $content_type));
+		EventManager::dispatch(new CompleteEvent($content_type));
 
 		// output data
 
@@ -544,45 +610,122 @@ final class App
 		return true;
 	}
 
-	public function loadConfig( $prop = null )
+	public function loadContext()
 	{
-		if( !is_array($prop) )
+		if( isset($this->ci["Context"]) )
+			return $this->ci["Context"];
+
+		if( CONSOLE_MODE )
+			throw new \InvalidArgumentException("Cannot use context for cli mode");
+
+		$cache = new Cache("context");
+
+		/** @var Context $context */
+		/** @var Context[] $ctx */
+		/** @var array $item */
+		/** @var ContextSchemeDesigner $instance */
+
+		if( $cache->ready() )
 		{
-			if(isset($this->ci["Config"])) {
-				return $this->ci["Config"];
+			$ctx = $cache->getContentData();
+			foreach($ctx as $item)
+				$ctx[$item["name"]] = Context::createFromData($item);
+		}
+		else
+		{
+			$ctx = [];
+			$cache_data = [];
+
+			foreach( (new QueryContext())->get() as $instance)
+			{
+				$context_item = Context::createFromSchemeDesignerInstance($instance);
+				$ctx[$instance->name] = $context_item;
+				$cache_data[] = $context_item->toArray();
 			}
 
-			$cache = new Cache('config');
-			if( $cache->ready() )
-			{
-				$prop = $cache->getContentData();
-			}
-			else
-			{
-				$prop = [];
-				foreach( (new QueryConfig())->get() as $item )
-				{
-					/** @var \EApp\Config\Scheme\PropertySchemeDesigner $item */
-					if( !$item->isNull() )
-					{
-						$prop[$item->getName()] = $item->getValue();
-					}
-				}
-
-				$cache->write($prop);
-			}
+			if( count($cache_data) )
+				$cache->write($cache_data);
 		}
 
-		$this->ci["Config"] = new Prop($prop);
-		$this->Config = $this->ci["Config"];
+		function isQuery( array $query )
+		{
+			foreach($query as $name => $value)
+			{
+				if( !isset($_GET[$name]) )
+				{
+					return false;
+				}
+				if( is_array($value) )
+				{
+					if( ! in_array($_GET[$name], $value) )
+					{
+						return false;
+					}
+				}
+				else if( strlen($value) && $_GET[$name] !== $value )
+				{
+					return false;
+				}
+			}
 
-		return $this->ci["Config"];
+			return true;
+		}
+
+		$priority_host  = false;
+		$priority_path  = false;
+		$priority_query = false;
+		$collection     = new Collection();
+		$path           = $this->Uri->length > 0 ? (implode("/", $this->Uri->segment) . "/") : "";
+
+		foreach($ctx as $name => $context_item)
+		{
+			$is_host    = $context_item->isHost();
+			$is_path    = $context_item->isPath();
+			$is_query   = $context_item->isQuery();
+			$is_once    = $is_host || $is_path || $is_query;
+
+			if($is_once)
+			{
+				$collection[] = $context_item;
+			}
+
+			if(
+				$is_host  && $context_item->getHost() !== APP_HOST ||
+				$is_path  && ! ( $path && strpos($path, $context_item->getPath() . "/") === 0 ) ||
+				$is_query && ! isQuery( $context_item->getQuery() ) ||
+				$priority_host  && ! $is_host ||
+				$priority_path  && ! ($is_path || $is_host) ||
+				$priority_query && ! $is_once ||
+				$is_once && ! $context_item->isDefault()
+			)
+			{
+				continue;
+			}
+
+			$context        = $context_item;
+			$priority_host  = $is_host;
+			$priority_path  = $is_path;
+			$priority_query = $is_query;
+		}
+
+		if( ! isset($context) )
+		{
+			throw new NotFoundException("System context not found");
+		}
+
+		$event = new ContextEvent($context, $collection);
+		EventManager::dispatch($event);
+
+		$this->ci["Context"] = $event->getParam("context");
+		$this->Context = $this->ci["Context"];
+		return $this->ci["Context"];
 	}
 
 	public function load( $name )
 	{
 		static $init = false;
 		static $ci = [];
+		static $reserved = ['Lang', 'Log', 'PhpExport', 'Session', 'Uri', 'View', 'Context', 'Controller'];
 
 		if( ! $init )
 		{
@@ -591,13 +734,43 @@ final class App
 			$this->ci['Log'] = CiLog::getInstance();
 			$this->ci['Response'] = new Response();
 			$this->ci['Request'] = Request::createFromGlobals();
+
+			$event = new SingletonEvent();
+			EventManager::dispatch($event);
+
+			foreach($event as $n => $s)
+			{
+				if( isset($ci[$n]) || isset($this->ci[$n]) || in_array($n, $reserved, true) )
+				{
+					throw new \InvalidArgumentException("Duplicated class name '{$n}' for singleton instance object");
+				}
+
+				if( is_object($s) )
+				{
+					$this->ci[$n] = $s;
+					if( $s instanceof SingletonCompletable )
+					{
+						$s->instanceComplete($this);
+					}
+				}
+				else if( is_string($s) )
+				{
+					$ci[$n] = $s;
+				}
+				else
+				{
+					throw new \InvalidArgumentException("Invalid object type for the '{$n}' singleton object");
+				}
+			}
+
+			unset($event, $item, $n, $s);
 		}
 
 		if( ! isset( $this->ci[$name] ) )
 		{
-			if( $name == "Config" )
+			if( $name == "Context" )
 			{
-				return $this->loadConfig();
+				return $this->loadContext();
 			}
 
 			$className = isset( $ci[$name] ) ? $ci[$name] : "EApp\\CI\\" . $name;
@@ -613,6 +786,10 @@ final class App
 			{
 				$this->ci[$name]->instanceComplete($this);
 			}
+		}
+		else if( ! isset($this->{$name}) )
+		{
+			$this->{$name} = $this->ci[$name];
 		}
 
 		return $this->ci[$name];
@@ -651,7 +828,7 @@ final class App
 		}
 
 		// shutdown callback
-		EventManager::dispatch('onSystem', new ShutdownEvent($this));
+		EventManager::dispatch(new ShutdownEvent());
 	}
 
 	public function __get( $name )
@@ -666,25 +843,10 @@ final class App
 
 	public function __call($name, array $arguments)
 	{
-		if( $name == "Config" )
+		$instance = $this->load($name);
+		if( method_exists($instance, '__invoke') )
 		{
-			$len = count($arguments);
-			if( $len == 1 )
-			{
-				return $this->Config->get($arguments[0]);
-			}
-			else if( $len == 2 )
-			{
-				return $this->Config->getOr($arguments[0], $arguments[1]);
-			}
-		}
-		else
-		{
-			$instance = $this->load($name);
-			if( method_exists($instance, '__invoke') )
-			{
-				return $instance(...$arguments);
-			}
+			return $instance(...$arguments);
 		}
 
 		throw new \InvalidArgumentException("Invalid parameters of the '{$name}' instance.");

@@ -9,7 +9,7 @@
 namespace EApp\Event;
 
 use EApp\App;
-use EApp\DB\Query\JoinClause;
+use EApp\Database\Query\JoinClause;
 use EApp\Event\Interfaces\EventPrepareInterface;
 use EApp\Component\Module;
 use EApp\Prop;
@@ -82,7 +82,7 @@ final class EventFactory
 			}
 			else if( ! (new \ReflectionClass($class_name))->implementsInterface( EventPrepareInterface::class ) )
 			{
-				$this->logLine("Class '{$class_name}' should implement the interface \\EApp\\Event\\Interfaces\\EventPrepareInterface.");
+				$this->logLine("Class '{$class_name}' should implement the interface " . EventPrepareInterface::class);
 			}
 			else
 			{

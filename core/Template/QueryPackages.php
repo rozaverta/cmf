@@ -8,7 +8,7 @@
 
 namespace EApp\Template;
 
-use EApp\DB\QueryPrototype;
+use EApp\Database\QueryPrototype;
 use EApp\Template\Scheme\PackageSchemeDesigner;
 
 class QueryPackages extends QueryPrototype

@@ -9,29 +9,28 @@
 namespace EApp\System\Events;
 
 use EApp\CI\Lang;
-use EApp\Event\EventParamTrait;
-use EApp\Event\Interfaces\EventInterface;
+use EApp\Event\Event;
 
-class LanguageEvent implements EventInterface
+/**
+ * Class LanguageEvent
+ *
+ * @property Lang $instance
+ * @property string $language
+ *
+ * @package EApp\System\Events
+ */
+class LanguageEvent extends Event
 {
-	use EventParamTrait;
-
-	private $event_name;
-
-	public function __construct( Lang $instance, $language, $event_name )
+	public function __construct( Lang $instance )
 	{
-		$this->params['instance'] = $instance;
-		$this->params['language'] = $language;
-		$this->event_name = $event_name;
-	}
+		parent::__construct("onLanguage", [
+			'instance' => $instance,
+			'language' => $instance->getCurrent()
+		]);
 
-	/**
-	 * Get event name
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return $this->event_name;
+		$this->params_allowed[] = "language";
+		$this->params_allowed_type["language"] = static function( $language ) {
+			return is_string($language) && Lang::valid($language);
+		};
 	}
 }

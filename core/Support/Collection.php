@@ -403,4 +403,13 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	{
 		return $this->toJson();
 	}
+
+	/**
+	 * @param array $an_array
+	 * @return static
+	 */
+	public function __set_state($an_array)
+	{
+		return new static($an_array["items"] ?? []);
+	}
 }

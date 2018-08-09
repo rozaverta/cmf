@@ -13,7 +13,8 @@ use EApp\Prop;
 use EApp\Support\Traits\SingletonInstance;
 
 /**
- * Class Php
+ * Class Uri
+ *
  * @package CI
  * @method static Uri getInstance()
  */
@@ -644,6 +645,14 @@ class Uri
 	public function getLast()
 	{
 		return $this->last;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isLower(): bool
+	{
+		return $this->lower;
 	}
 
 	protected function _request()

@@ -9,7 +9,7 @@
 namespace EApp\Component\Driver;
 
 use EApp\Component\Driver\Tools\ModuleFake;
-use EApp\DB\Connection;
+use EApp\Database\Connection;
 use EApp\Event\EventManager;
 use EApp\Support\Str;
 use InvalidArgumentException;
@@ -88,7 +88,7 @@ class ModuleComponent extends ModuleComponentAbstract
 
 		$dispatcher
 			->dispatch(
-				new Events\ModuleAddEvent($this, [
+				new Events\ModuleAddDriverEvent($this, [
 					"manifest" => $manifest
 				])
 			);
@@ -137,7 +137,7 @@ class ModuleComponent extends ModuleComponentAbstract
 
 		$dispatcher
 			->dispatch(
-				new Events\ModuleInstallEvent($this, [
+				new Events\ModuleInstallDriverEvent($this, [
 					"id" => $this->id,
 					"manifest" => $manifest
 				]), function ($result) {

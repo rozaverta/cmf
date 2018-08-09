@@ -9,8 +9,9 @@
 namespace EApp\Plugin\Scheme;
 
 use EApp\Component\Module;
+use EApp\Database\Schema\SchemeDesigner;
 
-class PluginSchemeDesigner
+class PluginSchemeDesigner extends SchemeDesigner
 {
 	/**
 	 * Plugin unique identifier.
@@ -79,9 +80,9 @@ class PluginSchemeDesigner
 			$module = Module::cache($this->module_id);
 			if( strpos($this->class_name, "\\") === false )
 			{
-				$this->class_name = $module->get("name_space") . "Plugin\\" . $this->class_name;
+				$this->class_name = $module->getNameSpace() . "Plugin\\" . $this->class_name;
 			}
-			$this->package_name = $module->get("name");
+			$this->package_name = $module->getName();
 		}
 		else
 		{

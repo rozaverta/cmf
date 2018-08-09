@@ -9,15 +9,51 @@
 namespace EApp\Component;
 
 use EApp\Cache;
+use EApp\ModuleCore;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Interfaces\Arrayable;
 use EApp\Support\Traits\Get;
+use EApp\Support\Traits\GetIdentifier;
 
 class Module implements Arrayable
 {
+	use GetIdentifier;
 	use Get;
 
-	protected $id = 0;
+	/**
+	 * @var string
+	 */
+	protected $name;
+
+	/**
+	 * @var string
+	 */
+	protected $key;
+
+	/**
+	 * @var bool
+	 */
+	protected $route;
+
+	/**
+	 * @var string
+	 */
+	protected $title;
+
+	/**
+	 * @var string
+	 */
+	protected $version;
+
+	/**
+	 * @var string
+	 */
+	protected $path;
+
+	/**
+	 * @var string
+	 */
+	protected $name_space;
 
 	protected $items = [];
 
@@ -25,16 +61,18 @@ class Module implements Arrayable
 
 	protected $is_install = true;
 
-	public function __construct( $id, $cached = true )
+	private static $cache = [];
+
+	public function __construct( int $id, bool $cached = true )
 	{
-		$this->id = (int) $id;
+		$id = (int) $id;
 
 		if( $cached )
 		{
-			$cache = new Cache( $this->id, 'modules' );
+			$cache = new Cache( $id, 'modules' );
 			if( !$cache->ready() )
 			{
-				$row = $this->fetch();
+				$row = $this->fetch( $id );
 				$cache->write($row);
 			}
 			else
@@ -44,40 +82,152 @@ class Module implements Arrayable
 		}
 		else
 		{
-			$row = $this->fetch();
+			$row = $this->fetch($id);
 		}
 
-		$this->support = $row['support'];
-		unset($row['support']);
+		$this->fill($id, $row);
+	}
 
-		$this->items = $row;
+	public function __set_state( $data )
+	{
+		if( !isset($data["id"]) || ! is_int($data["id"]) )
+		{
+			throw new \InvalidArgumentException(__CLASS__ . "::" . __METHOD__ . " 'id' property is not used");
+		}
+
+		$id = $data["id"];
+		if( isset(self::$cache[$id]) )
+		{
+			return self::$cache[$id];
+		}
+
+		/** @var self $module */
+
+		if( $id > 0 )
+		{
+			$ref = new \ReflectionClass(self::class);
+			$module = $ref->newInstanceWithoutConstructor();
+			$module->fill($id, $data);
+		}
+		else
+		{
+			$module = new ModuleCore();
+		}
+
+		self::$cache[$id] = $module;
+		return $module;
 	}
 
 	/**
-	 * @param $id
+	 * Load (or create) module instance from local cache
+	 *
+	 * @param int $id
 	 * @return Module
 	 */
-	public static function cache( $id )
+	public static function cache( int $id ): Module
 	{
-		static $cache = [];
-		if( !isset($cache[$id]) )
+		if( !isset(self::$cache[$id]) )
 		{
-			$cache[$id] = new self($id, true);
+			self::$cache[$id] = $id === 0 ? new ModuleCore() : new self($id, true);
 		}
 
-		return $cache[$id];
+		return self::$cache[$id];
 	}
 
-	public function getId()
+	/**
+	 * Get module name
+	 *
+	 * @return string
+	 */
+	public function getName(): string
 	{
-		return $this->id;
+		return $this->name;
 	}
 
-	public function support( $name )
+	/**
+	 * Get module key name
+	 *
+	 * @return string
+	 */
+	public function getKey(): string
+	{
+		return $this->key;
+	}
+
+	/**
+	 * Get module title
+	 *
+	 * @return string
+	 */
+	public function getTitle(): string
+	{
+		return $this->title;
+	}
+
+	/**
+	 * Module use router
+	 *
+	 * @return bool
+	 */
+	public function isRoute(): bool
+	{
+		return $this->route;
+	}
+
+	/**
+	 * Get module version
+	 *
+	 * @return string
+	 */
+	public function getVersion(): string
+	{
+		return $this->version;
+	}
+
+	/**
+	 * Get module path
+	 *
+	 * @return string
+	 */
+	public function getPath(): string
+	{
+		return $this->path;
+	}
+
+	/**
+	 * Get module namespace
+	 *
+	 * @return string
+	 */
+	public function getNameSpace(): string
+	{
+		return $this->name_space;
+	}
+
+	/**
+	 * Get all support addons
+	 *
+	 * @return array
+	 */
+	public function getSupport(): array
+	{
+		return $this->support;
+	}
+
+	/**
+	 * Addons module is supported
+	 *
+	 * @param $name
+	 * @return bool
+	 */
+	public function support( $name ): bool
 	{
 		return in_array($name, $this->support, true);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function toArray()
 	{
 		$data = $this->items;
@@ -85,34 +235,14 @@ class Module implements Arrayable
 		return $data;
 	}
 
-	protected function load( $id, ModuleConfig $module )
+	// -- protected
+
+	protected function fetch( int $id )
 	{
-		$get = [
-			'id' => $id,
-			'name' => $module->name,
-			'key' => $module->getKey(),
-			'route' => $module->route,
-			'title' => $module->title,
-			'version' => $module->version,
-			'path' => $module->getPath(),
-			'name_space' => $module->getNameSpace(),
-			'support' => $module->support
-		];
+		$builder = \DB
+			::table("modules")
+			->whereId($id);
 
-		foreach($module->data as $key => $value)
-		{
-			if( !isset($get[$key]) )
-			{
-				$get[$key] = $value;
-			}
-		}
-
-		return $get;
-	}
-
-	protected function fetch()
-	{
-		$builder = \DB::table("modules")->whereId($this->id);
 		if( $this->is_install )
 		{
 			$builder->where('install', true);
@@ -124,7 +254,7 @@ class Module implements Arrayable
 			throw new NotFoundException("ModuleComponent '{$this->id}' not found");
 		}
 
-		$name_space = empty($row->name_space) ? ('MD\\' . $row->name) : trim($row->name_space, '\\');
+		$name_space = trim($row->name_space, '\\');
 		$class = $name_space . '\\Module';
 		if( !class_exists($class, true) )
 		{
@@ -139,11 +269,53 @@ class Module implements Arrayable
 		{
 			throw new \InvalidArgumentException("Failure config data for module '{$row->name}'");
 		}
+
 		if( $this->is_install && $module->version !== $row->version )
 		{
 			throw new \InvalidArgumentException("The current version of the '{$row->name}' module does not match the installed version of the module");
 		}
 
 		return $this->load( $row->id, $module );
+	}
+
+	protected function load( $id, ModuleConfig $module )
+	{
+		$get = [
+			'id' => $id,
+			'name' => $module->name,
+			'key' => $module->getKey(),
+			'route' => $module->route,
+			'title' => $module->title,
+			'version' => $module->version,
+			'path' => $module->getPath(),
+			'name_space' => $module->getNameSpace(),
+			'support' => $module->support,
+			'extra' => []
+		];
+
+		foreach($module->data as $key => $value)
+		{
+			if( ! isset($get[$key]) )
+			{
+				$get["extra"][$key] = $value;
+			}
+		}
+
+		return $get;
+	}
+
+	protected function fill( int $id, array $row )
+	{
+		$this->id = $id;
+		$this->name = $row["name"];
+		$this->key = $row["key"];
+		$this->route = $row["route"];
+		$this->title = $row["title"];
+		$this->version = $row["version"];
+		$this->path = $row["path"];
+		$this->name_space = $row["name_space"];
+		$this->items = $row["items"];
+		$this->support = $row["support"];
+		$this->items = $row["extra"];
 	}
 }

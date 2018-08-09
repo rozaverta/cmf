@@ -10,7 +10,7 @@ namespace EApp\Component\Driver;
 
 use EApp\Component\Module;
 use EApp\Component\Scheme\RouteSchemeDesigner;
-use EApp\DB\Query\Builder;
+use EApp\Database\Query\Builder;
 use EApp\Event\EventManager;
 use EApp\Prop;
 use EApp\Support\Interfaces\Loggable;
@@ -62,7 +62,7 @@ class ModuleRouter implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\AddRouterEvent($this, $this->getEvn($path, $position, $properties))
+				new Events\AddRouterDriverEvent($this, $this->getEvn($path, $position, $properties))
 			);
 
 		$id = \DB::table("module_router")->insertGetId([
@@ -92,7 +92,7 @@ class ModuleRouter implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\EditRouterEvent($this, $this->getEvn($path, $position, $properties, $id))
+				new Events\EditRouterDriverEvent($this, $this->getEvn($path, $position, $properties, $id))
 			);
 
 		\DB::table("module_router")
@@ -118,7 +118,7 @@ class ModuleRouter implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\DeleteRouterEvent($this, $this->getEvn($path, $old["position"], $old["properties"], $id))
+				new Events\DeleteRouterDriverEvent($this, $this->getEvn($path, $old["position"], $old["properties"], $id))
 			);
 
 		\DB::table("module_router")

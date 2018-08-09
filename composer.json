@@ -1,9 +1,8 @@
 {
 	"name": "rozaverta/cmf",
 	"type": "library",
-	"version": "0.0.1-beta",
 	"description": "The Elastic CMF (Anaconda).",
-	"keywords": ["framework", "elastic", "els", "anaconda"],
+	"keywords": ["cmf", "framework", "elastic", "anaconda"],
 	"homepage": "https://rozaverta.com",
 	"license": "MIT",
 	"authors": [

@@ -10,7 +10,6 @@ use RuntimeException;
 use EApp\Http\Collections\HeaderCollection;
 use EApp\Http\Collections\ResponseCookieCollection;
 use EApp\Http\Exceptions\ResponseAlreadySentException;
-use EApp\App;
 use EApp\Http\Events\ResponseRedirectEvent;
 use EApp\Http\Events\ResponseSendEvent;
 use EApp\Http\Exceptions\LockedResponseException;
@@ -533,16 +532,10 @@ class Response
 		$event = new ResponseJsonEvent($this, $object, $jsonp_prefix);
 		$dispatcher->dispatch($event);
 
-		$update = $event->getParam("json");
-		if( $update !== $object && ( is_array($update) || is_object($update) ) )
-		{
-			$object = $update;
-		}
-
 		$this->setBody('');
 		$this->noCache();
 
-		$json = Json::stringify($object);
+		$json = Json::stringify($event->getParam("json"));
 
 		if (null !== $jsonp_prefix)
 		{
@@ -698,7 +691,7 @@ class Response
 			$url = BASE_PROTOCOL . '://' . $host . $url;
 		}
 
-		EventManager::dispatch("onResponseRedirect", new ResponseRedirectEvent($this, $url, $permanent, $refresh));
+		EventManager::dispatch(new ResponseRedirectEvent($this, $url, $permanent, $refresh));
 
 		if( headers_sent() )
 		{

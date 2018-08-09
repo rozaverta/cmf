@@ -8,13 +8,24 @@
 
 namespace EApp\Http\Events;
 
-use EApp\Event\Interfaces\EventInterface;
 use EApp\Http\Response;
 
-class ResponseFileEvent extends ResponseSendEvent implements EventInterface
+/**
+ * Class ResponseFileEvent
+ *
+ * @property string $file       The path of the file to send
+ * @property string $filename   The file's name
+ * @property string $mime_type  The MIME type of the file
+ *
+ * @package EApp\Http\Events
+ */
+class ResponseFileEvent extends ResponseSendEvent
 {
 	public function __construct( Response $response, $file, $filename, $mime_type )
 	{
-		$this->params = compact('response', 'file', 'filename', 'mime_type');
+		parent::__construct($response);
+		$this->params['file'] = $file;
+		$this->params['filename'] = $filename;
+		$this->params['mime_type'] = $mime_type;
 	}
 }

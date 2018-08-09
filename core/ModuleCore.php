@@ -17,8 +17,8 @@ class ModuleCore extends Module
 		parent::__construct(0, false );
 	}
 
-	protected function fetch()
+	protected function fetch( int $id )
 	{
-		return $this->load( $this->id, new ModuleCoreConfig() );
+		return $this->load( $id, new ModuleCoreConfig() );
 	}
 }
