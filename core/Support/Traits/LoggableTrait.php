@@ -202,7 +202,7 @@ trait LoggableTrait
 		}
 		else
 		{
-			return $transport === $this || $this->logsTransport->hasLogTransport( $transport );
+			return $transport === $this || $this->logsIsTransport && $this->logsTransport->hasLogTransport( $transport );
 		}
 	}
 

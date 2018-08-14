@@ -70,7 +70,7 @@ final class App
 {
 	use SingletonInstance;
 
-	const VER = "1.0.0";
+	const VER = "0.0.1";
 
 	const REDIRECT_HEADER  = 1;
 	const REDIRECT_META    = 2;
@@ -110,7 +110,7 @@ final class App
 		// load system config
 		// check install
 
-		$sys = new Prop("system");
+		$sys = Prop::cache("system");
 
 		define("SYSTEM_INSTALL", $sys->equiv("install", true) );
 
@@ -178,10 +178,9 @@ final class App
 			throw new \Exception("System is not install for this domain");
 		}
 
-		if( ! $sys->equiv("version", self::VER) )
-		{
-			throw new \Exception("The current version of the system does not match the previously specified");
-		}
+		// load system module for check the current system version
+
+		Module::cache(0);
 
 		// load manifest data
 
@@ -939,11 +938,11 @@ final class App
 					return $controller;
 				}
 
-				throw new \Exception("Controller must be inherited of \\EApp\\Proto\\Controller", 500);
+				throw new \Exception("Controller must be inherited of " . Controller::class, 500);
 			}
 		}
 		else {
-			throw new \Exception("Router must be inherited of \\EApp\\Proto\\Router", 500);
+			throw new \Exception("Router must be inherited of " . Router::class, 500);
 		}
 
 		return null;

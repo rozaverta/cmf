@@ -1,0 +1,59 @@
+cmf
+	-v --version
+	-i --install
+	-u --update
+	--uninstall
+
+cmf-module <module_name>
+	-v --version
+	-i --install
+	-u --update
+	-r --remove
+
+cmf-modules
+	--ls
+	--search [search text] [--limit value <default 50>]
+	--info module_name
+
+cmf-host
+	--ls
+	--create <new-host.name>
+	--rename <old-host.name> <new-host.name>
+	--remove <new-host.name>
+
+	--add-alias [-a] <host.name>
+	--add-redirect [-r] <host.name>
+	--set-ssl [true|false]
+	--set-www [true|false]
+	--remove-alias <host.name>
+
+cmf-event
+	--ls
+
+cmf-language
+	--ls [package]
+
+cmf-template
+	--ls [package]
+
+cmf-context <name>
+	--ls
+	--add
+	--remove
+	--rename ... start input menu
+		Enter name (old):
+		Enter host(s) (*):
+		Enter path (/):
+		Enter query string ():
+		- Save cookie (y/n):
+		Enter title (old):
+		Enter comment (old):
+		>>
+
+	--modules <module_name [, module2_name] | * | ^ module_name [, module2_name]>
+
+cmf-cache
+
+cmf-logs
+
+cmf-tables

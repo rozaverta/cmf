@@ -11,7 +11,7 @@ namespace EApp\Component\Driver\Events;
 use EApp\System\Events\SystemDriverEvent;
 use EApp\System\Interfaces\SystemDriver;
 
-class DeleteRouterDriverEvent extends SystemDriverEvent
+class RouterDeleteDriverEvent extends SystemDriverEvent
 {
 	public function __construct( SystemDriver $driver, array $data = [] )
 	{

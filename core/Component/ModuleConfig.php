@@ -26,7 +26,7 @@ abstract class ModuleConfig
 
 	public $support = [];
 
-	public $data = [];
+	public $extra = [];
 
 	/**
 	 * @var ReflectionClass
@@ -45,6 +45,7 @@ abstract class ModuleConfig
 
 		if( $manifest )
 		{
+			$manifest->ready();
 			$data = $manifest->getAll();
 			foreach(array_keys($data) as $key)
 			{
@@ -52,18 +53,23 @@ abstract class ModuleConfig
 				{
 					$this->{$key} = $data[$key];
 				}
-				else
+				else if( $key !== "type" )
 				{
-					$this->data[$key] = $data[$key];
+					$this->extra[$key] = $data[$key];
 				}
 			}
 		}
 
 		// ready module name
 
-		if( ! $this->name && preg_match('|([^\\\\]+)\\\\[^\\\\]+$|', $this->reflector->getName(), $m))
+		if( ! $this->name )
 		{
-			$this->name = $m[1];
+			$name_space = $this->reflector->getNamespaceName();
+			if( $name_space )
+			{
+				$end = strrpos($name_space, "\\");
+				$this->name = $end === false ? $name_space : substr($name_space, $end + 1);
+			}
 		}
 
 		// create module title

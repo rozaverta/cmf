@@ -1,0 +1,28 @@
+{
+	"type": "#/data_base_table",
+	"name": "context_module_link",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "context_id",
+			"type": "integer"
+		},
+		{
+			"name": "module_id",
+			"type": "integer"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "context_module_id",
+			"fields": [
+				"context_id",
+				"module_id"
+			]
+		}
+	]
+}

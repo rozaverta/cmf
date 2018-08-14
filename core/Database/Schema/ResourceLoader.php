@@ -260,7 +260,7 @@ class ResourceLoader implements ModuleComponent
 			{
 				if( isset($prop[$key]) )
 				{
-					$field[$key] = $prop[$key];
+					$properties[$key] = $prop[$key];
 				}
 			}
 
@@ -355,10 +355,10 @@ class ResourceLoader implements ModuleComponent
 			$lower = $type !== 'FULLTEXT' ? strtolower($type) : 'index';
 			foreach($fields as $field)
 			{
-				$this->columns[$field][$lower] = true;
+				$this->columns[$field]->set($lower, true);
 				if( $lower !== 'index' )
 				{
-					$this->columns[$field]['index'] = true;
+					$this->columns[$field]->set('index', true);
 				}
 			}
 

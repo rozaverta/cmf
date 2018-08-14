@@ -8,14 +8,13 @@
 
 namespace EApp\Component\Driver\Events;
 
-
 use EApp\System\Events\SystemDriverEvent;
 use EApp\System\Interfaces\SystemDriver;
 
-class AddRouterDriverEvent extends SystemDriverEvent
+class RouterEditDriverEvent extends SystemDriverEvent
 {
 	public function __construct( SystemDriver $driver, array $data = [] )
 	{
-		parent::__construct( $driver, "add", $data );
+		parent::__construct( $driver, "edit", $data );
 	}
 }

@@ -16,11 +16,14 @@ use Doctrine\DBAL\Types\Type;
 
 use EApp\Component\Module;
 use EApp\Database\Connection;
+use EApp\Database\Schema\Column;
+use EApp\Database\Schema\Index;
 use EApp\Database\Schema\TableData;
 use EApp\Event\EventManager;
 use EApp\ModuleCoreConfig;
 use EApp\Prop;
 use EApp\Support\Interfaces\Loggable;
+use EApp\Support\Traits\GetModuleComponent;
 use EApp\Support\Traits\LoggableTrait;
 use EApp\System\Fs\FileResource;
 use EApp\System\Interfaces\SystemDriver;
@@ -31,11 +34,7 @@ class DB implements SystemDriver, Loggable
 	use LoggableTrait;
 	use Traits\DBALToolsTraits;
 	use Traits\ResourceBackup;
-
-	/**
-	 * @var \EApp\Component\Module
-	 */
-	protected $module;
+	use GetModuleComponent;
 
 	/**
 	 * @var string
@@ -50,14 +49,14 @@ class DB implements SystemDriver, Loggable
 
 	public function __construct( Module $module, $version = null )
 	{
-		$this->module = $module;
+		$this->setModule($module);
 
 		// read last version
 		if( is_null($version) )
 		{
 			/** @var \EApp\Component\ModuleConfig $config */
 
-			$config_class = $this->module->getId() === 0 ? ModuleCoreConfig::class : $module->get("name_space") . "ModuleComponent";
+			$config_class = $module->getId() === 0 ? ModuleCoreConfig::class : $module->getNameSpace() . "Module";
 			$config = new $config_class();
 			$version = $config->version;
 		}
@@ -67,17 +66,9 @@ class DB implements SystemDriver, Loggable
 		$this->dir_version = $this->dir_current . $this->version . DIRECTORY_SEPARATOR;
 	}
 
-	/**
-	 * @return \EApp\Component\Module
-	 */
-	public function getModule()
-	{
-		return $this->module;
-	}
-
 	public function createTable( $name )
 	{
-		$module_id = $this->module->getId();
+		$module_id = $this->getModule()->getId();
 
 		if( $name === "scheme_tables" && $module_id === 0 )
 		{
@@ -96,7 +87,7 @@ class DB implements SystemDriver, Loggable
 
 		$this->resourceDirIsWritable($module_id, false, true);
 
-		$fileResource = new FileResource( "db_" . $name, null, $this->module );
+		$fileResource = new FileResource( "db_" . $name, null, $this->getModule() );
 		$table = TableData::createInstanceFromResource( $fileResource );
 		$schema = new Schema();
 		$tableDbal = $this->getDbalTable( $table, $schema->createTable( $this->getTablePrefix() . $table->getTableName() ) );
@@ -140,7 +131,7 @@ class DB implements SystemDriver, Loggable
 		$this->resourceWriteFileContent($name, $module_id, $fileResource);
 
 		$dispatcher->complete();
-		$this->addLogError(new Text("Add new database table '%s'", $name), "DEBUG");
+		$this->addLogDebug(new Text("Add new database table %s", $name));
 
 		return $this;
 	}
@@ -171,11 +162,11 @@ class DB implements SystemDriver, Loggable
 			$rename = true;
 		}
 
-		$module_id = $this->module->getId();
+		$module_id = $this->getModule()->getId();
 		$this->resourceDirIsWritable($module_id, false, true);
 
-		$fileCurrent = new FileResource("db_" . $table_name, null, $this->module, true );
-		$file = new FileResource("db_" . $new_table_name, null, $this->module );
+		$fileCurrent = new FileResource("db_" . $table_name, null, $this->getModule(), true );
+		$file = new FileResource("db_" . $new_table_name, null, $this->getModule() );
 		$tableCurrent = TableData::createInstanceFromResource($fileCurrent);
 		$table = TableData::createInstanceFromResource($file);
 
@@ -267,7 +258,7 @@ class DB implements SystemDriver, Loggable
 			throw new \InvalidArgumentException("Table '{$name}' is used by another module");
 		}
 
-		$fileResource = new FileResource( "db_" . $name, null, $this->module, true );
+		$fileResource = new FileResource( "db_" . $name, null, $this->getModule(), true );
 		$table = TableData::createInstanceFromResource( $fileResource );
 		$schema = new Schema();
 		$schema->dropTable($this->getTablePrefix() . $name);
@@ -299,7 +290,7 @@ class DB implements SystemDriver, Loggable
 			});
 
 		// remove resource file
-		$this->resourceRemoveFile($name, $this->module->getId(), "#/data_base_table");
+		$this->resourceRemoveFile($name, $this->getModule()->getId(), "#/data_base_table");
 
 		$dispatcher->complete();
 		$this->addLogError(new Text("Drop database table '%s'", $name), "DEBUG");
@@ -316,49 +307,51 @@ class DB implements SystemDriver, Loggable
 
 		$primary = [];
 
+		/** @var Column $column */
 		foreach( $table as $column )
 		{
-			$type = $column["type"];
-			if( $type !== $column['subtype'] && Type::hasType($column["subtype"]) )
+			$type = $column->getType();
+			$sub_type = $column->getSubtype();
+			if( $type !== $sub_type && Type::hasType($sub_type) )
 			{
-				$type = $column['subtype'];
+				$type =$sub_type;
 			}
 
 			$options = [];
 
-			if(!$column["notnull"]) $options["notnull"] = false;
-			if($column["unsigned"]) $options["unsigned"] = true;
-			if($column["comment"]) $options["comment"] = true;
-			if($column["autoincrement"]) $options["autoincrement"] = true;
-			if($column["fixed"]) $options["fixed"] = true;
-			if(isset($column["default"])) $options["default"] = $column["default"];
-			if(isset($column["comment"])) $options["comment"] = $column["comment"];
-			if(! is_null($column["length"])) $options["length"] = $column["length"];
-			if(! is_null($column["precision"])) $options["precision"] = $column["precision"];
-			if(! is_null($column["scale"])) $options["scale"] = $column["scale"];
+			if(! $column->isNotNull()) $options["notnull"] = false;
+			if($column->isUnsigned()) $options["unsigned"] = true;
+			if($column->isAutoIncrement()) $options["autoincrement"] = true;
+			if($column->isFixed()) $options["fixed"] = true;
+			if($column->isDefault()) $options["default"] = $column->getDefault();
+			if($column->getLength() > 0) $options["length"] = $column->getLength();
+			if($column->getPrecision() > 0) $options["precision"] = $column->getPrecision();
+			if($column->getScale() > 0) $options["scale"] = $column->getScale();
+			$options["comment"] = $column->getComment();
 
-			$queryTable->addColumn($column["name"], $type, $options);
-			if($column["primary"])
+			$queryTable->addColumn($column->getName(), $type, $options);
+			if($column->isPrimary())
 			{
-				$primary[] = $column["name"];
+				$primary[] = $column->getName();
 			}
 		}
 
 		// indexes
-		foreach( $table->indexes() as $index )
+		/** @var Index $index */
+		foreach( $table->getIndexes() as $index )
 		{
-			$type = $index["type"];
+			$type = $index->getType();
 
 			if( $type === 'PRIMARY' )
 			{
-				foreach($index["fields"] as $column)
+				foreach($index->getColumns() as $column)
 				{
 					$primary[] = $column;
 				}
 			}
 			else if( $type === "UNIQUE" )
 			{
-				$queryTable->addUniqueIndex($index["fields"], $index["name"]);
+				$queryTable->addUniqueIndex($index->getColumns(), $index->getName());
 			}
 			else
 			{
@@ -367,7 +360,7 @@ class DB implements SystemDriver, Loggable
 				{
 					$flags[] = strtolower($type);
 				}
-				$queryTable->addIndex($index["fields"], $index["name"], $flags);
+				$queryTable->addIndex($index->getColumns(), $index->getName(), $flags);
 			}
 		}
 
@@ -407,7 +400,7 @@ class DB implements SystemDriver, Loggable
 		{
 			$prop["id"] = (int) $row->id;
 			$prop["module_id"] = (int) $row->module_id;
-			$prop["module_compared"] = $prop["module_id"] === $this->module->getId();
+			$prop["module_compared"] = $prop["module_id"] === $this->getModule()->getId();
 			$prop["title"] = $row->title;
 			$prop["description"] = $row->description;
 			$prop["version"] = $row->version;

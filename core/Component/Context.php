@@ -48,12 +48,12 @@ class Context implements Arrayable
 	{
 		$ids = \DB
 			::table("context_module_link")
-			->where("context_id", $instance->id)
-			->get(['module_id'])
-			->map(static function($row) {
-				return (int) $row->module_id;
-			})
-			->getAll();
+				->where("context_id", $instance->id)
+				->get(['module_id'])
+				->map(static function($row) {
+					return (int) $row->module_id;
+				})
+				->getAll();
 
 		return new Context($instance, $ids);
 	}

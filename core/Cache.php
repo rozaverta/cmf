@@ -41,7 +41,7 @@ class Cache
 	public function __construct( $baseName, $directory = null, array $data = null )
 	{
 		$this->name = trim( $baseName );
-		$this->baseDir = APP_DIR . 'cache' . DIRECTORY_SEPARATOR;
+		$this->baseDir = ( defined("APP_DIR") ? (APP_DIR . "cache") : sys_get_temp_dir() ) . DIRECTORY_SEPARATOR;
 
 		if( ! $this->validFileName($this->name) )
 		{
@@ -104,10 +104,6 @@ class Cache
 		else if( $name === "raw" )
 		{
 			$this->raw = (bool) $value;
-		}
-		else if( $name === "assets" )
-		{
-			$this->baseDir = $value ? ASSETS_DIR : ( APP_DIR . 'cache' . DIRECTORY_SEPARATOR );
 		}
 		else
 		{

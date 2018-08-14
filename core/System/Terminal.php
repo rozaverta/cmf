@@ -11,10 +11,17 @@ namespace EApp\System;
 use EApp\App;
 use EApp\Cache;
 use EApp\Component\QueryModules;
+use EApp\Event\EventManager;
 use EApp\Prop;
-use EApp\System\Files\Php\ClassReader;
+use EApp\Proto\ConsoleCommand;
+use EApp\System\ConsoleCommands\Api\PhpCommentClass;
+use EApp\System\Events\ThrowableEvent;
+use EApp\System\Fs\FileResource;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\ConsoleEvents;
+use Symfony\Component\Console\Event\ConsoleErrorEvent;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Terminal
 {
@@ -23,31 +30,31 @@ class Terminal
 	private $commands = [];
 	private $wait = false;
 
-	public function __construct( $name = null, $version = null )
+	public function __construct()
 	{
-		if( !CONSOLE_MODE )
+		if( ! defined('CORE_DIR') )
+		{
+			throw new \Exception("System is not loaded");
+		}
+
+		if( ! CONSOLE_MODE )
 		{
 			throw new \Exception("Run php as cli");
 		}
 
+		// load manifest resource
+		$ref = new \ReflectionClass(App::class);
+		$manifest = new FileResource("manifest", dirname($ref->getFileName()) . DIRECTORY_SEPARATOR . "resources");
+		if( $manifest->getType() !== "#/system" )
+		{
+			throw new \InvalidArgumentException("Invalid manifest file type");
+		}
+
 		$system = Prop::cache("system");
-		if( $system->get("update") === true )
-		{
-			$this->wait = true;
-		}
 
-		if( !$name )
-		{
-			$name = $system->getIs("name") ? $system->get("name") : "Elastic CMF";
-		}
-
-		if( !$version )
-		{
-			$version = $system->getIs("version") ? $system->get("version") : App::VER;
-		}
-
-		$this->name = $name;
-		$this->version = $version;
+		$this->wait = in_array($system->get("status"), ["install-progress", "update-progress"]);
+		$this->name = $system->getOr("name", $manifest->get("name"));
+		$this->version = $system->getOr("version", $manifest->get("version"));
 	}
 
 	public function run()
@@ -61,38 +68,53 @@ class Terminal
 
 		$application = new Application( $this->name, $this->version );
 
-		// ... register commands
+		// ... register all commands
 		foreach( $this->commands as $key => $data )
 		{
-			// add $key
 			if( $data["count"] > 0 )
 				foreach($data["items"] as $command)
 				{
-					$name = $command["class_name"];
-					$application->add(new $name( $command ));
+					$class_name = $command["class_name"];
+					$application->add(new $class_name( $command ));
 				}
 		}
+
+		// add system throwable
+		$dispatcher = new EventDispatcher();
+		$dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event) {
+			EventManager::dispatch( new ThrowableEvent( $event->getError() ));
+		});
+
+		$application->setDispatcher($dispatcher);
 
 		return $application->run();
 	}
 
-	public function load( $dir )
+	public function load( $dir, $name_space )
 	{
 		if( $this->wait )
 		{
 			return false;
 		}
 
-		if( DIRECTORY_SEPARATOR !== "/" ) {
+		if( DIRECTORY_SEPARATOR !== "/" )
+		{
 			$dir = str_replace("/", DIRECTORY_SEPARATOR, $dir);
 		}
+
+		if( $dir[strlen($dir) - 1] !== DIRECTORY_SEPARATOR )
+		{
+			$dir .= DIRECTORY_SEPARATOR;
+		}
+
+		$dir .= "ConsoleCommands";
+		$name_space .= "ConsoleCommands\\";
 
 		if( !is_dir($dir) )
 		{
 			return false;
 		}
 
-		$dir = rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 		$key = md5($dir);
 
 		if( isset($this->commands[$key]) )
@@ -108,59 +130,75 @@ class Terminal
 		}
 		else
 		{
-			$scn = @ scandir($dir);
-
-			if( !is_array($scn) )
-			{
-				throw new \Exception("Can't ready terminal directory");
+			// $name_space
+			try {
+				$iterator = new \FilesystemIterator($dir);
+			}
+			catch( \UnexpectedValueException $e ) {
+				throw new \Exception("Can't ready terminal directory: " . $e->getMessage());
 			}
 
+			$dir .= DIRECTORY_SEPARATOR;
 			$map = [
 				"count" => 0,
 				"path" => $dir,
 				"items" => []
 			];
 
-			foreach( $scn as $file )
+			/** @var \SplFileInfo $file */
+			foreach( $iterator as $file )
 			{
-				if( $file[0] !== "." && preg_match('/^[a-z][a-z0-9]*\.php$/i', $file) )
+				$name = $file->getFilename();
+
+				// valid file name
+				if( $name[0] !== "." && ! $file->isLink() && $file->isFile() && $file->getExtension() === "php" )
 				{
-					$reader = new ClassReader( $dir . $file );
-					if( $reader->ready() )
+					// check class exists
+					$name = $file->getBasename(".php");
+					$class_name = $name_space . $name;
+					if( ! class_exists($class_name, true) )
 					{
-						$row =
-							[
-								"name" => preg_replace_callback('/[A-Z]/', static function($m) { return '-' . lcfirst($m[0]); }, lcfirst($reader->get("name"))),
-								"class_name" => $reader->getClassName()
-							];
-
-						if( $reader->getIs("description") )
-						{
-							$row["description"] = $reader->get("description");
-						}
-						else if( $reader->getIs(0) )
-						{
-							$row["description"] = $reader->get(0);
-						}
-
-						if( $reader->getIs("help") )
-						{
-							$row["help"] = $reader->get("help");
-						}
-
-						if( $reader->getIs("author") )
-						{
-							$row["author"] = $reader->get("author");
-						}
-
-						$map["count"] ++;
-						$map["items"][] = $row;
+						continue;
 					}
+
+					// check subclass
+					// valid only \EApp\Proto\ConsoleCommand
+					$comment = new PhpCommentClass($class_name);
+					if( !$comment->getReflection()->isSubclassOf(ConsoleCommand::class) )
+					{
+						continue;
+					}
+
+					// set base properties
+					// command name, class name, description, help, author
+					$row =
+						[
+							"name" => preg_replace_callback('/[A-Z]/', static function($m) { return '-' . lcfirst($m[0]); }, lcfirst($name)),
+							"class_name" => $class_name
+						];
+
+					if( $comment->hasDescription() )
+					{
+						$row["description"] = (string) $comment->getDescription();
+					}
+
+					if( $comment->hasParam("help") )
+					{
+						$row["help"] = (string) $comment->getParam("help");
+					}
+
+					if( $comment->hasParam("author") )
+					{
+						$row["author"] = (string) $comment->getParam("author");
+					}
+
+					$map["count"] ++;
+					$map["items"][] = $row;
 				}
 			}
 
 			$this->commands[$key] = $map;
-			//$cache->write($map);
+			// todo $cache->write($map);
 		}
 
 		return $this->commands[$key]["count"];
@@ -180,7 +218,7 @@ class Terminal
 			return $load;
 		}
 
-		$load = $this->load( CORE_DIR . "System" . DIRECTORY_SEPARATOR . "ConsoleCommands" );
+		$load = $this->load( CORE_DIR . "System", "EApp\\System\\" );
 		if( $load === false )
 		{
 			throw new \Exception("Default commands not registered");
@@ -193,7 +231,7 @@ class Terminal
 				         ->get() as $module )
 			{
 				/** @var \EApp\Component\Scheme\ModuleSchemeDesigner $module */
-				$count = $this->load( $module->path . "ConsoleCommands" );
+				$count = $this->load( $module->path, $module->name_space );
 				if( $count !== false )
 				{
 					$load += $count;

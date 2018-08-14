@@ -66,7 +66,7 @@ class TableData extends Collection implements ModuleComponent, TypeOfInterface
 		return new self(
 			$an_array["table_name"],
 			$an_array["module"],
-			$an_array["columns"],
+			new Collection($an_array["items"]),
 			$an_array["indexes"],
 			$an_array["filters"],
 			$an_array["extra"]
@@ -94,7 +94,7 @@ class TableData extends Collection implements ModuleComponent, TypeOfInterface
 	/**
 	 * @return Index[] | Collection
 	 */
-	public function getIndexes(): array
+	public function getIndexes(): Collection
 	{
 		return $this->indexes;
 	}
@@ -102,7 +102,7 @@ class TableData extends Collection implements ModuleComponent, TypeOfInterface
 	/**
 	 * @return Filter[] | Collection
 	 */
-	public function getFilters(): array
+	public function getFilters(): Collection
 	{
 		return $this->filters;
 	}

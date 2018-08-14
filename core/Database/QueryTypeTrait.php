@@ -10,7 +10,6 @@ namespace EApp\Database;
 
 trait QueryTypeTrait
 {
-
 	protected $fields_number = [];
 	protected $fields_boolean = [];
 	protected $fields_datetime = [];

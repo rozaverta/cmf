@@ -8,9 +8,18 @@
 
 namespace EApp\System\Events;
 
+use EApp\App;
+use EApp\Event\Event;
 use EApp\System\Interfaces\SystemDriver;
 
-abstract class SystemDriverEvent extends SystemEvent
+/**
+ * Class SystemDriverEvent
+ *
+ * @property \EApp\App $app
+ *
+ * @package EApp\System\Events
+ */
+abstract class SystemDriverEvent extends Event
 {
 	/**
 	 * @var SystemDriver
@@ -31,18 +40,25 @@ abstract class SystemDriverEvent extends SystemEvent
 	 */
 	public function __construct( SystemDriver $driver, string $action, array $params = [] )
 	{
-		parent::__construct($params);
+		$params["app"] = App::getInstance();
+		parent::__construct("onSystemDriver", $params);
 
 		$this->driver = $driver;
 		$this->driver_action = $action;
 	}
 
-	public function getDriver()
+	/**
+	 * @return SystemDriver
+	 */
+	public function getDriver(): SystemDriver
 	{
 		return $this->driver;
 	}
 
-	public function getDriverAction()
+	/**
+	 * @return string
+	 */
+	public function getDriverAction(): string
 	{
 		return $this->driver_action;
 	}

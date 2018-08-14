@@ -11,7 +11,13 @@ namespace EApp;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Traits\SingletonInstance;
 
-final class Hosts
+/**
+ * Class Host
+ *
+ * @package EApp
+ * @method static Host getInstance()
+ */
+final class Host
 {
 	use SingletonInstance;
 
@@ -196,17 +202,18 @@ final class Hosts
 
 		if( is_string($host) && strlen($host) )
 		{
+
 			if( preg_match('/^https?:\/\//', $host, $m) )
 			{
-				$ssl = $m[1] === 'https://';
+				$ssl = $m[0] === 'https://';
 				$host = substr($host, strlen($m[0]));
 			}
-			if( preg_match('/:(\d+)$/', $host, $m) )
+			if( preg_match('/:(\d{1,4})\/?$/', $host, $m) )
 			{
 				$port = (int) $m[1];
 				$host = substr($host, 0, strlen($host) - strlen($m[0]));
 			}
-			if( !filter_var($host, FILTER_VALIDATE_DOMAIN) )
+			if( !filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) )
 			{
 				throw new \InvalidArgumentException("Invalid host name '{$host}'");
 			}
@@ -331,7 +338,7 @@ final class Hosts
 			$argv = isset($_SERVER["argv"]) && is_array($_SERVER["argv"]) ? $_SERVER["argv"] : [];
 			$i = array_search("--host", $argv );
 
-			if( $i !== false && isset($argv[++$i]) && filter_var($argv[$i], FILTER_VALIDATE_DOMAIN) )
+			if( $i !== false && isset($argv[++$i]) && filter_var($argv[$i], FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) )
 			{
 				$host = $argv[$i];
 				$cmd_found = $host;
@@ -373,7 +380,7 @@ final class Hosts
 
 		if( !file_exists($file) )
 		{
-			throw new NotFoundException("Hosts file not found");
+			throw new NotFoundException("Host file not found");
 		}
 
 		$this->file = $file;

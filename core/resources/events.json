@@ -1,12 +1,17 @@
 {
-	"type": "#/events",
+	"type": "#/event_collection",
 	"items": [
 		{
 			"name": "onSystem",
 			"title": "Progress system events"
 		},
 		{
-			"name": "onSystemException",
+			"name": "onSystemDriver",
+			"title": "Progress system driver events",
+			"completable": true
+		},
+		{
+			"name": "onThrowable",
 			"title": "Fatal error"
 		},
 		{

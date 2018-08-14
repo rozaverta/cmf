@@ -54,7 +54,7 @@ class ModuleSchemeDesigner extends SchemeDesigner
 
 		if( ! class_exists($class, true) )
 		{
-			throw new NotFoundException("Module '{$this->name}' not found.");
+			throw new NotFoundException("Module '{$this->name}' not found");
 		}
 
 		/**
@@ -71,7 +71,7 @@ class ModuleSchemeDesigner extends SchemeDesigner
 		$this->route = $module->route;
 		$this->support = $module->support;
 		$this->version = $module->version;
-		$this->data = $module->data;
+		$this->data = $module->extra;
 		$this->key = $module->getKey();
 		$this->name_space = $module->getNameSpace();
 		$this->path = $module->getPath();

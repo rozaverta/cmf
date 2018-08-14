@@ -19,6 +19,13 @@ class ModuleCore extends Module
 
 	protected function fetch( int $id )
 	{
-		return $this->load( $id, new ModuleCoreConfig() );
+		$module_config = new ModuleCoreConfig();
+		$version = Prop::cache("system")->getOr("version", $module_config->version);
+		if( $this->is_install && $module_config->version !== $version )
+		{
+			throw new \InvalidArgumentException("The current version of the system does not match the previously specified");
+		}
+
+		return $this->load( $id, $module_config, $version );
 	}
 }

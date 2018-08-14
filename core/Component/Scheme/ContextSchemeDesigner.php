@@ -76,7 +76,7 @@ class ContextSchemeDesigner extends SchemeDesigner
 	 */
 	public function isHost(): bool
 	{
-		return strlen($this->host) > 0 && filter_var($this->host, FILTER_VALIDATE_DOMAIN);
+		return strlen($this->host) > 0 && filter_var($this->host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME);
 	}
 
 	/**

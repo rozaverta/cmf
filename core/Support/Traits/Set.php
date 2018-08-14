@@ -74,6 +74,16 @@ trait Set
 	}
 
 	/**
+	 * @param $name
+	 * @return $this
+	 */
+	public function setNull( $name )
+	{
+		$this->offsetUnset($name);
+		return $this;
+	}
+
+	/**
 	 * Remove an item from the collection by key.
 	 *
 	 * @param  string|array  $keys

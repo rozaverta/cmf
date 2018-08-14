@@ -149,6 +149,18 @@ abstract class Event implements EventInterface
 	}
 
 	/**
+	 * @param string $name
+	 * @param mixed $type
+	 * @return $this
+	 */
+	protected function setAllowed( string $name, $type = null )
+	{
+		$this->params_allowed[] = $name;
+		if( ! is_null($type) ) $this->params_allowed_type[$name] = $type;
+		return $this;
+	}
+
+	/**
 	 * @param $value
 	 * @param $type
 	 * @return bool
@@ -172,6 +184,7 @@ abstract class Event implements EventInterface
 		switch($type)
 		{
 			case "bool":
+			case "boolean":
 				return is_bool($value);
 
 			case "int":
@@ -183,7 +196,7 @@ abstract class Event implements EventInterface
 				return is_float($value);
 
 			case "number":
-				return is_int($value) || is_float($value) || is_numeric($value);
+				return is_numeric($value);
 
 			case "null":
 				return is_null($value);

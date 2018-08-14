@@ -8,12 +8,13 @@
 
 namespace EApp\System\Events;
 
+use EApp\App;
 use EApp\Event\Event;
 
 /**
  * Class ThrowableEvent
  *
- * @property \Exception | \Error $exception
+ * @property \Exception | \Error $throwable
  * @property \EApp\App $app
  * @property boolean $error
  */
@@ -21,8 +22,8 @@ final class ThrowableEvent extends Event
 {
 	public function __construct( \Throwable $throwable )
 	{
-		parent::__construct('onSystemException', [
-			"app" => "",
+		parent::__construct('onThrowable', [
+			"app" => App::getInstance(),
 			"throwable" => $throwable,
 			"error" => $throwable instanceof \Error
 		]);

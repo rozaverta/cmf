@@ -25,12 +25,29 @@ trait GetModuleComponent
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function hasModule(): bool
+	{
+		return ! is_null($this->module);
+	}
+
+	/**
 	 * @param Module $module
 	 * @return $this
 	 */
 	protected function setModule( Module $module )
 	{
 		$this->module = $module;
+		return $this;
+	}
+
+	/**
+	 * @return $this
+	 */
+	protected function unsetModule()
+	{
+		$this->module = null;
 		return $this;
 	}
 }

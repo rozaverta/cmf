@@ -9,13 +9,13 @@
 namespace EApp\Component\Driver;
 
 use EApp\Component\Driver\Tools\FileConfig;
-use EApp\Config\Driver\ConfigFactory;
 use EApp\Database\Connection;
 use EApp\Database\Query\Expression;
 use EApp\Event\Dispatcher;
-use EApp\Event\Driver\EventCallback;
-use EApp\Event\Driver\EventFactory;
+use EApp\Event\Driver\EventCallbackDriver;
+use EApp\Event\Driver\EventDriver;
 use EApp\Support\Interfaces\Loggable;
+use EApp\Support\Traits\GetModuleComponent;
 use EApp\Support\Traits\LoggableTrait;
 use EApp\System\Interfaces\SystemDriver;
 use EApp\System\Fs\FileResource;
@@ -28,11 +28,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 	use Traits\DBALToolsTraits;
 	use Traits\ResourceBackup;
 	use LoggableTrait;
-
-	/**
-	 * @var \EApp\Component\Module
-	 */
-	protected $module = null;
+	use GetModuleComponent;
 
 	protected $module_data = [];
 
@@ -90,7 +86,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 
 	abstract public function update();
 
-	abstract public function remove();
+	abstract public function uninstall();
 
 	/**
 	 * @param null|string $name_space
@@ -107,9 +103,14 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 			}
 
 			$config_class = $name_space . 'Module';
+			if( $this->name === "@core" )
+			{
+				$config_class .= "CoreConfig";
+			}
+
 			if( !class_exists($config_class, true) )
 			{
-				throw new NotFoundException("Module '{$this->name}' not found.");
+				throw new NotFoundException("Module '{$this->name}' not found");
 			}
 
 			$reflector = new \ReflectionClass($config_class);
@@ -120,7 +121,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 				throw new InvalidArgumentException("Can not ready base module directory");
 			}
 
-			$this->manifest = new FileResource("manifest", $path . DIRECTORY_SEPARATOR . "resource");
+			$this->manifest = new FileResource("manifest", $path . DIRECTORY_SEPARATOR . "resources");
 		}
 
 		return $this->manifest;
@@ -166,7 +167,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 						}
 						else
 						{
-							$this->addLogError(new Text("Not found method invoke or dispatch for %s class", $class_name));
+							$this->addLogError(Text::createInstance("Not found method invoke or dispatch for %s class", $class_name));
 						}
 					}
 				}
@@ -229,11 +230,24 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 						}
 					});
 
-					$this->addLogError(new Text("Add '%s' record(s) for database table '%s'", count($items), $db_table), "DEBUG");
+					$this->addLogError(Text::createInstance("Add '%s' record(s) for database table '%s'", count($items), $db_table), "DEBUG");
 				}
 				catch( \Exception $e )
 				{
-					$this->addLogError(new Text("Error database insert records, report: %s", $e->getMessage()));
+					$this->addLogError(Text::createInstance("Error database insert records, report: %s", $e->getMessage()));
+				}
+			}
+		}
+
+		// database values
+		$rec = $this->getResourceData("database_values", $dir, "#/database_values");
+		if(count($rec))
+		{
+			foreach($rec as $row)
+			{
+				if( isset($row["table"], $row["values"]) )
+				{
+					$this->databaseInsertValues((string) $row["table"], (array) $row["values"]);
 				}
 			}
 		}
@@ -242,7 +256,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 		$rec = $this->getResourceData("events", $dir, "#/event_collection");
 		if(count($rec))
 		{
-			$drv = new EventFactory($module);
+			$drv = new EventDriver($module);
 			$drv->addLogTransport($this);
 			foreach($rec as $event)
 			{
@@ -253,13 +267,13 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 				try {
 					$drv->create(
 						$event["name"],
-						isset($event["title"]) ? $event["title"] : null,
-						isset($event["completable"]) ? $event["completable"] : false
+						$event["title"] ?? "",
+						$event["completable"] ?? false
 					);
 				}
 				catch( \Exception $e )
 				{
-					$this->addLogError(new Text("Create event error, %s", $e->getMessage()));
+					$this->addLogError(Text::createInstance("Create event %s error, %s", $event["name"], $e->getMessage()));
 				}
 			}
 
@@ -270,7 +284,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 		$rec = $manifest->getOr("events", []);
 		if(count($rec))
 		{
-			$drv = new EventCallback($module);
+			$drv = new EventCallbackDriver($module);
 			$drv->addLogTransport($this);
 			foreach( $rec as $class_name => $events )
 			{
@@ -282,7 +296,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 				$callback = $drv->getCallbackItem($class_name);
 				if( !$callback )
 				{
-					$this->addLogError(new Text("Event class name %s not found", $class_name));
+					$this->addLogError(Text::createInstance("Event class name %s not found", $class_name));
 					continue;
 				}
 
@@ -293,7 +307,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 					}
 					catch( \Exception $e )
 					{
-						$this->addLogError(new Text("Callback link error, %s", $e->getMessage()));
+						$this->addLogError(Text::createInstance("Callback link error, %s", $e->getMessage()));
 					}
 				}
 			}
@@ -338,43 +352,15 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 				}
 				catch(\Exception $e)
 				{
-					$this->addLogError(new Text("Can not add mount point, %s", $e->getMessage()));
+					$this->addLogError(Text::createInstance("Can not add mount point, %s", $e->getMessage()));
 				}
 			}
 		}
 
-		// 7. configs
-		$rec = $this->getResourceData("configs", $dir, "#/config_collection");
-		if(count($rec))
-		{
-			$cf = new ConfigFactory($module);
-			foreach($rec as $name => $data)
-			{
-				$properties = null;
-				if(isset($data["properties"]))
-				{
-					if( is_array($data["properties"]) )
-					{
-						$properties = $data["properties"];
-					}
-					unset($data["properties"]);
-				}
-
-				try {
-					$cf->create($name, $data, $properties);
-				}
-				catch(\Exception $e)
-				{
-					$this->addLogError(new Text("Can not add config record, %s", $e->getMessage()));
-				}
-			}
-		}
-
-		// 8. file configs
+		// 7. file configs
 		$rec = $this->getResourceData("file_configs", $dir, "#/file_config_collection");
 		if(count($rec))
 		{
-			$dir = $module->getId() < 1 ? null : $this->getKey();
 			foreach($rec as $name => $data)
 			{
 				if( !is_array($data) )
@@ -383,25 +369,27 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 					continue;
 				}
 
-				$config = new FileConfig($name, $dir);
-				$key = ($dir ? $dir . "/" : "") . $name;
-				if($config->fileExists())
+				$drv = new ConfigFile($name, $module);
+				if( $drv->fileExists() )
 				{
-					$this->addLogError(new Text("Can not duplicate config file '%s'", $key));
-				}
-				else if( !$config->set($data)->write() )
-				{
-					$this->addLogError(new Text("Can not write config file '%s'", $key));
+					$this->addLogError(Text::createInstance("Can not duplicate the %s config file of the %s module", $name, $module->getName()));
+					continue;
 				}
 				else
 				{
-					$this->addLogError(new Text("Add new config file '%s'", $key), "DEBUG");
+					$drv->addLogTransport($this)
+						->merge($data)
+						->write();
 				}
+
+				unset($drv);
 			}
 		}
 
 		$this->resourceWriteFileContent("manifest", $module->getId(), $manifest, $version);
 		$this->resourceWriteFileContent("manifest", $module->getId(), $manifest);
+
+		// todo add cache clean
 	}
 
 	protected function updateData()
@@ -409,7 +397,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 		//
 	}
 
-	protected function removeData()
+	protected function uninstallData()
 	{
 		//
 	}
@@ -422,7 +410,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 			$rec = new FileResource($name, $dir);
 			if($rec->getType() !== $type)
 			{
-				throw new \IntlException("Invalid resource type ({$name})");
+				throw new \InvalidArgumentException("Invalid resource type ({$name})");
 			}
 			$result = $rec->getOr($key, []);
 		}
@@ -455,7 +443,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 	{
 		foreach(array_keys($row) as $key)
 		{
-			if( is_string($key) )
+			if( is_string($row[$key]) )
 			{
 				$row[$key] = $this->replaceModuleDataText($row[$key]);
 			}
@@ -489,5 +477,21 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 		}
 
 		return $string;
+	}
+
+	protected function databaseInsertValues(string $table, array $values)
+	{
+		$build = \DB::table($table);
+		foreach($values as $insert)
+		{
+			$insert = $this->replaceModuleData($insert);
+			try {
+				$build->insert($insert);
+			}
+			catch(\Exception $e)
+			{
+				$this->addLogError(Text::createInstance("Database insert error. Table %s, error - %s", $table, $e->getMessage()));
+			}
+		}
 	}
 }

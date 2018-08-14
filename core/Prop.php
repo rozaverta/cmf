@@ -81,6 +81,11 @@ class Prop implements ArrayAccess, Countable, Arrayable
 	 */
 	public static function file( $name, & $exists = false )
 	{
+		if( !defined("APP_DIR") )
+		{
+			return [];
+		}
+
 		$file = APP_DIR . "config" . DIRECTORY_SEPARATOR . $name . '.php';
 		if( file_exists( $file ) )
 		{

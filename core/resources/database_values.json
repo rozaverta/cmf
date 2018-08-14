@@ -1,0 +1,19 @@
+{
+	"type": "#/database_values",
+	"items": [
+		{
+			"table": "context",
+			"required": false,
+			"unique": [],
+			"values": [
+				{
+					"name": "default",
+					"context_name": "default",
+					"type": "point",
+					"title": "Default context point",
+					"is_default": true
+				}
+			]
+		}
+	]
+}

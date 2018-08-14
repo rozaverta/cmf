@@ -3,10 +3,12 @@
 	"name": "Elastic CMF (Anaconda)",
 	"version": "0.0.1",
 	"database_tables": [
-		"config",
+		"scheme_tables",
 		"module_router",
 		"modules",
 		"plugins",
+		"context",
+		"context_module_link",
 		"template_data",
 		"template_includes",
 		"template_packages",

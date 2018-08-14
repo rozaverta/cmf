@@ -8,10 +8,6 @@
 
 namespace EApp\System\Interfaces;
 
-interface SystemDriver
+interface SystemDriver extends ModuleComponent
 {
-	/**
-	 * @return \EApp\Component\Module
-	 */
-	public function getModule();
 }

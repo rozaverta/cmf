@@ -8,35 +8,23 @@
 
 namespace EApp\Event\Driver;
 
-
 use EApp\Component\Module;
 use EApp\Event\Scheme\EventCallbackSchemeDesigner;
 use EApp\Event\Scheme\EventSchemeDesigner;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Interfaces\Loggable;
+use EApp\Support\Traits\GetModuleComponent;
 use EApp\Support\Traits\LoggableTrait;
 use EApp\System\Interfaces\SystemDriver;
 
-class EventCallback implements SystemDriver, Loggable
+class EventCallbackDriver implements SystemDriver, Loggable
 {
 	use LoggableTrait;
-
-	/**
-	 * @var \EApp\Component\Module
-	 */
-	protected $module;
+	use GetModuleComponent;
 
 	public function __construct( Module $module )
 	{
-		$this->module = $module;
-	}
-
-	/**
-	 * @return \EApp\Component\Module
-	 */
-	public function getModule()
-	{
-		return $this->module;
+		$this->setModule($module);
 	}
 
 	public function add( $class_name, $priority = 1 )
@@ -74,28 +62,24 @@ class EventCallback implements SystemDriver, Loggable
 	}
 
 	/**
-	 * @param string|int $class_name
+	 * @param string $class_name
 	 * @return \EApp\Event\Scheme\EventCallbackSchemeDesigner | bool
 	 */
-	public function getCallbackItem( $class_name )
+	public function getCallbackItem( string $class_name )
 	{
-		$class_name = $this->getClassName($class_name);
-
-		$con = \DB::connection();
-		$sql = $con->table("event_callback")
-			->where("class_name", $class_name)
-			->where("module_id", $this->module->getId())
-			->select(["*"])
-			->limit(1)
-			->toSql();
-
-		$result = $con->select($sql, [], true, EventCallbackSchemeDesigner::class);
-		return count($result) ? reset($result) : false;
+		return \DB
+			::table("event_callback")
+				->where("class_name", $this->getClassName($class_name))
+				->where("module_id", $this->getModule()->getId())
+				->select(["*"])
+				->limit(1)
+				->setResultClass(EventCallbackSchemeDesigner::class)
+				->first();
 	}
 
 	// protected
 
-	protected function getEventItem($event)
+	protected function getEventItem( $event ): EventSchemeDesigner
 	{
 		if( $event instanceof EventSchemeDesigner )
 		{
@@ -103,7 +87,7 @@ class EventCallback implements SystemDriver, Loggable
 		}
 
 		$event_name = (string) $event;
-		$event = EventFactory::getEventItem($event_name);
+		$event = EventDriver::getEventItem($event_name);
 		if( !$event )
 		{
 			throw new NotFoundException("Event '{$event_name}' not found");
@@ -112,16 +96,20 @@ class EventCallback implements SystemDriver, Loggable
 		return $event;
 	}
 
-	protected function getClassName( $class_name )
+	protected function getClassName( string $class_name ): string
 	{
-		$end = stripos($class_name, "\\");
-		if( $end !== false )
+		if( strpos($class_name, "\\") !== false )
 		{
-			$prefix = $this->module->get("name_space") . "Events\\";
-			$len = strlen($prefix);
-			if( substr($class_name, 0, $len) === $prefix && $end === $len )
+			$prefix = $this->getModule()->getNameSpace();
+			if( $class_name[0] === "\\" )
 			{
-				$class_name = substr($class_name, $len);
+				$prefix = "\\" . $prefix;
+			}
+
+			$len = strlen($prefix);
+			if( substr($class_name, 0, $len) === $prefix )
+			{
+				return substr($class_name, $len);
 			}
 		}
 

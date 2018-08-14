@@ -8,7 +8,6 @@
 
 namespace EApp\Component\Driver\Tools;
 
-
 use EApp\Support\Traits\Get;
 use EApp\Support\Traits\Set;
 use EApp\Support\Traits\Write;
@@ -40,6 +39,7 @@ class FileConfig
 			}
 			$this->file .= $dir . DIRECTORY_SEPARATOR;
 		}
+		$this->full_path = $this->file;
 		$this->file .= $this->name . ".php";
 	}
 
@@ -79,7 +79,7 @@ class FileConfig
 
 	public function write()
 	{
-		if( !$this->makeDir($this->full_path) )
+		if( ! $this->makeDir($this->full_path) )
 		{
 			return false;
 		}

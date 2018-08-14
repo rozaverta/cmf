@@ -69,7 +69,7 @@ final class EventFactory
 			$class_name = $row->class_name;
 			if( $class_name[0] !== "\\" && $row->module_id > 0 )
 			{
-				$class_name = Module::cache((int) $row->module_id)->get("name_space") . $class_name;
+				$class_name = Module::cache((int) $row->module_id)->getNameSpace() . $class_name;
 			}
 			if( $class_name[0] !== "\\" )
 			{
@@ -78,7 +78,7 @@ final class EventFactory
 
 			if( ! class_exists($class_name, true) )
 			{
-				$this->logLine("Prepared class '{$class_name}' not found.");
+				$this->logLine("Prepared class '{$class_name}' not found");
 			}
 			else if( ! (new \ReflectionClass($class_name))->implementsInterface( EventPrepareInterface::class ) )
 			{

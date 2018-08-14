@@ -275,25 +275,25 @@ class Module implements Arrayable
 			throw new \InvalidArgumentException("The current version of the '{$row->name}' module does not match the installed version of the module");
 		}
 
-		return $this->load( $row->id, $module );
+		return $this->load( $row->id, $module, $row->version );
 	}
 
-	protected function load( $id, ModuleConfig $module )
+	protected function load( $id, ModuleConfig $module_config, string $version )
 	{
 		$get = [
 			'id' => $id,
-			'name' => $module->name,
-			'key' => $module->getKey(),
-			'route' => $module->route,
-			'title' => $module->title,
-			'version' => $module->version,
-			'path' => $module->getPath(),
-			'name_space' => $module->getNameSpace(),
-			'support' => $module->support,
+			'name' => $module_config->name,
+			'key' => $module_config->getKey(),
+			'route' => $module_config->route,
+			'title' => $module_config->title,
+			'version' => $version,
+			'path' => $module_config->getPath(),
+			'name_space' => $module_config->getNameSpace(),
+			'support' => $module_config->support,
 			'extra' => []
 		];
 
-		foreach($module->data as $key => $value)
+		foreach( $module_config->extra as $key => $value)
 		{
 			if( ! isset($get[$key]) )
 			{
@@ -314,7 +314,6 @@ class Module implements Arrayable
 		$this->version = $row["version"];
 		$this->path = $row["path"];
 		$this->name_space = $row["name_space"];
-		$this->items = $row["items"];
 		$this->support = $row["support"];
 		$this->items = $row["extra"];
 	}

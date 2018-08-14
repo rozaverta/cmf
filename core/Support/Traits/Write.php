@@ -9,6 +9,7 @@
 namespace EApp\Support\Traits;
 
 use EApp\App;
+use EApp\Support\Interfaces\Loggable;
 use EApp\Text;
 
 trait Write
@@ -30,8 +31,7 @@ trait Write
 			}
 			else
 			{
-				App::Log()->line(new Text("Content data must be string for write to file '%s'", $file));
-				return false;
+				return $this->writeError(Text::createInstance("Content data must be string for write to file %s", $file));
 			}
 		}
 
@@ -61,7 +61,7 @@ trait Write
 				flock(  $fo, LOCK_UN );
 				if( ! $attach && $php )
 				{
-					fwrite( $fo, '<' . '?php if( ! defined("ELS_CMS") ) exit("Not access");' );
+					fwrite( $fo, '<' . '?php defined("ELS_CMS") || exit("Not access"); ' );
 				}
 
 				if( $callable )
@@ -93,50 +93,47 @@ trait Write
 			@ fclose( $fo );
 		}
 
-		if( !$get )
-		{
-			App::Log()->lastPhp();
-		}
-
 		unset( $data );
-		return $get;
+		return $get ? $this->writeDebug($file, $attach) : $this->writeError();
 	}
 
 	protected function removeFile( $file )
 	{
-		if( !file_exists($file) )
+		if( ! file_exists($file) )
 		{
 			return true;
 		}
-		if( !is_file($file) )
+		if( ! is_file($file) )
 		{
-			return false;
+			return $this->writeError(Text::createInstance("Cannot remove file, because the specified path %s is not a file", $file));
 		}
 		if( @ unlink($file) )
 		{
 			return true;
 		}
 
-		App::Log()->lastPhp();
-		return false;
+		return $this->writeError(false, "Cannot remove file");
 	}
 
-	protected function makeDir( $dir )
+	protected function makeDir( $dir, $mode = 0777 ): bool
 	{
 		$dir = rtrim( $dir, DIRECTORY_SEPARATOR );
 		if( ! file_exists( $dir ) )
 		{
-			if( @ mkdir( $dir, 0777, true ) )
+			if( @ mkdir( $dir, $mode, true ) )
 			{
 				return true;
 			}
 
-			App::Log()->lastPhp();
-			return false;
+			return $this->writeError(false, "Cannot create directory");
+		}
+		else if( ! is_dir($dir) )
+		{
+			return $this->writeError(Text::createInstance("Cannot create directory, because the specified path %s is a file", $dir));
 		}
 		else
 		{
-			return is_dir($dir);
+			return true;
 		}
 	}
 
@@ -172,5 +169,48 @@ trait Write
 		}
 
 		return $test;
+	}
+
+	private function writeDebug( string $file, bool $updated = false ): bool
+	{
+		if( $this instanceof Loggable )
+		{
+			$this->addLogDebug("The '{$file}' file is successfully " . ($updated ? "updated" : "created"));
+		}
+
+		return true;
+	}
+
+	private function writeError( $error = false, $default_error = "Can not write data file" ): bool
+	{
+		if( $this instanceof Loggable )
+		{
+			if( !$error )
+			{
+				$err = error_get_last();
+				if( ! isset($err['message']))
+				{
+					$error = $default_error;
+				}
+				else
+				{
+					$error  = 'PHP Error: ' . $err['message'];
+					$error .= ', file: ' . $err['file'];
+					$error .= ', line: ' . $err['line'];
+				}
+			}
+
+			$this->addLogError($error);
+		}
+		else if( !$error)
+		{
+			App::Log()->lastPhp();
+		}
+		else
+		{
+			App::Log($error);
+		}
+
+		return false;
 	}
 }

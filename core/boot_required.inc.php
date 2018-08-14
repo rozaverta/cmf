@@ -268,26 +268,26 @@ EOT;
 
 // detect hosts
 
-$hosts = \EApp\Hosts::getInstance();
+$host = \EApp\Host::getInstance();
 
-if( $hosts->reload() )
+if( $host->reload() )
 {
-	if( $hosts->getStatus() === "redirect" )
+	if( $host->getStatus() === "redirect" )
 	{
-		$hosts->isCmd() || exit;
+		$host->isCmd() || exit;
 	}
 	else
 	{
-		$hosts->define();
+		$host->define();
 	}
 }
-else if( ! $hosts->isCmd() )
+else if( ! $host->isCmd() )
 {
 	headers_sent() || header("Content-Type: text/plain; charset=utf-8");
 	echo "The selected domain is not installed or the configuration file is not specified host ID";
 	exit;
 }
 
-defined("CONSOLE_MODE")     || define( "CONSOLE_MODE"   , $hosts->isCmd() );
+defined("CONSOLE_MODE")     || define( "CONSOLE_MODE"   , $host->isCmd() );
 defined("BASE_ENCODING")    || define( "BASE_ENCODING"  , "UTF-8" );
-defined("BASE_PROTOCOL")    || define( "BASE_PROTOCOL"  , CONSOLE_MODE || ! $hosts->isServerSsl() ? "http" : "https" );
+defined("BASE_PROTOCOL")    || define( "BASE_PROTOCOL"  , CONSOLE_MODE || ! $host->isServerSsl() ? "http" : "https" );

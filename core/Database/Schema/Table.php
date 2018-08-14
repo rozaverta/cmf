@@ -9,6 +9,7 @@
 namespace EApp\Database\Schema;
 
 use EApp\ModuleCore;
+use EApp\Support\Collection;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\System\Fs\FileResource;
 use EApp\Cache;
@@ -36,7 +37,7 @@ class Table extends TableData
 			parent::__construct(
 				$data["table_name"],
 				$data["module"],
-				$data["columns"],
+				new Collection($data["items"]),
 				$data["indexes"],
 				$data["filters"],
 				$data["extra"]
@@ -52,7 +53,7 @@ class Table extends TableData
 				$loader->getColumns(),
 				$loader->getIndexes(),
 				$loader->getFilters(),
-				$loader->getExtra()
+				$loader->getExtras()
 			);
 
 			$this->writeCache();
@@ -74,7 +75,7 @@ class Table extends TableData
 		$this->items    = $loader->getColumns();
 		$this->indexes  = $loader->getIndexes();
 		$this->filters  = $loader->getFilters();
-		$this->extra    = $loader->getExtra();
+		$this->extra    = $loader->getExtras();
 
 		$this->writeCache();
 
@@ -108,7 +109,7 @@ class Table extends TableData
 		$this->cache->write([
 			"table_name" => $this->getTableName(),
 			"module" => $this->getModule(),
-			"columns" => $this->items,
+			"items" => $this->items,
 			"indexes" => $this->indexes,
 			"filters" => $this->filters,
 			"extra" => $this->extra
@@ -123,12 +124,12 @@ class Table extends TableData
 	private function getLoader( string $table )
 	{
 		$row = \DB::table("scheme_tables")
-			->where("name", $this->table_name)
+			->where("name", $table)
 			->first();
 
 		if( ! $row )
 		{
-			throw new NotFoundException("Table '{$this->table_name}' not found in the database");
+			throw new NotFoundException("Table '{$table}' not found in the database");
 		}
 
 		return new ResourceLoader(

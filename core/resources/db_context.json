@@ -1,0 +1,63 @@
+{
+	"type": "#/data_base_table",
+	"name": "context",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "name"
+		},
+		{
+			"name": "context_name"
+		},
+		{
+			"name": "type"
+		},
+		{
+			"name": "title"
+		},
+		{
+			"name": "comment",
+			"default": ""
+		},
+		{
+			"name": "host",
+			"default": ""
+		},
+		{
+			"name": "host_port",
+			"type": "integer",
+			"default": 0
+		},
+		{
+			"name": "host_ssl",
+			"type": "boolean",
+			"default": false
+		},
+		{
+			"name": "path",
+			"default": ""
+		},
+		{
+			"name": "query",
+			"default": ""
+		},
+		{
+			"name": "is_default",
+			"type": "boolean",
+			"default": false
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_name",
+			"type": "unique",
+			"fields": [
+				"name"
+			]
+		}
+	]
+}

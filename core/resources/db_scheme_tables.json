@@ -21,9 +21,6 @@
 		},
 		{
 			"name": "version"
-		},
-		{
-			"name": "resource"
 		}
 	],
 	"primaryKey": "id",

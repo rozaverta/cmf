@@ -62,7 +62,7 @@ class ModuleRouter implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\AddRouterDriverEvent($this, $this->getEvn($path, $position, $properties))
+				new Events\RouterAddDriverEvent($this, $this->getEvn($path, $position, $properties))
 			);
 
 		$id = \DB::table("module_router")->insertGetId([
@@ -92,7 +92,7 @@ class ModuleRouter implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\EditRouterDriverEvent($this, $this->getEvn($path, $position, $properties, $id))
+				new Events\RouterEditDriverEvent($this, $this->getEvn($path, $position, $properties, $id))
 			);
 
 		\DB::table("module_router")
@@ -118,7 +118,7 @@ class ModuleRouter implements SystemDriver, Loggable
 		$dispatcher = EventManager::dispatcher("onComponentDriverAction");
 		$dispatcher
 			->dispatch(
-				new Events\DeleteRouterDriverEvent($this, $this->getEvn($path, $old["position"], $old["properties"], $id))
+				new Events\RouterDeleteDriverEvent($this, $this->getEvn($path, $old["position"], $old["properties"], $id))
 			);
 
 		\DB::table("module_router")
@@ -258,7 +258,7 @@ class ModuleRouter implements SystemDriver, Loggable
 			throw new \InvalidArgumentException("You must use path value for '{$type}' type");
 		}
 
-		if( $type === "host" && ! filter_var($path, FILTER_VALIDATE_DOMAIN) )
+		if( $type === "host" && ! filter_var($path, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) )
 		{
 			throw new \InvalidArgumentException("Invalid domain name '{$path}' for host type");
 		}

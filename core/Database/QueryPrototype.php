@@ -3,6 +3,7 @@
 namespace EApp\Database;
 
 use EApp\Database\Query\Builder;
+use EApp\Database\Schema\Column;
 use EApp\Database\Schema\Table;
 use EApp\Support\CollectionRecorder;
 use InvalidArgumentException;
@@ -248,14 +249,18 @@ abstract class QueryPrototype
 
 	protected function initialisation()
 	{
-		foreach($this->table_schema as $name => $prop)
+		/** @var Column $col */
+		foreach( $this->table_schema as $col)
 		{
+			// todo virtual field fix
+
+			$name = $col->getName();
 			$prefix_name = 't.' . $name;
 			$this->columns[] = $prefix_name;
 			$this->valid_columns[$name] = $prefix_name;
 			if( $this->check_type )
 			{
-				$this->setType($prop["type"], $name);
+				$this->setType($col->getType(), $name);
 			}
 		}
 	}

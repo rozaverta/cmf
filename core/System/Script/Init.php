@@ -8,6 +8,8 @@
 
 namespace EApp\System\Script;
 
+use EApp\System\ConsoleCommands\Api\Host\Host;
+
 class Init extends AbstractScript
 {
 	public function run()
@@ -208,7 +210,7 @@ RewriteRule ^(.*)$ /index.php?q=$1 [L,QSA]
 			return "localhost";
 		}
 
-		$host = filter_var($host, FILTER_VALIDATE_DOMAIN);
+		$host = Host::filter($host, false);
 		if( !$host )
 		{
 			$this

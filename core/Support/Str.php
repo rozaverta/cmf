@@ -99,7 +99,7 @@ class Str
 	 * Convert the given string to upper-case.
 	 *
 	 * @param  string  $value
-	 * @return string
+	 * @return int
 	 */
 	public static function len($value)
 	{
