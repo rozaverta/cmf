@@ -15,19 +15,12 @@ interface PluginShotable
 	 * Does the plugin use a short tag?
 	 * @return boolean
 	 */
-	public function hasShortTag();
-
-	/**
-	 * Get plugin content data
-	 *
-	 * @return string
-	 */
-	public function getContent();
+	public function hasShortTag(): bool ;
 
 	/**
 	 * Return short name
 	 *
 	 * @return string
 	 */
-	public static function getShotName();
+	public static function getShotName(): string ;
 }

@@ -126,7 +126,7 @@ class Terminal
 
 		if( $cache->ready() )
 		{
-			$this->commands[$key] = $cache->getContentData();
+			$this->commands[$key] = $cache->import();
 		}
 		else
 		{
@@ -198,7 +198,7 @@ class Terminal
 			}
 
 			$this->commands[$key] = $map;
-			// todo $cache->write($map);
+			// todo $cache->export($map);
 		}
 
 		return $this->commands[$key]["count"];

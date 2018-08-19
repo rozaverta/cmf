@@ -9,6 +9,7 @@
 namespace EApp\CI;
 
 use EApp\Support\Interfaces\InstanceStateConstructable;
+use EApp\Support\Str;
 use EApp\Support\Traits\SingletonInstance;
 
 /**
@@ -301,6 +302,20 @@ class PhpExport
 		}
 
 		return $this;
+	}
+
+	public function escape($value)
+	{
+		do {
+			$tmp = '{php_close' . Str::random(20) . '/}';
+		}
+		while( strpos($value, $tmp) !== false );
+
+		$value = str_replace('<?', '<?= "<"; ' . $tmp . '?', $value);
+		$value = str_replace('?>', '?<?= ">"; ?>', $value);
+		$value = str_replace($tmp, '?>', $value);
+
+		return $value;
 	}
 
 	// private

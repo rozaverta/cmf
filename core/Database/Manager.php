@@ -10,18 +10,28 @@ namespace EApp\Database;
 
 use EApp\Database\Connectors\ConnectionFactory;
 use EApp\Prop;
+use EApp\Support\Traits\SingletonInstance;
 
+/**
+ * Class Manager
+ *
+ * @method static Manager getInstance()
+ *
+ * @package EApp\Database
+ */
 final class Manager
 {
+	use SingletonInstance;
+
 	/**
 	 * @var Prop
 	 */
 	protected $prop;
 
+	/**
+	 * @var DatabaseManager
+	 */
 	protected $manager;
-
-	private static $instance;
-	private function __clone() {}
 
 	protected function __construct( Prop $prop = null )
 	{
@@ -44,29 +54,6 @@ final class Manager
 	}
 
 	/**
-	 * Database default instance is load.
-	 *
-	 * @return bool
-	 */
-	public static function loaded()
-	{
-		return isset(self::$instance);
-	}
-
-	/**
-	 * @return self
-	 */
-	protected static function manager()
-	{
-		if( ! isset(self::$instance) )
-		{
-			self::createManager()->setAsGlobal();
-		}
-
-		return self::$instance;
-	}
-
-	/**
 	 * Get a connection instance from the global manager.
 	 *
 	 * @param  string  $connection
@@ -74,7 +61,7 @@ final class Manager
 	 */
 	public static function connection($connection = null)
 	{
-		return static::manager()->getConnection($connection);
+		return static::getInstance()->getConnection($connection);
 	}
 
 	/**
@@ -101,7 +88,7 @@ final class Manager
 
 	public function setAsGlobal()
 	{
-		self::$instance = $this;
+		self::setInstance($this);
 		return $this;
 	}
 
@@ -149,7 +136,7 @@ final class Manager
 	 */
 	public static function table( $table, $connection = null )
 	{
-		return self::manager()->getConnection($connection)->table($table);
+		return self::getInstance()->getConnection($connection)->table($table);
 	}
 
 	/**
@@ -161,6 +148,6 @@ final class Manager
 	 */
 	public static function __callStatic( $method, $arguments )
 	{
-		return static::manager()->getConnection()->$method(...$arguments);
+		return static::getInstance()->getConnection()->$method(...$arguments);
 	}
 }

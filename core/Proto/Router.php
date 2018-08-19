@@ -8,50 +8,58 @@
 
 namespace EApp\Proto;
 
+use EApp\Component\MountPoint;
 use EApp\Support\Exceptions\PageNotFoundException;
-use EApp\Component\Module;
+use EApp\Support\Traits\GetModuleComponent;
+use EApp\System\Interfaces\ModuleComponent;
 
-abstract class Router
+abstract class Router implements ModuleComponent
 {
-	/**
-	 * @var \EApp\Component\Module
-	 */
-	protected $module;
+	use GetModuleComponent;
 
-	protected $prop  = [];
-	protected $ctrl  = null;
-	protected $type  = null;
+	protected $controller = null;
+
 	protected $match = null;
-	protected $mask  = '';
-	protected $mount_id = 0;
+
+	protected $mount_point;
 
 	abstract public function ready();
 
-	public function __construct( Module $module, $prop = [], $type = null, $mask = '', $match = null, $mount_id = 0 )
+	abstract static public function getControllerNames(): array;
+
+	abstract static public function valid( string $controller, int $id ): bool;
+
+	abstract static public function makeUrl( string $controller, int $id, string $context = null ): string;
+
+	public function __construct( MountPoint $mount_point, $match = null )
 	{
-		$name = get_class($this);
-		if( strpos($name, $module->get('name_space')) !== 0 )
+		$module = $mount_point->getModule();
+		if( strpos(__CLASS__, $module->getNameSpace()) !== 0 )
 		{
-			throw new \Exception("Invalid current module");
+			throw new \InvalidArgumentException("Invalid current module");
 		}
 
-		$this->module = $module;
-		$this->prop = $prop;
-		$this->type = $type;
 		$this->match = $match;
-		$this->mask = $mask;
-		$this->mount_id = $mount_id;
+		$this->setModule($module);
 	}
 
-	public function controller()
+	/**
+	 * @return MountPoint
+	 */
+	public function getMountPoint()
 	{
-		if( !$this->ctrl )
+		return $this->mount_point;
+	}
+
+	public function getController()
+	{
+		if( !$this->controller )
 		{
-			throw new \Exception("Controller not used", 500);
+			throw new \RuntimeException("Controller not used", 500);
 		}
 		else
 		{
-			return $this->ctrl;
+			return $this->controller;
 		}
 	}
 
@@ -64,18 +72,18 @@ abstract class Router
 
 	protected function checkController( $name )
 	{
-		return class_exists( $this->module->get('name_space') . "Controller\\" . $name, true );
+		return class_exists( $this->getModule()->getNameSpace() . "Controllers\\" . $name, true );
 	}
 
 	protected function setController( $name, array $instanceControllerData = [] )
 	{
-		$class = $this->module->get('name_space') . "Controller\\" . $name;
-		return $this->useController(new $class( $this->module, $instanceControllerData ));
+		$class = $this->getModule()->getNameSpace() . "Controllers\\" . $name;
+		return $this->useController(new $class( $this->getModule(), $instanceControllerData ));
 	}
 
 	protected function useController( Controller $controller )
 	{
-		$this->ctrl = $controller;
+		$this->controller = $controller;
 		return true;
 	}
 }

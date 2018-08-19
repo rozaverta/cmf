@@ -9,6 +9,7 @@
 namespace EApp\Database\Concerns;
 
 use Closure;
+use EApp\Helper;
 use Exception;
 use Throwable;
 
@@ -39,7 +40,7 @@ trait ManagesTransactions
 			// catch any exception we can rollback this transaction so that none of this
 			// gets actually persisted to a database or stored in a permanent fashion.
 			try {
-				return \E\Tap($callback($this), function ($result) {
+				return Helper::tap($callback($this), function ($result) {
 					$this->commit();
 				});
 			}

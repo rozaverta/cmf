@@ -170,7 +170,7 @@ class Cron extends ConsoleCommand
 			$this->trace("Fatal error: " . $e->getMessage(), "ERROR");
 		}
 
-		$data = $ctr->pageData();
+		$data = $ctr->getPageData();
 		$head = false;
 		$table = new Table( $this->output );
 		$table->setHeaders([

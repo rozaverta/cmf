@@ -70,14 +70,14 @@ class Module implements Arrayable
 		if( $cached )
 		{
 			$cache = new Cache( $id, 'modules' );
-			if( !$cache->ready() )
+			if( $cache->ready() )
 			{
-				$row = $this->fetch( $id );
-				$cache->write($row);
+				$row = $cache->import();
 			}
 			else
 			{
-				$row = $cache->getContentData();
+				$row = $this->fetch( $id );
+				$cache->export($row);
 			}
 		}
 		else

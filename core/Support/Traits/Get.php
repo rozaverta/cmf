@@ -8,6 +8,8 @@
 
 namespace EApp\Support\Traits;
 
+use EApp\Helper;
+
 /**
  * @property array $items
  */
@@ -83,7 +85,7 @@ trait Get
 		{
 			return $this->items[$name];
 		}
-		return \E\Value($default_value);
+		return Helper::value($default_value);
 	}
 
 	/**

@@ -11,7 +11,10 @@
 			"type": "integer"
 		},
 		{
-			"name": "path"
+			"name": "type"
+		},
+		{
+			"name": "rule"
 		},
 		{
 			"name": "position",

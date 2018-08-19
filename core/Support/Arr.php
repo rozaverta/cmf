@@ -9,6 +9,7 @@
 namespace EApp\Support;
 
 use ArrayAccess;
+use EApp\Helper;
 use InvalidArgumentException;
 
 class Arr
@@ -53,7 +54,7 @@ class Arr
 	{
 		if (! static::accessible($array))
 		{
-			return \E\Value($default);
+			return Helper::value($default);
 		}
 		if (is_null($key))
 		{
@@ -65,7 +66,7 @@ class Arr
 		}
 		if (strpos($key, '.') === false)
 		{
-			return isset($array[$key]) ? $array[$key] : \E\Value($default);
+			return isset($array[$key]) ? $array[$key] : Helper::value($default);
 		}
 
 		foreach (explode('.', $key) as $segment)
@@ -76,7 +77,7 @@ class Arr
 			}
 			else
 			{
-				return \E\Value($default);
+				return Helper::value($default);
 			}
 		}
 
@@ -311,7 +312,7 @@ class Arr
 		{
 			if (empty($array))
 			{
-				return \E\Value($default);
+				return Helper::value($default);
 			}
 			foreach ($array as $item)
 			{
@@ -326,7 +327,7 @@ class Arr
 			}
 		}
 
-		return \E\Value($default);
+		return Helper::value($default);
 	}
 
 	/**
@@ -341,7 +342,7 @@ class Arr
 	{
 		if (is_null($callback))
 		{
-			return empty($array) ? \E\Value($default) : end($array);
+			return empty($array) ? Helper::value($default) : end($array);
 		}
 		return static::first(array_reverse($array, true), $callback, $default);
 	}
@@ -360,7 +361,7 @@ class Arr
 		list($value, $key) = static::explodePluckParameters($value, $key);
 		foreach ($array as $item)
 		{
-			$itemValue = \E\DataGet($item, $value);
+			$itemValue = Helper::dataGet($item, $value);
 			// If the key is "null", we will just append the value to the array and keep
 			// looping. Otherwise we will key the array using the value of the key we
 			// received from the developer. Then we'll return the final array form.
@@ -371,7 +372,7 @@ class Arr
 			}
 			else
 			{
-				$itemKey = \E\DataGet($item, $key);
+				$itemKey = Helper::dataGet($item, $key);
 				if(is_object($itemKey) && method_exists($itemKey, '__toString')) {
 					$itemKey = (string) $itemKey;
 				}

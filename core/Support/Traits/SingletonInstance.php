@@ -24,7 +24,7 @@ trait SingletonInstance {
 		if( !self::$init )
 		{
 			self::$init = true;
-			self::$instance = new self();
+			self::setInstance(new self());
 		}
 
 		return self::$instance;
@@ -35,8 +35,13 @@ trait SingletonInstance {
 	 *
 	 * @return bool
 	 */
-	public static function hasInstance()
+	public static function hasInstance(): bool
 	{
 		return self::$init && isset(self::$instance);
+	}
+
+	protected static function setInstance( $instance )
+	{
+		self::$instance = $instance;
 	}
 }

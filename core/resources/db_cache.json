@@ -1,0 +1,30 @@
+{
+	"type": "#/data_base_table",
+	"name": "cache",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "key_name"
+		},
+		{
+			"name": "key_prefix"
+		},
+		{
+			"name": "value",
+			"type": "blob/longblob"
+		},
+		{
+			"name": "size",
+			"type": "integer"
+		},
+		{
+			"name": "updated_at",
+			"type": "datetime"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": []
+}

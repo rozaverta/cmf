@@ -40,11 +40,11 @@ class Template
 			$cache = new Cache( $name, 'template/' . $package->getId() );
 			if( $cache->ready() )
 			{
-				$this->items = $cache->getContentData();
+				$this->items = $cache->import();
 			}
 			else {
 				$this->load();
-				$cache->write($this->items);
+				$cache->export($this->items);
 			}
 		}
 	}

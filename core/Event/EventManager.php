@@ -10,6 +10,7 @@ namespace EApp\Event;
 
 use EApp\Cache;
 use EApp\Event\Interfaces\EventInterface;
+use EApp\Helper;
 use EApp\Prop;
 use EApp\Support\Exceptions\NotFoundException;
 
@@ -30,11 +31,15 @@ final class EventManager
 		{
 			// system has been installed
 			// use default mode
-			if(Prop::cache("system")->get("install"))
+			if(Helper::isSystemInstall())
 			{
 				$cache = new Cache($name, 'events');
 
-				if(! $cache->ready())
+				if( $cache->ready() )
+				{
+					$data = $cache->import();
+				}
+				else
 				{
 					$event = new EventFactory($name);
 					if( $event->load() === false )
@@ -43,14 +48,10 @@ final class EventManager
 					}
 
 					$data = $event->getContentData();
-					if(! $cache->write($data))
+					if(! $cache->export($data))
 					{
 						throw new \Exception("Can't write event file");
 					}
-				}
-				else
-				{
-					$data = $cache->getContentData();
 				}
 			}
 			else

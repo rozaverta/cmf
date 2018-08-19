@@ -9,7 +9,9 @@
 
 namespace EApp\Proto;
 
-use EApp\CI\View;
+use EApp\Cache;
+use EApp\View\View;
+use EApp\Support\Str;
 use EApp\Support\Traits\Get;
 use EApp\Support\Traits\Compare;
 use EApp\Plugin\Interfaces\PluginPrepareProperties;
@@ -21,11 +23,19 @@ abstract class Plugin
 
 	protected $items = [];
 
-	protected $cacheType = "nocache";
+	/**
+	 * @values nocache | data | view | plugin | page
+	 * @var string
+	 */
+	protected $cache_type = "nocache";
 
-	protected $cacheData = [];
+	protected $cache_data = [];
 
 	protected $view;
+
+	protected $custom_display = false;
+
+	protected $plugin_data = [];
 
 	public function __construct( $data, View $view )
 	{
@@ -41,11 +51,11 @@ abstract class Plugin
 			$cacheType = strtolower( trim( $data["cache"] ) );
 			if( $cacheType === "page" || $cacheType === "plugin" || $cacheType === "view" )
 			{
-				$this->cacheType = $cacheType;
+				$this->cache_type = $cacheType;
 			}
 			if( isset( $data["time"] ) && is_numeric( $data["time"] ) )
 			{
-				$this->cacheData["time"] = (int) $data["time"];
+				$this->cache_data["time"] = (int) $data["time"];
 			}
 			unset( $data["cache"], $data["time"] );
 		}
@@ -67,19 +77,80 @@ abstract class Plugin
 		}
 	}
 
-	abstract public function getContent();
-
-	public function cacheType()
+	/**
+	 * Load plugin data
+	 * @return $this
+	 */
+	public function load()
 	{
-		return $this->cacheType;
+		if( $this->cacheType() === "data" )
+		{
+			$ref = new \ReflectionClass($this);
+			$cache_name = Str::snake($ref->getShortName());
+			$cache_data = $this->cacheData();
+
+			if( isset($cache_data["id"]) )
+			{
+				$id = $cache_data["id"];
+				unset($cache_data["id"]);
+			}
+			else
+			{
+				$id = $cache_data;
+			}
+
+			$cache = new Cache( $id, "plugin/" . $cache_name, $cache_data );
+			if( $cache->ready() )
+			{
+				$this->plugin_data = $cache->import();
+			}
+			else
+			{
+				$this->loadPluginData();
+				$cache->export($this->plugin_data);
+			}
+		}
+		else
+		{
+			$this->loadPluginData();
+		}
+
+		return $this;
 	}
 
-	public function cacheData()
+	/**
+	 * Get cache type.
+	 * Valid values: nocache, data, view, plugin
+	 *
+	 * @return string
+	 */
+	public function cacheType(): string
 	{
-		return $this->cacheData;
+		return $this->cache_type;
 	}
 
-	public function getTplName()
+	public function cacheData(): array
+	{
+		return $this->cache_data;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isCustomDisplay(): bool
+	{
+		return $this->custom_display;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getPluginData(): array
+	{
+		return $this->plugin_data;
+	}
+
+	public function getTplName(): string
 	{
 		$tpl = $this->get("tpl");
 
@@ -97,17 +168,28 @@ abstract class Plugin
 		return $tpl;
 	}
 
-	protected function render( array $data )
+	public function render( View $view )
 	{
-		return $this->view->getTpl( $this->getTplName(), $data );
+		if( $this->isCustomDisplay() )
+		{
+			throw new \RuntimeException("You must overloaded the " . __METHOD__ . " method for the CUSTOM_DISPLAY mode");
+		}
+		else
+		{
+			return $view->getTpl( $this->getTplName(), $this->plugin_data );
+		}
 	}
+
+	// protected
+
+	abstract protected function loadPluginData();
 
 	protected function cacheValue( $name, $value )
 	{
 		$name = strtolower(trim($name));
 		if( $name !== "directory" && $name !== "time" )
 		{
-			$this->cacheData[$name] = $value;
+			$this->cache_data[$name] = $value;
 		}
 	}
 }

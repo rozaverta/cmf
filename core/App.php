@@ -4,11 +4,14 @@ namespace EApp;
 
 use EApp\CI\Log as CiLog;
 use EApp\Component\Context;
+use EApp\Component\MountPoint;
 use EApp\Component\QueryContext;
 use EApp\Component\Scheme\ContextSchemeDesigner;
+use EApp\Component\Scheme\RouteSchemeDesigner;
 use EApp\Database\Manager as DataBaseManager;
 use EApp\Event\Event;
 use EApp\Event\EventManager;
+use EApp\Filesystem\Filesystem;
 use EApp\Http\Request;
 use EApp\Http\Response;
 use EApp\Proto\Controller;
@@ -16,7 +19,6 @@ use EApp\Proto\Router;
 use EApp\Support\Collection;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Exceptions\PageNotFoundException;
-use EApp\Support\Str;
 use EApp\System\Events\ContextEvent;
 use EApp\System\Events\LanguageEvent;
 use EApp\System\Events\SingletonEvent;
@@ -32,6 +34,8 @@ use EApp\System\Events\ShutdownEvent;
 use EApp\Component\Module;
 use EApp\Component\QueryRoutes;
 use EApp\System\Terminal;
+use EApp\View\PageCache;
+use EApp\View\View;
 
 /**
  * Elastic Content Management Framework
@@ -44,9 +48,11 @@ use EApp\System\Terminal;
  * @property \EApp\CI\Log Log
  * @property \EApp\CI\PhpExport $PhpExport
  * @property \EApp\CI\Uri Uri
- * @property \EApp\CI\View View
+ * @property \EApp\View\View View
+ * @property \EApp\Filesystem\Filesystem Filesystem
  * @property \EApp\CI\Lang Lang
  * @property \EApp\CI\Session Session
+ * @property \EApp\Database\Manager Database
  * @property Controller Controller
  * @property Context Context
  *
@@ -56,9 +62,11 @@ use EApp\System\Terminal;
  * @method static \EApp\CI\Log Log(...$args)
  * @method static \EApp\CI\PhpExport PhpExport()
  * @method static \EApp\CI\Uri Uri()
- * @method static \EApp\CI\View View()
+ * @method static \EApp\View\View View()
+ * @method static \EApp\Filesystem\Filesystem Filesystem()
  * @method static \EApp\CI\Lang Lang(...$args)
  * @method static \EApp\CI\Session Session(...$args)
+ * @method static \EApp\Database\Manager Database()
  * @method static Context Context()
  *
  * @method static \EApp\Http\Response Response()
@@ -150,7 +158,7 @@ final class App
 
 		foreach( Prop::file('boot') as $file )
 		{
-			\E\IncludeFile($file, ['app' => $this]);
+			Helper::includeFile($file, ['app' => $this]);
 		}
 
 		EventManager::dispatch(new BootEvent());
@@ -191,7 +199,7 @@ final class App
 		if( $mnf->count() && $uri->mode() == 'rewrite' && $uri->length > 0 && $mnf->getIs($uri->path) )
 		{
 			$key  = $uri->path;
-			$data = \E\Value( $mnf->get($key) );
+			$data = Helper::value( $mnf->get($key) );
 
 			if( is_string($data) )
 			{
@@ -255,16 +263,18 @@ final class App
 		$cache = new Cache('routers');
 		if( $cache->ready() )
 		{
-			$routers = $cache->getContentData();
+			$routers = $cache->import();
 		}
 		else {
 			$routers = (new QueryRoutes())
 				->get()
-				->toArray();
+				->map(function(RouteSchemeDesigner $scheme) {
+					return new MountPoint($scheme);
+				})
+				->getAll();
 
-			if( count($routers) ) {
-				$cache->write($routers);
-			}
+			if( count($routers) )
+				$cache->export($routers);
 		}
 
 		$web_router_404 = false;
@@ -278,20 +288,22 @@ final class App
 
 		// math
 
-		foreach($routers as $item)
+		/** @var MountPoint $mount_point */
+
+		foreach( $routers as $mount_point )
 		{
 			// if context not use this module
-			if( !$context->hasModuleId($item["module_id"]) )
+			if( !$context->hasModuleId($mount_point->getModuleId()) )
 			{
 				continue;
 			}
 
-			$type = (string) $item['type'];
+			$type = $mount_point->getType();
 
 			// if controller not found
 			if( $type === "404" )
 			{
-				$web_router_404 = $item;
+				$web_router_404 = $mount_point;
 				if( $found )
 				{
 					break;
@@ -304,7 +316,7 @@ final class App
 			}
 
 			// redirect to folder
-			if( $open && $type == "path" && ($path_prefix . $item['path']) == $uri->path )
+			if( $open && $type == "path" && ($path_prefix . $mount_point->getRule()) == $uri->path )
 			{
 				$response
 					->redirect( $uri->makeURL( $uri->path . "/" ) )
@@ -315,9 +327,9 @@ final class App
 
 			// found
 			$match = null;
-			if( $type == "all" || $type == "index" && $uri->length == 0 || isset($item[$type]) && $uri->match($type, $item[$type], $match) )
+			if( $type == "all" || $type == "index" && $uri->length == 0 || $mount_point->isRule() && $uri->match($type, $mount_point->getRule(), $match) )
 			{
-				$controller = $this->readyController($item, $type, isset($item[$type]) ? $item[$type] : '', $match);
+				$controller = $this->readyController($mount_point, $match);
 				if( $controller !== null )
 				{
 					$found = true;
@@ -363,45 +375,26 @@ final class App
 			throw new \Exception( "Can't load route settings" . ( $this->Controller->hasLogs() ? ": " . $this->Controller->getLastLog() : "" ), 500 );
 		}
 
-		$cacheable = $this->Controller->cacheable();
-		if($cacheable && $this->Controller instanceof ControllerContentOutput)
-		{
-			$cacheable = false;
-		}
+		$cacheable = $this->Controller->isCacheable();
+		$page_cache = false;
 
-		$cache = false;
-
-		if( $cacheable )
+		if($cacheable)
 		{
-			$cacheID = $this->Controller->getId();
-			if( !$cacheID )
+			if( $this->Controller instanceof ControllerContentOutput || ! $this->Controller->getId() )
 			{
 				$cacheable = false;
 			}
 			else
 			{
-				$cData = $this->Controller->properties();
-				$cDir = 'website_pages/' . ( empty($cData['directory']) ? str_replace( ':', '_', str_replace( '::', '/', $this->Controller->name() ) ) : $cData['directory'] );
-				unset( $cData['directory'] );
-
-				$cache = new Cache( $cacheID, $cDir, $cData );
-				if( $cache->ready() )
+				$page_cache = new PageCache($this->Controller);
+				if( $page_cache->exists() )
 				{
-					EventManager::dispatch(new ReadyEvent(true));
-
-					$view = $this->View;
-					$view->set( "from_cache", true );
-
-					EventManager::dispatch(new PreRenderEvent(true));
-
-					\E\IncludeFile( $cache->path(), ["app" => $this, "view" => $view] );
-
+					$page_cache->render();
 					return $result_type;
 				}
 			}
 		}
 
-		$outCache = "\n";
 		$content_type = $response->headers()->get("Content-Type");
 
 		if( !$content_type )
@@ -416,14 +409,6 @@ final class App
 			if( !strlen($content_type) )
 			{
 				$content_type = 'unknown';
-			}
-		}
-
-		if( $cacheable )
-		{
-			foreach( $response->headers() as $name => $value )
-			{
-				$outCache .= '$app->Response->header(' . $this->PhpExport->string( $name ) . ', ' . $this->PhpExport->string( $value ) . ");\n";
 			}
 		}
 
@@ -453,7 +438,7 @@ final class App
 		$protected = ["package", "template", "controller", "from_cache"];
 
 		$view = $this->View;
-		$data = $this->Controller->pageData();
+		$data = $this->Controller->getPageData();
 		$template = isset( $data["template"] ) ? $data["template"] : "main";
 
 		if( isset($data['package']) )
@@ -462,98 +447,34 @@ final class App
 		}
 
 		$view
-			->setKeysAsProtected($protected)
+			->setProtectedKeys($protected)
 			->set($data);
 
-		$Ctrl         = $this->Controller->properties();
+		$Ctrl         = $this->Controller->getProperties();
 		$Ctrl['id']   = $this->Controller->getId();
-		$Ctrl['name'] = $this->Controller->name();
+		$Ctrl['name'] = $this->Controller->getName();
 		$view->set( 'controller', $Ctrl );
 
 		$onPreRender = new PreRenderEvent(false, $cacheable);
 		EventManager::dispatch($onPreRender);
 
-		if($cacheable && $onPreRender->getParam("cacheable") === false) {
+		if($cacheable && $onPreRender->getParam("cacheable") === false)
+		{
 			$cacheable = false;
 		}
 
 		unset($onPreRender);
 
-		$outPage = $view->getTpl( $template );
+		$out_page = $view->getTpl( $template );
 
 		// write page cache
-		if( $cacheable )
+
+		if( $cacheable && ! $page_cache->save($template, $out_page, $content_type) )
 		{
-			$php = $this->PhpExport;
-			$escape = static function( $value ) {
-				return str_replace(
-					[ '<?', '?>' ],
-					[ '<?= "<"; ?>?', '?<?= ">"; ?>' ],
-					$value
-				);
-			};
-
-			$all = $view->toArray();
-			unset($all["from_cache"]);
-
-			$outCache .= '$view->setKeysAsProtected("' . implode('", "', $protected) . "\");\n";
-			$outCache .= '$view->set(';
-			$outCache .= $php->assoc( $view->toArray() ) . '); ob_start(); ?>';
-			$outCache .= $escape( $outPage );
-
-			$view->eachPluginData( $outCache, function( & $info ) use ( $escape, $php ) {
-
-				if( $info["cache"] == "page" )
-				{
-					return $escape( $info["content"] );
-				}
-
-				else if( $info["cache"] == "plugin" )
-				{
-					$name = Str::snake($info["name"]);
-					$id = $name;
-					if( isset($info["cacheData"]["id"]) )
-					{
-						$id = $info["cacheData"]["id"];
-						unset($info["cacheData"]["id"]);
-					}
-
-					$str  = '<?php ';
-					$str .= "\n\$cache = new \\EApp\\Cache( " . $php->string( $id ) . ", ";
-					$str .= $php->string( 'plugin_' . $name ) . ", " . $php->php( $info["cacheData"] );
-					$str .= " );\nif( \$cache->ready() ) echo \$cache->getContentData();\nelse {\n\t";
-					$str .= "\$cacheData = \$view->getPlugin( " . $php->string( $info["name"] ) ;
-					$str .= ", " . $php->php( $info["data"] ) . ", true );\n\t";
-					$str .= "\$cache->write( \$cacheData );\n\techo \$cacheData;\n}\n";
-					$str .= 'unset( $cache, $cacheData ); ?>';
-					return $str;
-				}
-
-				else {
-					// no cache
-					return
-						'<?= $view->getPlugin( ' .
-						$php->string( $info["alias"] ) . ', ' .
-						$php->php( $info["data"] ) . ', true ); ?>'
-						;
-				}
-			});
-
-			$outCache .= '<?php ' . "\n" .
-				'$html = ob_get_contents(); ob_end_clean();' . "\n" .
-				'$app->Response->setBody($view->replaceDelay( $html ));' . "\n" .
-				'\\EApp\\Event\\EventManager::dispatch("onSystem", new \\EApp\\System\\Events\\CompleteEvent(' . var_export($content_type, true) . ', true));' . "\n" .
-				'$app->Response->send();';
-
-			if( !$cache->writePhp($outCache) )
-			{
-				$this->Log->line( "Can't write page cache" );
-			}
-
-			unset( $outCache );
+			$this->Log->line( "Can't write page cache" );
 		}
 
-		$response->setBody( $view->eachPluginData( $outPage, static function( & $info ) { return $info["content"]; }, 3) );
+		$response->setBody( $view->eachPluginData( $out_page, static function( & $info ) { return $info["content"]; }, 3) );
 
 		// complete dispatcher
 
@@ -626,7 +547,7 @@ final class App
 
 		if( $cache->ready() )
 		{
-			$ctx = $cache->getContentData();
+			$ctx = $cache->import();
 			foreach($ctx as $item)
 				$ctx[$item["name"]] = Context::createFromData($item);
 		}
@@ -643,7 +564,7 @@ final class App
 			}
 
 			if( count($cache_data) )
-				$cache->write($cache_data);
+				$cache->export($cache_data);
 		}
 
 		function isQuery( array $query )
@@ -724,7 +645,7 @@ final class App
 	{
 		static $init = false;
 		static $ci = [];
-		static $reserved = ['Lang', 'Log', 'PhpExport', 'Session', 'Uri', 'View', 'Context', 'Controller'];
+		static $reserved = ['Lang', 'Log', 'PhpExport', 'Session', 'Uri', 'Context', 'Controller'];
 
 		if( ! $init )
 		{
@@ -733,6 +654,11 @@ final class App
 			$this->ci['Log'] = CiLog::getInstance();
 			$this->ci['Response'] = new Response();
 			$this->ci['Request'] = Request::createFromGlobals();
+
+			// reserved
+			$ci['Database'] = DataBaseManager::class;
+			$ci['Filesystem'] = Filesystem::class;
+			$ci['View'] = View::class;
 
 			$event = new SingletonEvent();
 			EventManager::dispatch($event);
@@ -804,7 +730,7 @@ final class App
 		$close = true;
 
 		// rollback database transaction
-		if( \DB::loaded() )
+		if( \DB::hasInstance() )
 		{
 			$conn = \DB::connection();
 			$conn->transactionLevel() > 0 && $conn->rollBack();
@@ -914,23 +840,22 @@ final class App
 		}
 	}
 
-	private function readyController( $item, $type = "404", $mask = '', $match = null )
+	private function readyController( MountPoint $mount_point, $match = null )
 	{
-		$module = Module::cache($item['module_id']);
-		$class  = $module->get('name_space') . 'Router';
+		$class_name = $mount_point->getModule()->getNameSpace() . 'Router';
 
 		/** @var Router $router */
 
-		$router = new $class( $module, $item['properties'], $type, $mask, $match, $item['id'] );
+		$router = new $class_name( $mount_point, $match );
 
 		if( $router instanceof Router )
 		{
 			if( $router->ready() )
 			{
-				$controller = $router->controller();
+				$controller = $router->getController();
 				if( ! is_object($controller) )
 				{
-					throw new \Exception("Router controller method mast be return controller object", 500);
+					throw new \RuntimeException("Router controller method mast be return controller object", 500);
 				}
 
 				if( $controller instanceof Controller )
@@ -938,11 +863,11 @@ final class App
 					return $controller;
 				}
 
-				throw new \Exception("Controller must be inherited of " . Controller::class, 500);
+				throw new \RuntimeException("Controller must be inherited of " . Controller::class, 500);
 			}
 		}
 		else {
-			throw new \Exception("Router must be inherited of " . Router::class, 500);
+			throw new \RuntimeException("Router must be inherited of " . Router::class, 500);
 		}
 
 		return null;

@@ -11,6 +11,7 @@ namespace EApp\Template;
 use EApp\App;
 use EApp\Cache;
 use EApp\Component\Module;
+use Eapp\Helper;
 use EApp\ModuleCore;
 use EApp\Support\Traits\Get;
 use EApp\Support\Traits\GetIdentifier;
@@ -39,11 +40,11 @@ class Package
 			$cache = new Cache( $id, 'template/package' );
 			if( $cache->ready() )
 			{
-				$this->items = $cache->getContentData();
+				$this->items = $cache->import();
 			}
 			else {
 				$this->load($id);
-				$cache->write($this->items);
+				$cache->export($this->items);
 			}
 		}
 	}
@@ -84,7 +85,7 @@ class Package
 	 */
 	public function func()
 	{
-		$this->get('func') && \E\IncludeFile( $this->get('func_path'), ["view" => App::View()], false, true );
+		$this->get('func') && Helper::includeFile( $this->get('func_path'), ["view" => App::View()], false, true );
 		return $this;
 	}
 

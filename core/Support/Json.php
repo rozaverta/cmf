@@ -9,12 +9,10 @@
 namespace EApp\Support;
 
 use Closure;
+use EApp\Prop;
 use EApp\Support\Interfaces\Arrayable;
 use EApp\Support\Interfaces\Jsonable;
 use InvalidArgumentException;
-
-! defined("JSON_DECODE_OPTIONS") && define("JSON_DECODE_OPTIONS", 0);
-! defined("JSON_ENCODE_OPTIONS") && define("JSON_ENCODE_OPTIONS", 0);
 
 /**
  * Class Json
@@ -42,14 +40,14 @@ class Json
 			$json,
 			$assoc,
 			$depth,
-			is_int($options) ? $options : JSON_DECODE_OPTIONS
+			is_int($options) ? $options : self::jsonDecodeOptions()
 		);
 
 		$err = json_last_error();
 		if(JSON_ERROR_NONE !== $err)
 		{
 			throw new InvalidArgumentException(
-				'json_decode error: ' . self::getError($err)
+				'json_decode error: ' . json_last_error_msg()
 			);
 		}
 
@@ -118,60 +116,87 @@ class Json
 	 */
 	public static function stringify( $value, $options = null, $depth = 512 )
 	{
-		if( PHP_VERSION >= 5.5 ) {
-			$json = json_encode(
-				$value,
-				is_int($options) ? $options : JSON_ENCODE_OPTIONS,
-				$depth
-			);
-		}
-		else {
-			$json = json_encode(
-				$value,
-				is_int($options) ? $options : JSON_ENCODE_OPTIONS
-			);
-		}
+		$json = json_encode(
+			$value,
+			is_int($options) ? $options : self::jsonEncodeOptions(),
+			$depth
+		);
 
 		$err = json_last_error();
-		if (JSON_ERROR_NONE !== $err)
+		if(JSON_ERROR_NONE !== $err)
 		{
 			throw new InvalidArgumentException(
-				'json_encode error: ' . self::getError($err)
+				'json_encode error: ' . json_last_error_msg()
 			);
 		}
 
 		return $json;
 	}
 
-	private static function getError($err)
+	public static function jsonDecodeOptions()
 	{
-		if( PHP_VERSION >= 5.5 )
+		if( ! defined("JSON_DECODE_OPTIONS") )
 		{
-			return json_last_error_msg();
+			$prop = Prop::cache('json');
+			$decode_options = 0;
+
+			if( $prop->isInt('decode_options') )
+			{
+				$decode_options = $prop->get('decode_options');
+			}
+			else if( $prop->equiv('bigint_as_string', true) )
+			{
+				$decode_options = JSON_BIGINT_AS_STRING;
+			}
+
+			define("JSON_DECODE_OPTIONS", $decode_options);
 		}
 
-		switch($err)
+		return JSON_DECODE_OPTIONS;
+	}
+
+	public static function jsonEncodeOptions()
+	{
+		if( ! defined("JSON_ENCODE_OPTIONS") )
 		{
-			case JSON_ERROR_DEPTH:
-				$err = 'Maximum stack depth exceeded';
-				break;
-			case JSON_ERROR_STATE_MISMATCH:
-				$err = 'Underflow or the modes mismatch';
-				break;
-			case JSON_ERROR_CTRL_CHAR:
-				$err = 'Unexpected control character found';
-				break;
-			case JSON_ERROR_SYNTAX:
-				$err = 'Syntax error, malformed JSON';
-				break;
-			case JSON_ERROR_UTF8:
-				$err = 'Malformed UTF-8 characters, possibly incorrectly encoded';
-				break;
-			default:
-				$err = 'Unknown error';
-				break;
+			$prop = Prop::cache('json');
+			$encode_options = 0;
+
+			if( $prop->isInt('encode_options') )
+			{
+				$encode_options = $prop->get('encode_options');
+			}
+			else
+			{
+				$valid = [
+					'hex_quot' => JSON_HEX_QUOT,
+					'hex_tag' => JSON_HEX_TAG,
+					'hex_amp' => JSON_HEX_AMP,
+					'hex_apos' => JSON_HEX_APOS,
+					'numeric_check' => JSON_NUMERIC_CHECK,
+					'pretty_print' => JSON_PRETTY_PRINT,
+					'unescaped_slashes' => JSON_UNESCAPED_SLASHES,
+					'force_object' => JSON_FORCE_OBJECT,
+					'unescaped_unicode' => JSON_UNESCAPED_UNICODE
+				];
+
+				foreach( $valid as $name => $opt )
+				{
+					if( $prop->equiv($name, true) )
+					{
+						$encode_options = $encode_options | $opt;
+					}
+				}
+
+				if( ! $prop->equiv('unescaped_unicode', false) )
+				{
+					$encode_options = $encode_options | JSON_UNESCAPED_UNICODE;
+				}
+			}
+
+			define("JSON_ENCODE_OPTIONS", $encode_options);
 		}
 
-		return $err;
+		return JSON_ENCODE_OPTIONS;
 	}
 }

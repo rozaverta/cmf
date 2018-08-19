@@ -8,6 +8,8 @@
 
 namespace EApp\System\ConsoleCommands\Traits;
 
+use EApp\Helper;
+
 trait SystemInfoTrait
 {
 	protected function hasInstall(): bool
@@ -33,7 +35,7 @@ trait SystemInfoTrait
 			return false;
 		}
 
-		$info = \E\IncludeContentFile($file);
+		$info = Helper::includeImport($file);
 		$progress = $info["progress"] ?? false;
 		if( !$progress )
 		{

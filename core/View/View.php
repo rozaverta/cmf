@@ -6,11 +6,12 @@
  * Time: 16:37
  */
 
-namespace EApp\CI;
+namespace EApp\View;
 
 use EApp\App;
 use EApp\Cache;
 use EApp\Event\EventManager;
+use EApp\Helper;
 use EApp\Plugin\QueryPlugins;
 use EApp\Plugin\Interfaces\PluginShotable;
 use EApp\Plugin\Scheme\PluginSchemeDesigner;
@@ -46,6 +47,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	protected $items = [];
 
 	private $getDelay = [];
+	private $depth = 0;
 	private $iterationLimit = 10;
 	private $plugin = [];
 	private $plugin_index = 0;
@@ -104,7 +106,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		$cache = new Cache("plugins", 'template');
 		if( $cache->ready() )
 		{
-			$this->plugins = $cache->getContentData();
+			$this->plugins = $cache->import();
 		}
 		else
 		{
@@ -117,7 +119,7 @@ final class View implements SingletonCompletable, ArrayAccess
 				}
 			}
 
-			$cache->write($this->plugins);
+			$cache->export($this->plugins);
 		}
 
 		foreach($this->plugins as $plugin)
@@ -227,7 +229,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		$cache = new Cache('id_from_name', 'template/package');
 		if( $cache->ready() )
 		{
-			$this->packages = $cache->getContentData();
+			$this->packages = $cache->import();
 		}
 		else
 		{
@@ -236,7 +238,7 @@ final class View implements SingletonCompletable, ArrayAccess
 			{
 				$this->packages[$item->name] = $item->id;
 			}
-			$cache->write($this->packages);
+			$cache->export($this->packages);
 		}
 
 		$this->usePackage( Prop::cache("system")->getOr("package", "main") );
@@ -244,7 +246,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		$cache = new Cache('includes', 'template');
 		if( $cache->ready() )
 		{
-			$inc = $cache->getContentData();
+			$inc = $cache->import();
 		}
 		else
 		{
@@ -254,28 +256,31 @@ final class View implements SingletonCompletable, ArrayAccess
 			{
 				$inc[] = $item->full_path;
 			}
-			$cache->write($inc);
+			$cache->export($inc);
 		}
 
 		if( count($inc) )
 		{
 			foreach($inc as $file)
 			{
-				\E\IncludeFile($file, ["view" => $this], false, true);
+				Helper::includeFile($file, ["view" => $this], false, true);
 			}
 		}
 
 		unset($cache, $inc);
 	}
 
-	public function setKeysAsProtected($keys)
+	public function setProtectedKeys( ... $keys )
 	{
-		if( !is_array($keys) ) {
-			$keys = [$keys];
+		if( count($keys) === 1 && is_array($keys[0]) )
+		{
+			$keys = $keys[0];
 		}
 
-		foreach($keys as $key) {
-			if( ! in_array($key, $this->protected, true) ) {
+		foreach($keys as $key)
+		{
+			if( ! in_array($key, $this->protected, true) )
+			{
 				$this->protected[] = $key;
 			}
 		}
@@ -291,6 +296,11 @@ final class View implements SingletonCompletable, ArrayAccess
 		else {
 			return in_array($name, $this->protected, true);
 		}
+	}
+
+	public function getProtectedKeys(): array
+	{
+		return $this->protected;
 	}
 
 	// global data
@@ -395,6 +405,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	 * Use RenderGetOnEvent event before return item value
 	 *
 	 * @example <?= $view->getOn("content") ?>
+	 * @example <?= $view->getOn("page_title") ?>
 	 *
 	 * @param string $name name or path
 	 * @param string $default default result value
@@ -658,14 +669,80 @@ final class View implements SingletonCompletable, ArrayAccess
 		return $this;
 	}
 
-	public function getTplCache( $name, $path )
+	/**
+	 * @return int
+	 */
+	public function getDepth(): int
 	{
-		//
+		return $this->depth;
 	}
 
-	public function getTpl( $name, $local = null )
+	public function getTplClosure( string $name, \Closure $closure ): string
 	{
-		static $func, $level = 0, $init = false, $current_path = "";
+		if( $this->depth > 0 )
+		{
+			throw new \InvalidArgumentException("View process is run");
+		}
+
+		$this->template = $this->package->getTemplate($name);
+		$this->depth = 1;
+
+		$this->items['__local__'] =& new Prop();
+		$this->items['__level__'] = $this->depth;
+		$this->items['__template__'] = $name;
+
+		$body = (string) $closure($this);
+		$this->depth = 0;
+
+		// back parent local
+		unset($this->items['__local__'], $this->items['__template__'], $this->items['__level__']);
+
+		// replace plugin data (delay and short_tags) too, default YES
+		$replace_plugin_content = $this->template->getOr("replace_plugin_content", true);
+		$keys = $replace_plugin_content ? array_keys($this->plugin) : [];
+
+		// replace delay variables, default YES
+		if( $this->template->getOr("replace_delay", true) )
+		{
+			$depth = (int) $this->template->getOr("delay_depth", 1);
+			$body = $this->replaceDelay( $body, $depth );
+			if($replace_plugin_content)
+			{
+				foreach($keys as $key)
+				{
+					$this->plugin[$key]["content"] = $this->replaceDelay($this->plugin[$key]["content"], $depth);
+				}
+			}
+		}
+
+		// replace short tags, default NO
+		if( $this->template->get("replace_short_tag") )
+		{
+			$depth = (int) $this->template->getOr("short_tag_depth", 1);
+			$body = $this->replaceShortTag($body, false, $depth);
+			if($replace_plugin_content)
+			{
+				foreach($keys as $key)
+				{
+					$this->plugin[$key]["content"] = $this->replaceShortTag($this->plugin[$key]["content"], false, $depth);
+				}
+			}
+		}
+
+		// dispatch render complete event
+		// update body
+		$event = new RenderCompleteEvent( $this->template, $body );
+		EventManager::dispatch($event);
+		$body = $event->getParam("body");
+
+		$this->template = null;
+
+		return $body;
+	}
+
+	public function getTpl( string $name, array $local = null ): string
+	{
+		static $func, $init = false, $current_path = "";
 
 		if( !$init )
 		{
@@ -684,7 +761,7 @@ final class View implements SingletonCompletable, ArrayAccess
 			};
 		}
 
-		if( $level > $this->iterationLimit )
+		if( $this->depth > $this->iterationLimit )
 		{
 			return "[iteration limit]";
 		}
@@ -694,7 +771,7 @@ final class View implements SingletonCompletable, ArrayAccess
 			$local = [];
 		}
 
-		$root = $level < 1;
+		$root = $this->depth < 1;
 		$back = $current_path;
 		if( $root )
 		{
@@ -719,7 +796,7 @@ final class View implements SingletonCompletable, ArrayAccess
 			}
 		}
 
-		++ $level;
+		++ $this->depth;
 
 		// create global local array link
 		if( !empty($this->items['__local__']) )
@@ -732,19 +809,19 @@ final class View implements SingletonCompletable, ArrayAccess
 
 		$parentTemplate = $local->getOr("__template__", null);
 		$this->items['__local__'] =& $local;
-		$this->items['__level__'] = $level;
+		$this->items['__level__'] = $this->depth;
 		$this->items['__template__'] = $name;
 
 		ob_start();
 		$body = $func( $path, $name, $local );
 		$tpl  = ob_get_contents();
 		ob_end_clean();
-		-- $level;
+		-- $this->depth;
 
 		// back parent local
 		unset($this->items['__local__'], $this->items['__template__'], $this->items['__level__']);
-		if( $level ) {
-			$this->items['__level__'] = $level;
+		if( $this->depth ) {
+			$this->items['__level__'] = $this->depth;
 			if( $parentTemplate ) {
 				$this->items['__template__'] = $parentTemplate;
 			}
@@ -807,7 +884,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		return $body;
 	}
 
-	public function tplExists( $template )
+	public function tplExists( string $template ): bool
 	{
 		return $this->package->getTplPath( $template ) !== false;
 	}
@@ -821,11 +898,11 @@ final class View implements SingletonCompletable, ArrayAccess
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function getPlugin( $name, array $data = [], $rawResult = false )
+	public function getPlugin( string $name, array $data = [], bool $rawResult = false )
 	{
 		if( ! isset($this->plugins[$name]) )
 		{
-			return "Plugin '{$name}' not found.";
+			return "The '{$name}' plugin not found";
 		}
 
 		$plug = $this->plugins[$name];
@@ -836,16 +913,18 @@ final class View implements SingletonCompletable, ArrayAccess
 		}
 
 		/** @var Plugin $plugin */
-		$plugin = new $class_name( $data, $this );
+		$plugin = new $class_name($data);
 
 		if( !$plugin instanceof Plugin )
 		{
-			throw new \Exception("Plugin must be inherited of \\EApp\\Proto\\Plugin", 500);
+			throw new \RuntimeException("Plugin must be inherited of " . Plugin::class, 500);
 		}
 
 		if( $rawResult )
 		{
-			return $plugin->getContent();
+			return $plugin
+				->load()
+				->getPluginData();
 		}
 
 		$cache_type = $plugin->cacheType();
@@ -865,12 +944,15 @@ final class View implements SingletonCompletable, ArrayAccess
 			$cache = new Cache( $id, "plugin/" . $cache_name, $cache_data );
 			if( $cache->ready() )
 			{
-				$content = $cache->getContentData();
+				$content = $cache->import();
 			}
 			else
 			{
-				$content = $plugin->getContent();
-				$cache->write($content);
+				$content = $plugin
+					->load()
+					->render($this);
+
+				$cache->export($content);
 			}
 
 			if($cache_view) {
@@ -879,19 +961,21 @@ final class View implements SingletonCompletable, ArrayAccess
 		}
 		else
 		{
-			$content = $plugin->getContent();
+			$content = $plugin
+				->load()
+				->render($this);
 		}
 
 		$number = $this->plugin_index ++;
 		$hash = md5(mt_rand( 1000, 100000 )) . "-" . time();
 		$this->plugin[$number] = [
-			"package"   => $plug["package_name"],
-			"name"      => $name,
-			"cache"     => $cache_type,
-			"cacheData" => $plugin->cacheData(),
-			"content"   => $content,
-			"data"      => $data,
-			"hash"      => $hash
+			"package"       => $plug["package_name"],
+			"name"          => $name,
+			"cache"         => $cache_type,
+			"cache_data"    => $plugin->cacheData(),
+			"content"       => $content,
+			"data"          => $data,
+			"hash"          => $hash
 		];
 
 		return '{plugin:' . $number . ':' . $hash . '}';
@@ -1158,10 +1242,13 @@ final class View implements SingletonCompletable, ArrayAccess
 
 				else
 				{
-					/** @var \EApp\Plugin\Interfaces\PluginShotable $plugin */
+					/** @var \EApp\Plugin\Interfaces\PluginShotable | \EApp\Proto\Plugin $plugin */
 					$plugin = new $class_name( $args, $this );
 					$plugin->toShortTag();
-					$get .= $plugin->getContent();
+					$get .= $plugin
+						->load()
+						->render($this);
+
 					unset($plugin);
 				}
 			}
@@ -1458,14 +1545,13 @@ final class View implements SingletonCompletable, ArrayAccess
 		{
 			$init  = true;
 			$cache = new Cache( "assets_time", ".system" );
-			if( $cache->ready() ) {
-				$data = $cache->getContentData();
-			}
+			if( $cache->ready() )
+				$data = $cache->import();
 
 			EventManager::listen("onSystem", function( SystemEvent $event ) use ( & $write, & $data, $cache ) {
 				if( $write && $event instanceof ShutdownEvent )
 				{
-					$cache->write( $data );
+					$cache->export( $data );
 				}
 			});
 		}

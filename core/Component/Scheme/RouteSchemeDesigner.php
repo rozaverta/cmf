@@ -25,14 +25,14 @@ class RouteSchemeDesigner extends SchemeDesigner
 	 */
 	public $module_id;
 
-	public $path;
+	public $type = "path";
+
+	public $rule = "";
 
 	/**
 	 * @var array | object | string
 	 */
-	public $properties;
-
-	public $type = "path";
+	public $properties = [];
 
 	public function __construct()
 	{
@@ -55,28 +55,15 @@ class RouteSchemeDesigner extends SchemeDesigner
 			}
 		}
 
-		if( $this->path === "@index" || $this->path === "@all" || $this->path === "@404" )
+		if( $this->type === "path" )
 		{
-			$this->type = substr($this->path, 1);
+			$this->rule = trim( $this->rule, "/" );
 		}
-		else if( preg_match('/^@(math|uri|query|of|host):(.+?)$/', $this->path, $m) )
+		else if( $this->type === "query" )
 		{
-			$type = $m[1];
-			$math = $m[2];
-
-			$this->type = $type;
-
-			if( $type == "query" )
-			{
-				$math = [];
-				parse_str( $m[2], $math );
-			}
-
-			$this->{$type} = $math;
-		}
-		else
-		{
-			$this->path = trim( $this->path, "/" );
+			$rule = $this->rule;
+			$this->rule = [];
+			parse_str( $rule, $this->rule );
 		}
 	}
 }

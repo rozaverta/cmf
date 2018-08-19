@@ -32,7 +32,7 @@ class Table extends TableData
 
 		if( $this->cache->ready() )
 		{
-			$data = $this->cache->getContentData();
+			$data = $this->cache->import();
 
 			parent::__construct(
 				$data["table_name"],
@@ -62,7 +62,7 @@ class Table extends TableData
 
 	public function reloadDataBase()
 	{
-		$this->cache->clean();
+		$this->cache->forget();
 
 		$loader = $this->getLoader($this->getTableName());
 		$module = $loader->getModule();
@@ -106,7 +106,7 @@ class Table extends TableData
 
 	private function writeCache()
 	{
-		$this->cache->write([
+		$this->cache->export([
 			"table_name" => $this->getTableName(),
 			"module" => $this->getModule(),
 			"items" => $this->items,

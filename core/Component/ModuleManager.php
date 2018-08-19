@@ -34,7 +34,7 @@ class ModuleManager implements Arrayable
 
 		if( $cache->ready() )
 		{
-			$this->items = $cache->getContentData();
+			$this->items = $cache->import();
 			foreach($this->items as $item)
 			{
 				$this->names[$item["name"]] = $item["id"];
@@ -55,7 +55,7 @@ class ModuleManager implements Arrayable
 					"path" => $item->path,
 				];
 			}
-			$cache->write($this->items);
+			$cache->export($this->items);
 		}
 	}
 

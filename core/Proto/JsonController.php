@@ -27,30 +27,30 @@ abstract class JsonController extends Controller implements ControllerContentOut
 
 		App::Response()->header("Content-Type", "application/json; charset=utf-8");
 		EventManager::listen(
-			"onSystemException",
+			"onThrowable",
 			function( ThrowableEvent $event )
 			{
-				$code = $event->exception->getCode();
+				$code = $event->throwable->getCode();
 				if( ! $event->app->loadIs('Controller') || $event->app->Controller !== $this || in_array( $code, [403, 404, 500] ) )
 				{
 					return null;
 				}
 
 				// hide sql query
-				$this->pageData =
+				$this->page_data =
 					[
 						"status" => "error",
-						"message" => $event->exception instanceof QueryException ? 'DataBase fatal error' : $event->exception->getMessage()
+						"message" => $event->throwable instanceof QueryException ? 'DataBase fatal error' : $event->throwable->getMessage()
 					];
 
 				if( $code )
 				{
-					$this->pageData['code'] = $code;
+					$this->page_data['code'] = $code;
 				}
 
 				return function()
 				{
-					$this->output();
+					defined("CONSOLE_MODE") && CONSOLE_MODE || $this->output();
 				};
 			});
 	}
@@ -62,32 +62,18 @@ abstract class JsonController extends Controller implements ControllerContentOut
 
 	public function output()
 	{
-		if( is_object($this->pageData) )
+		if( !isset( $this->page_data["status"] ) )
 		{
-			$json = get_object_vars($this->pageData);
-		}
-		else if( !is_array( $this->pageData ) )
-		{
-			$json = ["response" => $this->pageData ];
-		}
-		else {
-			$json = $this->pageData;
+			$this->page_data["status"] = "ok";
 		}
 
-		$this->pageData = [];
-
-		if( !isset( $json["status"] ) )
+		if( Prop::cache('system')->get('debug') && ! isset($this->page_data['debug']) )
 		{
-			$json["status"] = "ok";
-		}
-
-		if( Prop::cache('system')->get('debug') && !isset($json['debug']) )
-		{
-			$json['debug'] = [
+			$this->page_data['debug'] = [
 				'time' => microtime(true) - NOW_MICROTIME
 			];
 		}
 
-		App::Response()->json($json);
+		App::Response()->json($this->page_data);
 	}
 }

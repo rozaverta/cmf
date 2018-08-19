@@ -13,7 +13,16 @@ use EApp\Component\Module;
 interface ModuleComponent
 {
 	/**
+	 * Get module instance
+	 *
 	 * @return \EApp\Component\Module
 	 */
 	public function getModule(): Module;
+
+	/**
+	 * Get module id
+	 *
+	 * @return int
+	 */
+	public function getModuleId(): int;
 }

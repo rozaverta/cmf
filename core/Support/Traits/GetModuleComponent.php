@@ -12,6 +12,9 @@ use EApp\Component\Module;
 
 trait GetModuleComponent
 {
+	/**
+	 * @var Module | null
+	 */
 	protected $module;
 
 	/**
@@ -22,6 +25,16 @@ trait GetModuleComponent
 	public function getModule(): Module
 	{
 		return $this->module;
+	}
+
+	/**
+	 * Get module id
+	 *
+	 * @return int
+	 */
+	public function getModuleId(): int
+	{
+		return $this->module->getId();
 	}
 
 	/**

@@ -222,7 +222,7 @@ set_exception_handler(static function( $exception )
 				$compact = compact('title', 'head_title', 'message', 'mode', 'is_error', 'replace');
 				$compact['charset'] = 'utf-8';
 				ob_start();
-				\E\IncludeFile($file, $compact);
+				\Eapp\Helper::includeFile($file, $compact);
 				$body = ob_get_contents();
 				ob_end_clean();
 			}

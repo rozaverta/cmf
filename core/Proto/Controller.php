@@ -12,17 +12,22 @@ use EApp\Prop;
 use EApp\Component\Module;
 use EApp\Support\Interfaces\Loggable;
 use EApp\Support\Traits\GetIdentifier;
+use EApp\Support\Traits\GetModuleComponent;
 use EApp\Support\Traits\LoggableTrait;
 use EApp\Support\Traits\Get;
+use EApp\System\Interfaces\ModuleComponent;
 
-abstract class Controller implements Loggable
+abstract class Controller implements Loggable, ModuleComponent
 {
 	use LoggableTrait;
 	use Get;
 	use GetIdentifier;
+	use GetModuleComponent;
 
 	protected $items = [];
+
 	protected $name = false;
+
 	protected $cacheable = false;
 
 	/**
@@ -31,23 +36,16 @@ abstract class Controller implements Loggable
 	protected $properties;
 
 	/**
-	 * @var \EApp\Component\Module
+	 * @var array
 	 */
-	protected $module;
-
-	/**
-	 * @var array | object
-	 */
-	protected $pageData = [];
-
-	abstract public function ready();
+	protected $page_data = [];
 
 	public function __construct( Module $module, array $data = [] )
 	{
 		$name = get_class($this);
-		if( strpos($name, $module->get('name_space')) !== 0 )
+		if( strpos($name, $module->getNameSpace()) !== 0 )
 		{
-			throw new \Exception("Invalid current module");
+			throw new \InvalidArgumentException("Invalid current module");
 		}
 
 		if( isset($data['id']) )
@@ -62,17 +60,24 @@ abstract class Controller implements Loggable
 
 		unset($data['id'], $data['cacheable']);
 
-		$this->module = $module;
-		$this->properties = new Prop();
+		$this->setModule($module);
 		$this->items = $data;
+		$this->properties = new Prop();
 	}
 
-	public function name()
+	abstract public function ready();
+
+	/**
+	 * Get controller name
+	 *
+	 * @return string
+	 */
+	public function getName(): string
 	{
 		if( !$this->name )
 		{
-			$name = $this->module->get('key');
-			if( preg_match('/Controller\\\\(.*?)$/', get_class($this), $e ) )
+			$name = $this->getModule()->getKey();
+			if( preg_match('/Controllers\\\\(.*?)$/', get_class($this), $e ) )
 			{
 				$name .= '::' . preg_replace_callback( '/[A-Z]/', static function( $m ) { return '_' . lcfirst( $m[0] ); }, lcfirst( $e[1] ) );
 				$name  = str_replace( '\\', ':', $name );
@@ -83,30 +88,38 @@ abstract class Controller implements Loggable
 		return $this->name;
 	}
 
-	public function cacheable()
+	public function isCacheable(): bool
 	{
 		return $this->cacheable;
-	}
-
-	public function module()
-	{
-		return $this->module;
 	}
 
 	// for override
 	public function complete() {}
 
 	/**
+	 * @param string $name
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function getProperty( string $name, $default = false )
+	{
+		return $this->properties->getOr($name, $default);
+	}
+
+	/**
 	 * @return array
 	 */
-	public function properties()
+	public function getProperties(): array
 	{
 		return $this->properties->getAll();
 	}
 
-	public function pageData()
+	/**
+	 * @return array
+	 */
+	public function getPageData(): array
 	{
-		return $this->pageData;
+		return $this->page_data;
 	}
 
 	/**
@@ -120,7 +133,7 @@ abstract class Controller implements Loggable
 	{
 		if( $name instanceof Module )
 		{
-			$name = $name->get("key");
+			$name = $name->getKey();
 		}
 
 		return $this->module->support($name) && method_exists($this, $method);

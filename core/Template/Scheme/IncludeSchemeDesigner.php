@@ -10,6 +10,7 @@ namespace EApp\Template\Scheme;
 
 use EApp\Component\Module;
 use EApp\Database\Schema\SchemeDesigner;
+use EApp\Helper;
 
 class IncludeSchemeDesigner extends SchemeDesigner
 {
@@ -64,9 +65,9 @@ class IncludeSchemeDesigner extends SchemeDesigner
 		$path = [];
 		if( $this->module_id > 0 )
 		{
-			$path["module"] = Module::cache($this->module_id)->get("path");
+			$path["module"] = Module::cache($this->module_id)->getPath();
 		}
 
-		$this->full_path = \E\Path($this->path, false, $path);
+		$this->full_path = Helper::path($this->path, false, $path);
 	}
 }

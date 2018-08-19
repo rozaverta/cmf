@@ -9,16 +9,20 @@
 namespace EApp\System\Fs;
 
 use EApp\Component\Module;
+use EApp\Helper;
 use EApp\ModuleCore;
 use EApp\Support\Exceptions\FileReadyException;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Exceptions\ReadyException;
 use EApp\Support\Json;
 use EApp\Support\Traits\Get;
+use EApp\Support\Traits\GetModuleComponent;
+use EApp\System\Interfaces\ModuleComponent;
 
-class FileResource
+class FileResource implements ModuleComponent
 {
 	use Get;
+	use GetModuleComponent;
 
 	protected $file;
 	protected $ready = false;
@@ -27,11 +31,6 @@ class FileResource
 	protected $name  = '';
 	protected $path  = '';
 	protected $raw   = '{}';
-
-	/**
-	 * @var Module|null
-	 */
-	protected $module = null;
 
 	/**
 	 * FileResource constructor.
@@ -54,18 +53,28 @@ class FileResource
 			throw new \InvalidArgumentException("The resource must be a json data file.");
 		}
 
+		if($module)
+		{
+			$this->setModule($module);
+		}
+
 		if( $file[0] === '@' )
 		{
-			$file = \E\Path($file);
+			$data = [];
+			if($this->hasModule())
+			{
+				$data["module"] = $this->getModule()->getPath();
+				$data["module_resources"] = $this->getModule()->getPath() . "resources" . DIRECTORY_SEPARATOR;
+			}
+			$file = Helper::path($file, ".json", $data);
 		}
 		else
 		{
-			if($module)
+			if($this->hasModule())
 			{
-				$this->module = $module;
 				if($module_cache_version)
 				{
-					$directory = APP_DIR . "resources" . DIRECTORY_SEPARATOR . $module->getId() . DIRECTORY_SEPARATOR;
+					$directory = APP_DIR . "resources" . DIRECTORY_SEPARATOR . $this->getModuleId() . DIRECTORY_SEPARATOR;
 					if(is_string($module_cache_version) || is_int($module_cache_version))
 					{
 						$directory .= $module_cache_version . DIRECTORY_SEPARATOR;
@@ -79,7 +88,7 @@ class FileResource
 					}
 					else
 					{
-						$directory = $module->get("path");
+						$directory = $this->getModule()->getPath();
 					}
 					$directory .= "resources" . DIRECTORY_SEPARATOR;
 				}
@@ -111,11 +120,6 @@ class FileResource
 		$this->file = $file;
 		$this->path = $end === false ? "" : substr($file, 0, $end + 1);
 		$this->name = $end === false ? substr($file, 0, $dot) : substr($file, $end + 1, $dot - $end - 1);
-	}
-
-	public function getModule()
-	{
-		return $this->module;
 	}
 
 	public function ready()

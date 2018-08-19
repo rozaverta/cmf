@@ -14,7 +14,8 @@
 		"template_packages",
 		"events",
 		"event_callback",
-		"event_lnk"
+		"event_lnk",
+		"cache"
 	],
 	"packages": [
 		"main"

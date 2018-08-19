@@ -8,6 +8,7 @@
 
 namespace EApp\Http\Collections;
 
+use EApp\Helper;
 use EApp\Support\Collection;
 use EApp\Support\Str;
 
@@ -82,7 +83,7 @@ class HeaderCollection extends Collection
 		{
 			return $this->items[$name];
 		}
-		return \E\Value($default_value);
+		return Helper::value($default_value);
 	}
 
 	/**

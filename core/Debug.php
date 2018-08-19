@@ -17,7 +17,7 @@ final class Debug
 
 	public static function dbTiming()
 	{
-		if( \DB::loaded() )
+		if( \DB::hasInstance() )
 		{
 			return \DB::connection()->getTiming();
 		}
@@ -29,7 +29,7 @@ final class Debug
 
 	public static function dbQueries()
 	{
-		if( \DB::loaded() )
+		if( \DB::hasInstance() )
 		{
 			return \DB::connection()->getQueries();
 		}

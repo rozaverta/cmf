@@ -8,6 +8,7 @@
 
 namespace EApp\Component\Driver\Tools;
 
+use EApp\Helper;
 use EApp\Support\Traits\Get;
 use EApp\Support\Traits\Set;
 use EApp\Support\Traits\Write;
@@ -48,7 +49,7 @@ class FileConfig
 		$this->items = [];
 		if( $this->fileExists() )
 		{
-			$this->items = \E\IncludeContentFile( $this->file );
+			$this->items = Helper::includeImport( $this->file );
 			return true;
 		}
 		else

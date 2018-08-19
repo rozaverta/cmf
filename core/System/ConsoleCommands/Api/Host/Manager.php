@@ -10,6 +10,7 @@ namespace EApp\System\ConsoleCommands\Api\Host;
 
 use Countable;
 use EApp\App;
+use EApp\Helper;
 use EApp\Support\Collection;
 use EApp\Support\Str;
 use EApp\Support\Traits\SingletonInstance;
@@ -70,7 +71,7 @@ class Manager implements Countable
 				}
 			}
 
-			\E\Tap($file, function(string $file) {
+			Helper::tap($file, function(string $file) {
 
 				/** @noinspection PhpUnusedLocalVariableInspection */
 				$remove_host_data = false;

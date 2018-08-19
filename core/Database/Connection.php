@@ -27,6 +27,12 @@ class Connection implements ConnectionInterface
 	use DetectsLostConnectionsTrait;
 	use Concerns\ManagesTransactions;
 
+	const FETCH_ASSOC   = PDO::FETCH_ASSOC;
+	const FETCH_OBJ     = PDO::FETCH_OBJ;
+	const FETCH_BOUND   = PDO::FETCH_BOUND;
+	const FETCH_COLUMN  = PDO::FETCH_COLUMN;
+	const FETCH_NUM     = PDO::FETCH_NUM;
+
 	/**
 	 * The active PDO connection.
 	 *

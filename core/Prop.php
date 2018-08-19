@@ -89,7 +89,7 @@ class Prop implements ArrayAccess, Countable, Arrayable
 		$file = APP_DIR . "config" . DIRECTORY_SEPARATOR . $name . '.php';
 		if( file_exists( $file ) )
 		{
-			$data = \E\IncludeContentFile($file);
+			$data = Helper::includeImport($file);
 			$exists = true;
 		}
 

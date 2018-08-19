@@ -8,9 +8,7 @@
 
 namespace EApp\Component;
 
-
 use EApp\Component\Scheme\RouteSchemeDesigner;
-use EApp\ModuleCore;
 use EApp\Support\Exceptions\NotFoundException;
 use EApp\Support\Traits\Get;
 use EApp\Support\Traits\GetIdentifier;
@@ -27,9 +25,9 @@ class MountPoint implements ModuleComponent
 
 	private $module_id;
 
-	protected $path;
-
 	protected $type;
+
+	protected $rule;
 
 	protected $items;
 
@@ -40,9 +38,36 @@ class MountPoint implements ModuleComponent
 		$this->id = $scheme->id;
 		$this->module_id = $scheme->module_id;
 		$this->scheme = $scheme;
-		$this->path = $scheme->path;
 		$this->type = $scheme->type;
+		$this->rule = $scheme->rule;
 		$this->items = $scheme->properties;
+	}
+
+	public function __set_state( $data )
+	{
+		if( ! isset($data["id"], $data["module_id"], $data["type"]) || ! is_int($data["id"]) )
+		{
+			throw new \InvalidArgumentException(__CLASS__ . "::" . __METHOD__ . " 'id' property is not used");
+		}
+
+		$ref = new \ReflectionClass(RouteSchemeDesigner::class);
+
+		/** @var RouteSchemeDesigner $scheme */
+		$scheme = $ref->newInstanceWithoutConstructor();
+
+		$scheme->id = $data["id"];
+		$scheme->module_id = $data["module_id"];
+		$scheme->properties = $data["items"] ?? [];
+		$scheme->type = $data["type"];
+		$scheme->rule = $data["rule"] ?? "";
+
+		$instance = new self($scheme);
+		if( isset($data["module"]) )
+		{
+			$instance->module = $data["module"];
+		}
+
+		return $instance;
 	}
 
 	/**
@@ -88,17 +113,9 @@ class MountPoint implements ModuleComponent
 	{
 		if( !isset($this->module) )
 		{
-			$this->module = $this->module_id === 0 ? new ModuleCore() : Module::cache($this->module_id);
+			$this->module = Module::cache($this->module_id);
 		}
 		return $this->module;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getPath(): string
-	{
-		return $this->path;
 	}
 
 	/**
@@ -107,5 +124,29 @@ class MountPoint implements ModuleComponent
 	public function getType(): string
 	{
 		return $this->type;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getModuleId(): int
+	{
+		return $this->module_id;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isRule(): bool
+	{
+		return is_string($this->rule) ? strlen($this->rule) > 0 : ! is_null($this->rule);
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getRule()
+	{
+		return is_null($this->rule) ? "" : $this->rule;
 	}
 }
