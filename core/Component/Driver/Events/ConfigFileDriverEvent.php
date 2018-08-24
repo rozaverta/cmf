@@ -8,8 +8,8 @@
 
 namespace EApp\Component\Driver\Events;
 
-use EApp\System\Events\SystemDriverEvent;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Events\SystemDriverEvent;
+use EApp\Interfaces\SystemDriverInterface;
 
 /**
  * Class ConfigFileDriverEvent
@@ -20,7 +20,7 @@ class ConfigFileDriverEvent extends SystemDriverEvent
 {
 	private $aborted = false;
 
-	public function __construct( SystemDriver $driver )
+	public function __construct( SystemDriverInterface $driver )
 	{
 		parent::__construct( $driver, "update");
 	}

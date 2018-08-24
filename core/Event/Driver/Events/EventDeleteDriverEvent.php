@@ -8,8 +8,8 @@
 
 namespace EApp\Event\Driver\Events;
 
-use EApp\System\Events\SystemDriverEvent;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Events\SystemDriverEvent;
+use EApp\Interfaces\SystemDriverInterface;
 
 /**
  * Class EventDeleteDriverEvent
@@ -20,7 +20,7 @@ use EApp\System\Interfaces\SystemDriver;
  */
 class EventDeleteDriverEvent extends SystemDriverEvent
 {
-	public function __construct( SystemDriver $driver, string $event_name )
+	public function __construct( SystemDriverInterface $driver, string $event_name )
 	{
 		parent::__construct( $driver, "delete", compact( 'event_name' ) );
 	}

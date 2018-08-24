@@ -80,7 +80,7 @@ class PluginSchemeDesigner extends SchemeDesigner
 			$module = Module::cache($this->module_id);
 			if( strpos($this->class_name, "\\") === false )
 			{
-				$this->class_name = $module->getNameSpace() . "Plugin\\" . $this->class_name;
+				$this->class_name = $module->getNamespace() . "Plugin\\" . $this->class_name;
 			}
 			$this->package_name = $module->getName();
 		}

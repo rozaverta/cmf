@@ -43,6 +43,16 @@ class ContextSchemeDesigner extends SchemeDesigner
 	public $host;
 
 	/**
+	 * @var int
+	 */
+	public $host_port;
+
+	/**
+	 * @var string
+	 */
+	public $host_scheme;
+
+	/**
 	 * @var string
 	 */
 	public $path;
@@ -61,6 +71,7 @@ class ContextSchemeDesigner extends SchemeDesigner
 	{
 		$this->id = (int) $this->id;
 		$this->is_default = $this->is_default > 0;
+		$this->host_port = (int) $this->host_port;
 
 		$q = (string) $this->query;
 		$this->query = [];

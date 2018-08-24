@@ -10,10 +10,10 @@ namespace EApp\Component;
 
 use EApp\Cache;
 use EApp\Support\Collection;
-use EApp\Support\Interfaces\Arrayable;
+use EApp\Interfaces\Arrayable;
 use EApp\Support\Str;
-use EApp\Support\Traits\Get;
-use EApp\Support\Traits\SingletonInstance;
+use EApp\Traits\GetTrait;
+use EApp\Traits\SingletonInstanceTrait;
 
 /**
  * Class ModuleManager
@@ -22,8 +22,8 @@ use EApp\Support\Traits\SingletonInstance;
  */
 class ModuleManager implements Arrayable
 {
-	use Get;
-	use SingletonInstance;
+	use GetTrait;
+	use SingletonInstanceTrait;
 
 	protected $items = [];
 	protected $names = [];
@@ -60,7 +60,7 @@ class ModuleManager implements Arrayable
 	}
 
 	/**
-	 * Get all install modules collection.
+	 * GetTrait all install modules collection.
 	 *
 	 * @return Collection
 	 */
@@ -134,7 +134,7 @@ class ModuleManager implements Arrayable
 		$id = $this->getId($name);
 		if( $id === false )
 		{
-			throw new \Exception("ModuleComponent '{$name}' not found");
+			throw new \Exception("ModuleComponentInterface '{$name}' not found");
 		}
 
 		return new Module($id, $cached);
@@ -147,7 +147,7 @@ class ModuleManager implements Arrayable
 	}
 
 	/**
-	 * Get the instance as an array.
+	 * GetTrait the instance as an array.
 	 *
 	 * @return array
 	 */

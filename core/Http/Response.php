@@ -96,7 +96,7 @@ class Response
 	{
 		$status_code   = $status_code ?: $this->default_status_code;
 
-		// Set our body and code using our internal methods
+		// SetTrait our body and code using our internal methods
 		$this->setBody($body);
 		$this->setCode($status_code);
 
@@ -115,7 +115,7 @@ class Response
 	}
 
 	/**
-	 * Get the HTTP protocol version
+	 * GetTrait the HTTP protocol version
 	 *
 	 * @return string
 	 */
@@ -125,7 +125,7 @@ class Response
 	}
 
 	/**
-	 * Set the HTTP protocol version
+	 * SetTrait the HTTP protocol version
 	 *
 	 * @param string $protocol_version
 	 * @return string|$this
@@ -139,7 +139,7 @@ class Response
 	}
 
 	/**
-	 * Set the response's body content
+	 * SetTrait the response's body content
 	 *
 	 * @param string $body  The body content string
 	 * @return $this
@@ -153,7 +153,7 @@ class Response
 	}
 
 	/**
-	 * Get the response's body content
+	 * GetTrait the response's body content
 	 *
 	 * @return string
 	 */
@@ -193,7 +193,7 @@ class Response
 	}
 
 	/**
-	 * Set the HTTP response code
+	 * SetTrait the HTTP response code
 	 *
 	 * @param int $code     The HTTP status code to send
 	 * @return $this
@@ -207,7 +207,7 @@ class Response
 	}
 
 	/**
-	 * Get the HTTP response code
+	 * GetTrait the HTTP response code
 	 *
 	 * @return int
 	 */

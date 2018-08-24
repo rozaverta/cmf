@@ -12,16 +12,16 @@ use ArrayAccess;
 use Countable;
 use EApp\Support\Str;
 use Traversable;
-use EApp\Support\Interfaces\Arrayable;
-use EApp\Support\Traits\Get;
-use EApp\Support\Traits\Set;
-use EApp\Support\Traits\Compare;
+use EApp\Interfaces\Arrayable;
+use EApp\Traits\GetTrait;
+use EApp\Traits\SetTrait;
+use EApp\Traits\CompareTrait;
 
 class Prop implements ArrayAccess, Countable, Arrayable
 {
-	use Get;
-	use Set;
-	use Compare;
+	use GetTrait;
+	use SetTrait;
+	use CompareTrait;
 
 	protected $items = [];
 
@@ -67,13 +67,13 @@ class Prop implements ArrayAccess, Countable, Arrayable
 	 * @param array $an_array
 	 * @return static
 	 */
-	public function __set_state($an_array)
+	public static function __set_state($an_array)
 	{
 		return new static($an_array["items"] ?? []);
 	}
 
 	/**
-	 * Get array data from file
+	 * GetTrait array data from file
 	 *
 	 * @param $name
 	 * @param bool $exists
@@ -102,7 +102,7 @@ class Prop implements ArrayAccess, Countable, Arrayable
 	}
 
 	/**
-	 * Get cache property from file
+	 * GetTrait cache property from file
 	 *
 	 * @param $name
 	 * @return Prop
@@ -200,7 +200,7 @@ class Prop implements ArrayAccess, Countable, Arrayable
 	}
 
 	/**
-	 * Get new property group
+	 * GetTrait new property group
 	 *
 	 * @param $name
 	 * @return Prop
@@ -239,7 +239,7 @@ class Prop implements ArrayAccess, Countable, Arrayable
 	}
 
 	/**
-	 * Set value for path.
+	 * SetTrait value for path.
 	 *
 	 * @example $this->pathSet( 'a.b.c', $value ) => $this->items['a']['b']['c'] = $value;
 	 *
@@ -327,7 +327,7 @@ class Prop implements ArrayAccess, Countable, Arrayable
 	}
 
 	/**
-	 * Get value from path.
+	 * GetTrait value from path.
 	 *
 	 * @param string $path
 	 * @return mixed
@@ -338,7 +338,7 @@ class Prop implements ArrayAccess, Countable, Arrayable
 	}
 
 	/**
-	 * Get value from path or get default value if not exists.
+	 * GetTrait value from path or get default value if not exists.
 	 *
 	 * @param string $path
 	 * @param mixed $default

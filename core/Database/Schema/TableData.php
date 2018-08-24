@@ -11,15 +11,15 @@ namespace EApp\Database\Schema;
 use EApp\Component\Module;
 use EApp\Prop;
 use EApp\Support\Collection;
-use EApp\Support\Interfaces\TypeOfInterface;
-use EApp\Support\Traits\GetModuleComponent;
-use EApp\System\Fs\FileResource;
-use EApp\System\Interfaces\ModuleComponent;
+use EApp\Interfaces\TypeOfInterface;
+use EApp\Traits\GetModuleComponentTrait;
+use EApp\Filesystem\Resource as ResourceFile;
+use EApp\Interfaces\ModuleComponentInterface;
 
-class TableData extends Collection implements ModuleComponent, TypeOfInterface
+class TableData extends Collection implements ModuleComponentInterface, TypeOfInterface
 {
 	use ExtraTrait;
-	use GetModuleComponent;
+	use GetModuleComponentTrait;
 
 	/**
 	 * @var string
@@ -36,18 +36,25 @@ class TableData extends Collection implements ModuleComponent, TypeOfInterface
 	 */
 	protected $filters;
 
+	/** @noinspection All */
+
+	/**
+	 * TableData constructor.
+	 *
+	 * @param string $table_name
+	 * @param Module $module
+	 * @param Collection $columns
+	 * @param Collection $indexes
+	 * @param Collection $filters
+	 * @param Prop $extra
+	 *
+	 */
 	public function __construct( string $table_name, Module $module, Collection $columns, Collection $indexes, Collection $filters, Prop $extra )
 	{
-		parent::__construct($columns);
-
-		$this->setModule($module);
-		$this->table_name = $table_name;
-		$this->indexes = $indexes;
-		$this->filters = $filters;
-		$this->extra = $extra;
+		$this->fill($table_name, $module, $columns, $indexes, $filters, $extra);
 	}
 
-	public static function createInstanceFromResource( FileResource $file )
+	public static function createInstanceFromResource( ResourceFile $file )
 	{
 		$loader = new ResourceLoader($file);
 
@@ -61,16 +68,22 @@ class TableData extends Collection implements ModuleComponent, TypeOfInterface
 		);
 	}
 
-	public function __set_state( $an_array )
+	public static function __set_state( $an_array )
 	{
-		return new self(
+		$ref = new \ReflectionClass(static::class);
+
+		/** @var static $instance */
+		$instance = $ref->newInstanceWithoutConstructor();
+		$instance->fill(
 			$an_array["table_name"],
 			$an_array["module"],
-			new Collection($an_array["items"]),
+			$an_array["items"],
 			$an_array["indexes"],
 			$an_array["filters"],
 			$an_array["extra"]
 		);
+
+		return $instance;
 	}
 
 	/**
@@ -82,7 +95,7 @@ class TableData extends Collection implements ModuleComponent, TypeOfInterface
 	}
 
 	/**
-	 * Get table name
+	 * GetTrait table name
 	 *
 	 * @return string
 	 */
@@ -108,7 +121,7 @@ class TableData extends Collection implements ModuleComponent, TypeOfInterface
 	}
 
 	/**
-	 * Get filter for one column
+	 * GetTrait filter for one column
 	 *
 	 * @param string $name
 	 * @return Filter|null
@@ -121,5 +134,15 @@ class TableData extends Collection implements ModuleComponent, TypeOfInterface
 	public function typeOf( & $value, $name = null ): bool
 	{
 		return $value instanceof Column && $value->getName() === $name;
+	}
+
+	protected function fill(string $table_name, Module $module, $items, Collection $indexes, Collection $filters, Prop $extra)
+	{
+		$this->table_name = $table_name;
+		$this->setModule($module);
+		$this->reload($items);
+		$this->indexes = $indexes;
+		$this->filters = $filters;
+		$this->extra = $extra;
 	}
 }

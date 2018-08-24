@@ -9,19 +9,20 @@
 namespace EApp\Component\Scheme;
 
 use EApp\Database\Schema\SchemeDesigner;
-use EApp\Support\Exceptions\NotFoundException;
+use EApp\Exceptions\NotFoundException;
+use EApp\Component\ModuleConfig;
 
 class ModuleSchemeDesigner extends SchemeDesigner
 {
 	/**
-	 * ModuleComponent unique identifier in the database table.
+	 * ModuleComponentInterface unique identifier in the database table.
 	 *
 	 * @var int
 	 */
 	public $id;
 
 	/**
-	 * ModuleComponent name (base directory for namespace)
+	 * ModuleComponentInterface name (base directory for namespace)
 	 *
 	 * @var string
 	 */
@@ -45,40 +46,41 @@ class ModuleSchemeDesigner extends SchemeDesigner
 
 	public $path;
 
+	/**
+	 * @var \EApp\Component\ModuleConfig $config
+	 */
+	protected $config;
+
 	public function __construct()
 	{
 		$this->id = (int) $this->id;
 		$this->install = $this->install > 0;
 		$name_space = empty($this->name_space) ? ('MD\\' . $this->name) : trim($this->name_space, '\\');
-		$class = $name_space . '\\Module';
+		$class_name = $name_space . '\\Module';
 
-		if( ! class_exists($class, true) )
+		if( ! class_exists($class_name, true) )
 		{
-			throw new NotFoundException("Module '{$this->name}' not found");
+			throw new NotFoundException("The '{$this->name}' module not found");
 		}
 
-		/**
-		 * @var \EApp\Component\ModuleConfig $module
-		 */
-
-		$module = new $class();
-		if( $module->name !== $this->name )
+		$this->config = new $class_name();
+		if( $this->config->name !== $this->name )
 		{
 			throw new \InvalidArgumentException("Failure config data for module '{$this->name}'");
 		}
 
-		$this->title = $module->title;
-		$this->route = $module->route;
-		$this->support = $module->support;
-		$this->version = $module->version;
-		$this->data = $module->extra;
-		$this->key = $module->getKey();
-		$this->name_space = $module->getNameSpace();
-		$this->path = $module->getPath();
+		$this->title = $this->config->title;
+		$this->route = $this->config->route;
+		$this->support = $this->config->support;
+		$this->version = $this->config->version;
+		$this->data = $this->config->extra;
+		$this->key = $this->config->getKey();
+		$this->name_space = $this->config->getNamespace();
+		$this->path = $this->config->getPath();
 	}
 
 	/**
-	 * Get the instance as an array.
+	 * GetTrait the instance as an array.
 	 *
 	 * @return array
 	 */
@@ -97,5 +99,13 @@ class ModuleSchemeDesigner extends SchemeDesigner
 				"name_space" => $this->name_space,
 				"path" => $this->path,
 			];
+	}
+
+	/**
+	 * @return \EApp\Component\ModuleConfig
+	 */
+	public function getConfig(): ModuleConfig
+	{
+		return $this->config;
 	}
 }

@@ -8,14 +8,14 @@
 
 namespace EApp\Database\Schema;
 
-use EApp\Support\Interfaces\Arrayable;
+use EApp\Interfaces\Arrayable;
 use JsonSerializable;
 
 class SchemeDesigner implements SchemeDesignerInterface, Arrayable, JsonSerializable
 {
-	public function __set_state( $data )
+	public static function __set_state( $data )
 	{
-		$ref = new \ReflectionClass( static::class );
+		$ref = new \ReflectionClass(static::class);
 		$instance = $ref->newInstanceWithoutConstructor();
 
 		foreach( $data as $key => $value )
@@ -27,13 +27,13 @@ class SchemeDesigner implements SchemeDesignerInterface, Arrayable, JsonSerializ
 	}
 
 	/**
-	 * Get the instance as an array.
+	 * GetTrait the instance as an array.
 	 *
 	 * @return array
 	 */
 	public function toArray()
 	{
-		return get_object_vars( $this );
+		return get_object_vars($this);
 	}
 
 	/**

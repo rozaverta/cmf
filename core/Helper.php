@@ -16,19 +16,19 @@ class Helper
 {
 	public static function isOsWindows(): bool
 	{
-		return strtolower(substr(PHP_OS, 0, 3)) === 'win';;
+		return strtolower(substr(PHP_OS, 0, 3)) === 'win';
 	}
 
 	public static function isSystemInstall( bool $reload = false ): bool
 	{
+		if( ! self::isSystemHost() )
+		{
+			return false;
+		}
+
 		if( defined("SYSTEM_INSTALL") )
 		{
 			return SYSTEM_INSTALL;
-		}
-
-		if( ! defined("APP_HOST") )
-		{
-			return false;
 		}
 
 		if( $reload )
@@ -40,6 +40,11 @@ class Helper
 		{
 			return (bool) Prop::cache("system")->getOr("install", false );
 		}
+	}
+
+	public static function isSystemHost(): bool
+	{
+		return defined("APP_HOST") && defined("APP_DIR");
 	}
 
 	public static function debug()
@@ -222,7 +227,7 @@ class Helper
 	}
 
 	/**
-	 * Get an item from an array or object using "dot" notation.
+	 * GetTrait an item from an array or object using "dot" notation.
 	 *
 	 * @param  mixed   $target
 	 * @param  string|array  $key

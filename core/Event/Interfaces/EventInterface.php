@@ -11,21 +11,21 @@ namespace EApp\Event\Interfaces;
 interface EventInterface
 {
 	/**
-	 * Get event name
+	 * GetTrait event name
 	 *
 	 * @return string
 	 */
 	public function getName(): string;
 
 	/**
-	 * Get all events parameters
+	 * GetTrait all events parameters
 	 *
 	 * @return array
 	 */
 	public function getParams(): array;
 
 	/**
-	 * Get event parameter by name
+	 * GetTrait event parameter by name
 	 *
 	 * @param string $name parameter name
 	 * @return mixed

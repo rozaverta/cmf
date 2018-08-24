@@ -10,8 +10,8 @@ namespace EApp\Support;
 
 use Closure;
 use EApp\Prop;
-use EApp\Support\Interfaces\Arrayable;
-use EApp\Support\Interfaces\Jsonable;
+use EApp\Interfaces\Arrayable;
+use EApp\Interfaces\Jsonable;
 use InvalidArgumentException;
 
 /**
@@ -108,7 +108,7 @@ class Json
 	 *
 	 * @param mixed  $value   The value being encoded
 	 * @param int    $options JSON encode option bitmask
-	 * @param int    $depth   Set the maximum depth. Must be greater than zero.
+	 * @param int    $depth   SetTrait the maximum depth. Must be greater than zero.
 	 *
 	 * @return string
 	 * @throws InvalidArgumentException if the JSON cannot be encoded.

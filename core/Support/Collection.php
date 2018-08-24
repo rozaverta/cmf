@@ -14,17 +14,17 @@ use Countable;
 use IteratorAggregate;
 use JsonSerializable;
 use Traversable;
-use EApp\Support\Traits\Compare;
-use EApp\Support\Traits\Get;
-use EApp\Support\Traits\Set;
-use EApp\Support\Interfaces\Arrayable;
-use EApp\Support\Interfaces\Jsonable;
+use EApp\Traits\CompareTrait;
+use EApp\Traits\GetTrait;
+use EApp\Traits\SetTrait;
+use EApp\Interfaces\Arrayable;
+use EApp\Interfaces\Jsonable;
 
 class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable, Countable, JsonSerializable
 {
-	use Get;
-	use Set;
-	use Compare;
+	use GetTrait;
+	use SetTrait;
+	use CompareTrait;
 
 	const EACH_USE_BOTH = 1;
 	const EACH_USE_KEY = 2;
@@ -173,7 +173,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * Get the first item from the collection.
+	 * GetTrait the first item from the collection.
 	 *
 	 * @param  callable|null  $callback
 	 * @param  mixed  $default
@@ -185,7 +185,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * Get the last item from the collection.
+	 * GetTrait the last item from the collection.
 	 *
 	 * @param  callable|null  $callback
 	 * @param  mixed  $default
@@ -197,7 +197,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * Get the values of a given key.
+	 * GetTrait the values of a given key.
 	 *
 	 * @param  string|array  $value
 	 * @param  string|null  $key
@@ -229,7 +229,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * Get the keys of the collection items.
+	 * GetTrait the keys of the collection items.
 	 *
 	 * @return self
 	 */
@@ -295,7 +295,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * Get the instance as an array.
+	 * GetTrait the instance as an array.
 	 *
 	 * @return array
 	 */
@@ -408,7 +408,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	 * @param array $an_array
 	 * @return static
 	 */
-	public function __set_state($an_array)
+	public static function __set_state($an_array)
 	{
 		return new static($an_array["items"] ?? []);
 	}

@@ -1,6 +1,7 @@
 {
 	"type": "#/system",
-	"name": "Elastic CMF (Anaconda)",
+	"name": "@core",
+	"title": "Elastic CMF (Anaconda)",
 	"version": "0.0.1",
 	"database_tables": [
 		"scheme_tables",
@@ -9,8 +10,7 @@
 		"plugins",
 		"context",
 		"context_module_link",
-		"template_data",
-		"template_includes",
+		"templates",
 		"template_packages",
 		"events",
 		"event_callback",

@@ -8,27 +8,26 @@
 
 namespace EApp\Component\Driver;
 
-use EApp\Component\Driver\Tools\FileConfig;
 use EApp\Database\Connection;
 use EApp\Database\Query\Expression;
 use EApp\Event\Dispatcher;
-use EApp\Event\Driver\EventCallbackDriver;
-use EApp\Event\Driver\EventDriver;
-use EApp\Support\Interfaces\Loggable;
-use EApp\Support\Traits\GetModuleComponent;
-use EApp\Support\Traits\LoggableTrait;
-use EApp\System\Interfaces\SystemDriver;
-use EApp\System\Fs\FileResource;
-use EApp\Support\Exceptions\NotFoundException;
+use EApp\Event\Driver\EventCallbackDriverInterface;
+use EApp\Event\Driver\EventDriverInterface;
+use EApp\Interfaces\Loggable;
+use EApp\Traits\GetModuleComponentTrait;
+use EApp\Traits\LoggableTrait;
+use EApp\Interfaces\SystemDriverInterface;
+use EApp\Filesystem\Resource;
+use EApp\Exceptions\NotFoundException;
 use EApp\Text;
 use InvalidArgumentException;
 
-abstract class ModuleComponentAbstract implements SystemDriver, Loggable
+abstract class ModuleComponentAbstract implements SystemDriverInterface, Loggable
 {
 	use Traits\DBALToolsTraits;
 	use Traits\ResourceBackup;
 	use LoggableTrait;
-	use GetModuleComponent;
+	use GetModuleComponentTrait;
 
 	protected $module_data = [];
 
@@ -48,7 +47,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 	protected $name_space = "";
 
 	/**
-	 * @var null | \EApp\System\Fs\FileResource
+	 * @var null | \EApp\Filesystem\Resource
 	 */
 	protected $manifest = null;
 
@@ -90,8 +89,8 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 
 	/**
 	 * @param null|string $name_space
-	 * @return \EApp\System\Fs\FileResource
-	 * @throws \EApp\Support\Exceptions\NotFoundException | \InvalidArgumentException
+	 * @return \EApp\Filesystem\Resource
+	 * @throws \EApp\Exceptions\NotFoundException | \InvalidArgumentException
 	 */
 	protected function getManifest( $name_space = null )
 	{
@@ -121,7 +120,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 				throw new InvalidArgumentException("Can not ready base module directory");
 			}
 
-			$this->manifest = new FileResource("manifest", $path . DIRECTORY_SEPARATOR . "resources");
+			$this->manifest = new Resource("manifest", $path . DIRECTORY_SEPARATOR . "resources");
 		}
 
 		return $this->manifest;
@@ -130,7 +129,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 	protected function addManifestListeners( Dispatcher $dispatcher )
 	{
 		$manifest = $this->getManifest();
-		$key = '@module:' . $manifest->getFile();
+		$key = '@module:' . $manifest->getPathname();
 
 		$dispatcher->register(function (Dispatcher $dispatcher) use ($manifest) {
 
@@ -256,7 +255,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 		$rec = $this->getResourceData("events", $dir, "#/event_collection");
 		if(count($rec))
 		{
-			$drv = new EventDriver($module);
+			$drv = new EventDriverInterface($module);
 			$drv->addLogTransport($this);
 			foreach($rec as $event)
 			{
@@ -284,7 +283,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 		$rec = $manifest->getOr("events", []);
 		if(count($rec))
 		{
-			$drv = new EventCallbackDriver($module);
+			$drv = new EventCallbackDriverInterface($module);
 			$drv->addLogTransport($this);
 			foreach( $rec as $class_name => $events )
 			{
@@ -407,7 +406,7 @@ abstract class ModuleComponentAbstract implements SystemDriver, Loggable
 		$result = [];
 
 		try {
-			$rec = new FileResource($name, $dir);
+			$rec = new Resource($name, $dir);
 			if($rec->getType() !== $type)
 			{
 				throw new \InvalidArgumentException("Invalid resource type ({$name})");

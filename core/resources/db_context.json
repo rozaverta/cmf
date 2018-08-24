@@ -32,9 +32,8 @@
 			"default": 0
 		},
 		{
-			"name": "host_ssl",
-			"type": "boolean",
-			"default": false
+			"name": "host_scheme",
+			"length": 10
 		},
 		{
 			"name": "path",

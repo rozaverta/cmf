@@ -1,0 +1,34 @@
+{
+	"type": "#/data_base_table",
+	"name": "templates",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "package_id",
+			"type": "integer"
+		},
+		{
+			"name": "name"
+		},
+		{
+			"name": "title"
+		},
+		{
+			"name": "properties",
+			"type": "text/json",
+			"default": "{}"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_package_id",
+			"fields": [
+				"package_id"
+			]
+		}
+	]
+}

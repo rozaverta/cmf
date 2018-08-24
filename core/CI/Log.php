@@ -9,7 +9,7 @@
 namespace EApp\CI;
 
 use EApp\Prop;
-use EApp\Support\Traits\SingletonInstance;
+use EApp\Traits\SingletonInstanceTrait;
 use EApp\Text;
 
 /**
@@ -20,7 +20,7 @@ use EApp\Text;
  */
 final class Log
 {
-	use SingletonInstance;
+	use SingletonInstanceTrait;
 
 	private $logs = [];
 	private $writeLevel = 0;
@@ -68,7 +68,7 @@ final class Log
 
 		if( $this->writeLevel === 0 || isset($this->levels[$log->level]) && $this->levels[$log->level] >= $this->writeLevel )
 		{
-			$this->logs[] = (string) $log->translateOff()->line();
+			$this->logs[] = (string) $log->setTranslate(false)->setLine();
 			return true;
 		}
 		else

@@ -55,6 +55,8 @@ class RouteSchemeDesigner extends SchemeDesigner
 			}
 		}
 
+		$this->type = strtolower($this->type);
+
 		if( $this->type === "path" )
 		{
 			$this->rule = trim( $this->rule, "/" );

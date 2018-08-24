@@ -10,16 +10,16 @@
 
 namespace EApp\Filesystem;
 
-use EApp\Filesystem\Exceptions\FileNotFoundException;
+use EApp\Filesystem\Exceptions\NotFoundFileException;
 use EApp\Helper;
-use EApp\Support\Traits\CallbackTrait;
-use EApp\Support\Traits\SingletonInstance;
+use EApp\Traits\CallbackTrait;
+use EApp\Traits\SingletonInstanceTrait;
 use ErrorException;
 use FilesystemIterator;
 
 class Filesystem
 {
-	use SingletonInstance;
+	use SingletonInstanceTrait;
 	use CallbackTrait;
 
 	/**
@@ -34,13 +34,13 @@ class Filesystem
 	}
 
 	/**
-	 * Get the contents of a file
+	 * GetTrait the contents of a file
 	 *
 	 * @param  string $path
 	 * @param  bool $lock
 	 * @return string
 	 *
-	 * @throws Exceptions\FileNotFoundException
+	 * @throws Exceptions\NotFoundFileException
 	 */
 	public function get( string $path, bool $lock = false )
 	{
@@ -48,11 +48,11 @@ class Filesystem
 		{
 			return $lock ? $this->sharedGet( $path ) : file_get_contents( $path );
 		}
-		throw new FileNotFoundException( "File does not exist at path {$path}" );
+		throw new NotFoundFileException($path, "File does not exist at path '{$path}'");
 	}
 
 	/**
-	 * Get contents of a file with shared access.
+	 * GetTrait contents of a file with shared access.
 	 *
 	 * @param  string $path
 	 * @return string
@@ -79,12 +79,12 @@ class Filesystem
 	}
 
 	/**
-	 * Get the returned value of a file
+	 * GetTrait the returned value of a file
 	 *
 	 * @param  string $path
 	 * @return mixed
 	 *
-	 * @throws FileNotFoundException
+	 * @throws NotFoundFileException
 	 */
 	public function getRequire( string $path )
 	{
@@ -95,17 +95,17 @@ class Filesystem
 				return require $file;
 			}, $path);
 		}
-		throw new FileNotFoundException( "File does not exist at path {$path}" );
+		throw new NotFoundFileException($path,"File does not exist at path '{$path}'" );
 	}
 
 	/**
-	 * Get the saved data value of a file
+	 * GetTrait the saved data value of a file
 	 *
 	 * @param  string $path
 	 * @param array $default
 	 * @return mixed
 	 *
-	 * @throws FileNotFoundException
+	 * @throws NotFoundFileException
 	 */
 	public function getRequireData( string $path, $default = [] )
 	{
@@ -117,11 +117,11 @@ class Filesystem
 				return $data ?? $default ?? null;
 			}, $path);
 		}
-		throw new FileNotFoundException( "File does not exist at path {$path}" );
+		throw new NotFoundFileException($path, "File does not exist at path '{$path}'");
 	}
 
 	/**
-	 * Get the MD5 hash of the file at the given path
+	 * GetTrait the MD5 hash of the file at the given path
 	 *
 	 * @param  string $path
 	 * @return string
@@ -173,7 +173,7 @@ class Filesystem
 	}
 
 	/**
-	 * Get or set UNIX mode of a file or directory
+	 * GetTrait or set UNIX mode of a file or directory
 	 *
 	 * @param  string $path
 	 * @param  int $mode
@@ -320,7 +320,7 @@ class Filesystem
 	}
 
 	/**
-	 * Get the file type of a given file.
+	 * GetTrait the file type of a given file.
 	 *
 	 * @param  string $path
 	 * @return string
@@ -331,7 +331,7 @@ class Filesystem
 	}
 
 	/**
-	 * Get the mime-type of a given file.
+	 * GetTrait the mime-type of a given file.
 	 *
 	 * @param  string $path
 	 * @return string|false
@@ -342,7 +342,7 @@ class Filesystem
 	}
 
 	/**
-	 * Get the file size of a given file.
+	 * GetTrait the file size of a given file.
 	 *
 	 * @param  string $path
 	 * @return int
@@ -353,7 +353,7 @@ class Filesystem
 	}
 
 	/**
-	 * Get the file's last modification time.
+	 * GetTrait the file's last modification time.
 	 *
 	 * @param  string $path
 	 * @return int
@@ -552,7 +552,7 @@ class Filesystem
 		try {
 			$allDirectories = Iterator::createInstance( $directory )->getDirectories();
 		}
-		catch( Exceptions\InvalidArgumentException $e ) { return false; }
+		catch( Exceptions\InvalidArgumentPathException $e ) { return false; }
 
 		if( $allDirectories->isNotEmpty() )
 		{

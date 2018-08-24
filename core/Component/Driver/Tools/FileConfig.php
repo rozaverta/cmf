@@ -9,15 +9,15 @@
 namespace EApp\Component\Driver\Tools;
 
 use EApp\Helper;
-use EApp\Support\Traits\Get;
-use EApp\Support\Traits\Set;
-use EApp\Support\Traits\Write;
+use EApp\Traits\GetTrait;
+use EApp\Traits\SetTrait;
+use EApp\Traits\Write;
 
 class FileConfig
 {
 	use Write;
-	use Set;
-	use Get;
+	use SetTrait;
+	use GetTrait;
 
 	protected $items = [];
 

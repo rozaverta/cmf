@@ -8,22 +8,22 @@
 
 namespace EApp\Component\Driver\Events;
 
-use EApp\System\Events\SystemDriverEvent;
-use EApp\System\Fs\FileResource;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Events\SystemDriverEvent;
+use EApp\Filesystem\Resource;
+use EApp\Interfaces\SystemDriverInterface;
 
 /**
  * Class ModuleRegisterDriverEvent
  *
  * @property string $module_name
  * @property string $name_space
- * @property FileResource $manifest
+ * @property \EApp\Filesystem\Resource $manifest
  *
  * @package EApp\Component\Driver\Events
  */
 class ModuleRegisterDriverEvent extends SystemDriverEvent
 {
-	public function __construct( SystemDriver $driver, string $module_name, string $name_space, FileResource $manifest )
+	public function __construct( SystemDriverInterface $driver, string $module_name, string $name_space, Resource $manifest )
 	{
 		parent::__construct( $driver, "register", compact('module_name', 'name_space', 'manifest') );
 	}

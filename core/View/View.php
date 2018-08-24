@@ -11,25 +11,22 @@ namespace EApp\View;
 use EApp\App;
 use EApp\Cache;
 use EApp\Event\EventManager;
-use EApp\Helper;
 use EApp\Plugin\QueryPlugins;
 use EApp\Plugin\Interfaces\PluginShotable;
 use EApp\Plugin\Scheme\PluginSchemeDesigner;
 use EApp\Prop;
-use EApp\Proto\Plugin;
-use EApp\Support\Interfaces\SingletonCompletable;
+use EApp\Plugin\Plugin;
+use EApp\Exceptions\NotFoundException;
+use EApp\Interfaces\SingletonCompletable;
 use EApp\Support\Str;
-use EApp\Support\Traits\Set;
-use EApp\System\Events\RenderCompleteEvent;
-use EApp\System\Events\RenderGetOnEvent;
-use EApp\System\Events\ShutdownEvent;
-use EApp\System\Events\SystemEvent;
-use EApp\Support\Traits\Get;
-use EApp\Support\Traits\Compare;
-use EApp\Support\Traits\SingletonInstance;
-use EApp\Template\Package;
-use EApp\Template\QueryIncludes;
-use EApp\Template\QueryPackages;
+use EApp\Traits\SetTrait;
+use EApp\Events\RenderCompleteEvent;
+use EApp\Events\RenderGetOnEvent;
+use EApp\Events\ShutdownEvent;
+use EApp\Events\SystemEvent;
+use EApp\Traits\GetTrait;
+use EApp\Traits\CompareTrait;
+use EApp\Traits\SingletonInstanceTrait;
 use ArrayAccess;
 
 /**
@@ -39,10 +36,10 @@ use ArrayAccess;
  */
 final class View implements SingletonCompletable, ArrayAccess
 {
-	use SingletonInstance;
-	use Get;
-	use Set;
-	use Compare;
+	use SingletonInstanceTrait;
+	use GetTrait;
+	use SetTrait;
+	use CompareTrait;
 
 	protected $items = [];
 
@@ -57,12 +54,12 @@ final class View implements SingletonCompletable, ArrayAccess
 	private $charset;
 
 	/**
-	 * @var \EApp\Template\Package
+	 * @var \EApp\View\Package
 	 */
 	private $package;
 
 	/**
-	 * @var null | \EApp\Template\Template
+	 * @var null | \EApp\View\Template
 	 */
 	private $template = null;
 
@@ -77,23 +74,23 @@ final class View implements SingletonCompletable, ArrayAccess
 	public function __construct( $conf = [] )
 	{
 		$app = App::getInstance();
-		$url = $app->Uri;
+		$url = $app->Url;
 
 		$this->items["language"]   = $app->Lang->getCurrent();
 		$this->items["site_name"]  = Prop::cache("system")->getOr("site_name", APP_HOST);
 		$this->items["page_title"] = $conf['page_title'] ?? $this->items["site_name"];
-		$this->items["assets"]     = $conf['assets']     ?? $url->base . ltrim( ASSETS_PATH, "/" );
+		$this->items["assets"]     = $conf['assets']     ?? $url->getBase() . ltrim( ASSETS_PATH, "/" );
 		$this->items["charset"]    = $this->charset = BASE_ENCODING;
 		$this->items["now"]        = time();
 		$this->items["from_cache"] = false;
-		$this->items["host"]       = $url->host;
-		$this->items["http"]       = BASE_PROTOCOL . "://" . $url->host;
+		$this->items["host"]       = $url->getHost();
+		$this->items["http"]       = BASE_PROTOCOL . "://" . $url->getHost();
 
 		// route
 
-		$this->items["route_url"]   = $url->url;
-		$this->items["route_base"]  = $url->base;
-		$this->items["route_path"]  = $url->path;
+		$this->items["route_url"]   = $url->getUrl();
+		$this->items["route_base"]  = $url->getBase();
+		$this->items["route_path"]  = $url->getPath();
 
 		$this->protected = array_keys($this->items);
 		$this->protected[] = "package";
@@ -201,7 +198,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	}
 
 	/**
-	 * @return \EApp\Template\Package
+	 * @return \EApp\View\Package
 	 */
 	public function getPackage()
 	{
@@ -209,7 +206,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	}
 
 	/**
-	 * @return \EApp\Template\Template|null
+	 * @return \EApp\View\Template|null
 	 */
 	public function getTemplate()
 	{
@@ -219,8 +216,9 @@ final class View implements SingletonCompletable, ArrayAccess
 	public function instanceComplete( App $app )
 	{
 		static $complete = false;
-		if( $complete ) {
-			throw new \Exception("The view pack instance has already been completed.");
+		if( $complete )
+		{
+			throw new \Exception("The view pack instance has already been completed");
 		}
 
 		$complete = true;
@@ -233,7 +231,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		}
 		else
 		{
-			/** @var \EApp\Template\Scheme\PackageSchemeDesigner $item */
+			/** @var \EApp\View\Scheme\TemplatePackagesSchemeDesigner $item */
 			foreach( (new QueryPackages())->get() as $item )
 			{
 				$this->packages[$item->name] = $item->id;
@@ -242,32 +240,6 @@ final class View implements SingletonCompletable, ArrayAccess
 		}
 
 		$this->usePackage( Prop::cache("system")->getOr("package", "main") );
-
-		$cache = new Cache('includes', 'template');
-		if( $cache->ready() )
-		{
-			$inc = $cache->import();
-		}
-		else
-		{
-			$inc = [];
-			/** @var \EApp\Template\Scheme\IncludeSchemeDesigner $item */
-			foreach( (new QueryIncludes())->get() as $item )
-			{
-				$inc[] = $item->full_path;
-			}
-			$cache->export($inc);
-		}
-
-		if( count($inc) )
-		{
-			foreach($inc as $file)
-			{
-				Helper::includeFile($file, ["view" => $this], false, true);
-			}
-		}
-
-		unset($cache, $inc);
 	}
 
 	public function setProtectedKeys( ... $keys )
@@ -419,7 +391,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	}
 
 	/**
-	 * Get an item from the collection by keys if value not empty.
+	 * GetTrait an item from the collection by keys if value not empty.
 	 *
 	 * @param array $keys
 	 * @param mixed $default default value
@@ -494,7 +466,7 @@ final class View implements SingletonCompletable, ArrayAccess
 			else {
 				$get .= $this->_srcRelativate( $src . $srcValue );
 				if( $ver ) {
-					if( $srv ) $get .= $this->_ver( $this->package->get('assets_path') . $dir . $file[$i] );
+					if( $srv ) $get .= $this->_ver( $this->package->getAssetsPath() . $dir . $file[$i] );
 					else $get .= "?v=" . $ver;
 				}
 			}
@@ -556,7 +528,7 @@ final class View implements SingletonCompletable, ArrayAccess
 			else {
 				$get .= $this->_srcRelativate( $src . $srcValue );
 				if( $ver ) {
-					if( $srv ) $get .= $this->_ver( $this->package->get('assets_path') . $dir . $file[$i] );
+					if( $srv ) $get .= $this->_ver( $this->package->getAssetsPath() . $dir . $file[$i] );
 					else $get .= "?v=" . $ver;
 				}
 			}
@@ -603,7 +575,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		}
 
 		$srv = !preg_match( $this->http, $img );
-		$ins = $this->package->get('assetsPath');
+		$ins = $this->package->getAssetsPath();
 		if( $srv ) {
 
 			$assets = $this->items["assets"];
@@ -657,14 +629,15 @@ final class View implements SingletonCompletable, ArrayAccess
 	public function usePackage( $name )
 	{
 		$name = trim($name);
-		if( !isset($this->packages[$name]) ) {
-			throw new \InvalidArgumentException("Package '{$name}' not found.");
+		if( !isset($this->packages[$name]) )
+		{
+			throw new NotFoundException("The '{$name}' package not found");
 		}
 
-		$this->package = new Package( $this->packages[$name] );
-		$this->items['assets'] = $this->package->get('assets');
+		$this->package = Package::cache( $this->packages[$name] );
+		$this->items['assets'] = $this->package->getAssets();
 		$this->items['package'] = $name;
-		$this->package->func();
+		$this->package->includeFunc($this);
 
 		return $this;
 	}
@@ -681,13 +654,13 @@ final class View implements SingletonCompletable, ArrayAccess
 	{
 		if( $this->depth > 0 )
 		{
-			throw new \InvalidArgumentException("View process is run");
+			throw new \RuntimeException("View process is run");
 		}
 
 		$this->template = $this->package->getTemplate($name);
 		$this->depth = 1;
 
-		$this->items['__local__'] =& new Prop();
+		$this->items['__local__'] = new Prop();
 		$this->items['__level__'] = $this->depth;
 		$this->items['__template__'] = $name;
 
@@ -890,7 +863,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	}
 
 	/**
-	 * Get plugin data
+	 * GetTrait plugin data
 	 *
 	 * @param $name
 	 * @param array $data
@@ -950,7 +923,7 @@ final class View implements SingletonCompletable, ArrayAccess
 			{
 				$content = $plugin
 					->load()
-					->render($this);
+					->getRenderContent($this);
 
 				$cache->export($content);
 			}
@@ -963,7 +936,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		{
 			$content = $plugin
 				->load()
-				->render($this);
+				->getRenderContent($this);
 		}
 
 		$number = $this->plugin_index ++;
@@ -1242,12 +1215,12 @@ final class View implements SingletonCompletable, ArrayAccess
 
 				else
 				{
-					/** @var \EApp\Plugin\Interfaces\PluginShotable | \EApp\Proto\Plugin $plugin */
+					/** @var \EApp\Plugin\Interfaces\PluginShotable | \EApp\Plugin\Plugin $plugin */
 					$plugin = new $class_name( $args, $this );
 					$plugin->toShortTag();
 					$get .= $plugin
 						->load()
-						->render($this);
+						->getRenderContent($this);
 
 					unset($plugin);
 				}

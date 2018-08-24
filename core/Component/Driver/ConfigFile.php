@@ -10,22 +10,22 @@ namespace EApp\Component\Driver;
 
 use EApp\Component\Module;
 use EApp\Event\EventManager;
+use EApp\Helper;
 use EApp\Prop;
-use EApp\Support\Interfaces\Loggable;
-use EApp\Support\Traits\{
-	CallbackTrait, Get, GetModuleComponent, LoggableTrait, Set, Write
+use EApp\Interfaces\Loggable;
+use EApp\Traits\{
+	GetTrait, GetModuleComponentTrait, LoggableTrait, SetTrait, Write
 };
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Interfaces\SystemDriverInterface;
 use EApp\Text;
 
-class ConfigFile implements SystemDriver, Loggable
+class ConfigFile implements SystemDriverInterface, Loggable
 {
 	use LoggableTrait;
-	use GetModuleComponent;
+	use GetModuleComponentTrait;
 	use Write;
-	use Set;
-	use Get;
-	use CallbackTrait;
+	use SetTrait;
+	use GetTrait;
 
 	protected $items = [];
 
@@ -62,12 +62,7 @@ class ConfigFile implements SystemDriver, Loggable
 	{
 		if( $this->fileExists() )
 		{
-			$this->items = (array) $this->callback( function($file) {
-				/** @noinspection PhpIncludeInspection */
-				include $file;
-				return $data ?? [];
-			}, $this->file_name );
-
+			$this->items = Helper::includeImport($this->file_name);
 			return true;
 		}
 		else

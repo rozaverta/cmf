@@ -11,13 +11,13 @@ namespace EApp\Event;
 use EApp\Cache;
 use EApp\Event\Interfaces\EventInterface;
 use EApp\Helper;
-use EApp\Prop;
-use EApp\Support\Exceptions\NotFoundException;
+use EApp\Exceptions\NotFoundException;
+use EApp\Exceptions\WriteException;
 
 final class EventManager
 {
 	/**
-	 * Get event manager element from cache
+	 * GetTrait event manager element from cache
 	 *
 	 * @param $name
 	 * @return \EApp\Event\Dispatcher
@@ -50,7 +50,7 @@ final class EventManager
 					$data = $event->getContentData();
 					if(! $cache->export($data))
 					{
-						throw new \Exception("Can't write event file");
+						throw new WriteException("Can't write cache data for the '{$name}' event");
 					}
 				}
 			}

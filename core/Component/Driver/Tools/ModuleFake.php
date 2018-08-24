@@ -13,9 +13,4 @@ use EApp\Component\Module;
 final class ModuleFake extends Module
 {
 	protected $is_install = false;
-
-	public function __construct($id)
-	{
-		parent::__construct($id, false);
-	}
 }

@@ -4,36 +4,40 @@ namespace EApp;
 
 use EApp\CI\Log as CiLog;
 use EApp\Component\Context;
-use EApp\Component\MountPoint;
+use EApp\Route\Comparator;
+use EApp\Route\MountPoint;
 use EApp\Component\QueryContext;
 use EApp\Component\Scheme\ContextSchemeDesigner;
 use EApp\Component\Scheme\RouteSchemeDesigner;
+use EApp\Controllers\WelcomeController;
 use EApp\Database\Manager as DataBaseManager;
 use EApp\Event\Event;
 use EApp\Event\EventManager;
 use EApp\Filesystem\Filesystem;
 use EApp\Http\Request;
 use EApp\Http\Response;
-use EApp\Proto\Controller;
-use EApp\Proto\Router;
+use EApp\Controllers\Controller;
+use EApp\Language\Lang;
+use EApp\Route\Router;
+use EApp\Route\Url;
 use EApp\Support\Collection;
-use EApp\Support\Exceptions\NotFoundException;
-use EApp\Support\Exceptions\PageNotFoundException;
-use EApp\System\Events\ContextEvent;
-use EApp\System\Events\LanguageEvent;
-use EApp\System\Events\SingletonEvent;
-use EApp\System\Interfaces\ControllerContentOutput;
-use EApp\Support\Interfaces\SingletonCompletable;
-use EApp\Support\Traits\SingletonInstance;
-use EApp\System\Events\BootEvent;
-use EApp\System\Events\CompleteEvent;
-use EApp\System\Events\LoadEvent;
-use EApp\System\Events\PreRenderEvent;
-use EApp\System\Events\ReadyEvent;
-use EApp\System\Events\ShutdownEvent;
+use EApp\Exceptions\NotFoundException;
+use EApp\Exceptions\PageNotFoundException;
+use EApp\Events\ContextEvent;
+use EApp\Events\LanguageEvent;
+use EApp\Events\SingletonEvent;
+use EApp\Controllers\Interfaces\ControllerContentOutput;
+use EApp\Interfaces\SingletonCompletable;
+use EApp\Traits\SingletonInstanceTrait;
+use EApp\Events\BootEvent;
+use EApp\Events\CompleteEvent;
+use EApp\Events\LoadEvent;
+use EApp\Events\PreRenderEvent;
+use EApp\Events\ReadyEvent;
+use EApp\Events\ShutdownEvent;
 use EApp\Component\Module;
 use EApp\Component\QueryRoutes;
-use EApp\System\Terminal;
+use EApp\Cmd\Terminal;
 use EApp\View\PageCache;
 use EApp\View\View;
 
@@ -47,10 +51,10 @@ use EApp\View\View;
  *
  * @property \EApp\CI\Log Log
  * @property \EApp\CI\PhpExport $PhpExport
- * @property \EApp\CI\Uri Uri
+ * @property \EApp\Route\Url Url
  * @property \EApp\View\View View
  * @property \EApp\Filesystem\Filesystem Filesystem
- * @property \EApp\CI\Lang Lang
+ * @property \EApp\Language\Lang Lang
  * @property \EApp\CI\Session Session
  * @property \EApp\Database\Manager Database
  * @property Controller Controller
@@ -61,10 +65,10 @@ use EApp\View\View;
  *
  * @method static \EApp\CI\Log Log(...$args)
  * @method static \EApp\CI\PhpExport PhpExport()
- * @method static \EApp\CI\Uri Uri()
+ * @method static Route\Url Url()
  * @method static \EApp\View\View View()
  * @method static \EApp\Filesystem\Filesystem Filesystem()
- * @method static \EApp\CI\Lang Lang(...$args)
+ * @method static Language\Lang Lang(...$args)
  * @method static \EApp\CI\Session Session(...$args)
  * @method static \EApp\Database\Manager Database()
  * @method static Context Context()
@@ -76,7 +80,7 @@ use EApp\View\View;
  */
 final class App
 {
-	use SingletonInstance;
+	use SingletonInstanceTrait;
 
 	const VER = "0.0.1";
 
@@ -118,50 +122,50 @@ final class App
 		// load system config
 		// check install
 
-		$sys = Prop::cache("system");
-
-		define("SYSTEM_INSTALL", $sys->equiv("install", true) );
-
-		if( $sys->equiv("status", "update") )
+		if( defined("APP_DIR") )
 		{
-			throw new \Exception("The website is temporarily unavailable");
-		}
+			$sys = Prop::cache("system");
 
-		// debugging
+			define("SYSTEM_INSTALL", $sys->equiv("install", true) );
 
-		if( !defined("DEBUG_MODE") )
-		{
-			define("DEBUG_MODE", $sys->get("debug") === false ? "off" : "on" );
-		}
-
-		if( $sys->get("debug") !== false && DEBUG_MODE !== "production" )
-		{
-			@ ini_set( "display_errors", "on" );
-			error_reporting( E_ALL );
-			if( $sys->equiv("debug", "html") )
+			if( $sys->equiv("status", "update") )
 			{
-				ini_set('html_errors', 'on');
+				throw new \Exception("The website is temporarily unavailable");
 			}
-		}
 
-		// php init values
+			// debugging
 
-		if( $sys->isArray("ini_set") )
-		{
-			foreach($sys->get("ini_set") as $name => $value )
+			if( ! defined("DEBUG_MODE") )
 			{
-				ini_set($name, $value);
+				define("DEBUG_MODE", $sys->get("debug") === false ? "off" : "on" );
 			}
+
+			if( $sys->get("debug") !== false && DEBUG_MODE !== "production" )
+			{
+				@ ini_set( "display_errors", "on" );
+				error_reporting( E_ALL );
+				if( $sys->equiv("debug", "html") )
+				{
+					ini_set('html_errors', 'on');
+				}
+			}
+
+			// php init values
+
+			if( $sys->isArray("ini_set") )
+			{
+				foreach($sys->get("ini_set") as $name => $value )
+				{
+					ini_set($name, $value);
+				}
+			}
+
+			// run boot config (only for host)
+
+			$file = APP_DIR . "boot.php";
+			file_exists($file) && Helper::includeFile($file, ['app' => $this]);
+			EventManager::dispatch(new BootEvent());
 		}
-
-		// run boot config
-
-		foreach( Prop::file('boot') as $file )
-		{
-			Helper::includeFile($file, ['app' => $this]);
-		}
-
-		EventManager::dispatch(new BootEvent());
 
 		// run
 		// console mode
@@ -174,31 +178,32 @@ final class App
 			}
 
 			$term = new Terminal();
-			$term->loadDefault();
 			$term->run();
 			return $result_type = 'cli';
 		}
 
 		// web access
 
-		if( ! SYSTEM_INSTALL )
+		if( ! Helper::isSystemInstall() )
 		{
 			throw new \Exception("System is not install for this domain");
 		}
 
 		// load system module for check the current system version
 
-		Module::cache(0);
+		$core_module = Module::cache(0);
 
 		// load manifest data
 
-		$uri = $this->Uri;
-		$mnf = new Prop('manifest');
+		$url = $this->Url;
+		$mnf = Prop::cache('manifest');
 		$response = $this->Response;
 
-		if( $mnf->count() && $uri->mode() == 'rewrite' && $uri->length > 0 && $mnf->getIs($uri->path) )
+		$url->reloadRequest();
+
+		if( $mnf->count() && $url->getMode() == 'rewrite' && $url->count() > 0 && $mnf->getIs($url->getPath()) )
 		{
-			$key  = $uri->path;
+			$key  = $url->getPath();
 			$data = Helper::value( $mnf->get($key) );
 
 			if( is_string($data) )
@@ -210,7 +215,7 @@ final class App
 			return 'raw';
 		}
 
-		$open = $uri->length > 0 && !$uri->isDir;
+		$open = $url->count() > 0 && ! $url->isDir();
 		$path_prefix = "/";
 
 		// load or create context
@@ -224,17 +229,17 @@ final class App
 			$path = $context->getPath();
 
 			// redirect to folder
-			if( $open && ("/" . $path) == $uri->path )
+			if( $open && ("/" . $path) == $url->getPath() )
 			{
 				$response
-					->redirect( $uri->makeURL( $uri->path . "/" ) )
+					->redirect( $url->makeURL( $url->getPath() . "/" ) )
 					->send();
 
 				return $result_type = 'redirect';
 			}
 
 			$path_prefix .= $path . "/";
-			$uri->shift(substr_count($path, "/") + 1);
+			$url->shift(substr_count($path, "/") + 1);
 		}
 
 		// update system language
@@ -264,6 +269,7 @@ final class App
 		if( $cache->ready() )
 		{
 			$routers = $cache->import();
+			$is_route = count($routers) > 0;
 		}
 		else {
 			$routers = (new QueryRoutes())
@@ -273,7 +279,8 @@ final class App
 				})
 				->getAll();
 
-			if( count($routers) )
+			$is_route = count($routers) > 0;
+			if( $is_route )
 				$cache->export($routers);
 		}
 
@@ -281,80 +288,94 @@ final class App
 		$web_router_found = false;
 		$web_page_404 = false;
 
-		/** @var Controller $controller */
+		/** @var \EApp\Controllers\Controller $controller */
 
 		$controller = null;
 		$found = false;
 
 		// math
 
-		/** @var MountPoint $mount_point */
-
-		foreach( $routers as $mount_point )
+		if( $is_route )
 		{
-			// if context not use this module
-			if( !$context->hasModuleId($mount_point->getModuleId()) )
-			{
-				continue;
-			}
+			$comparator = new Comparator($url);
 
-			$type = $mount_point->getType();
+			/** @var MountPoint $mount_point */
 
-			// if controller not found
-			if( $type === "404" )
+			foreach( $routers as $mount_point )
 			{
-				$web_router_404 = $mount_point;
-				if( $found )
+				// if context not use this module
+				if( !$context->hasModuleId($mount_point->getModuleId()) )
 				{
-					break;
+					continue;
 				}
-				continue;
-			}
-			else if( $found )
-			{
-				continue;
-			}
 
-			// redirect to folder
-			if( $open && $type == "path" && ($path_prefix . $mount_point->getRule()) == $uri->path )
-			{
-				$response
-					->redirect( $uri->makeURL( $uri->path . "/" ) )
-					->send();
+				$type = $mount_point->getType();
 
-				return $result_type = 'redirect';
-			}
-
-			// found
-			$match = null;
-			if( $type == "all" || $type == "index" && $uri->length == 0 || $mount_point->isRule() && $uri->match($type, $mount_point->getRule(), $match) )
-			{
-				$controller = $this->readyController($mount_point, $match);
-				if( $controller !== null )
+				// if controller not found
+				if( $type === "404" )
 				{
-					$found = true;
-					if( $web_router_404 )
+					$web_router_404 = $mount_point;
+					if( $found )
 					{
 						break;
 					}
 					continue;
 				}
-				else
+				else if( $found )
 				{
-					$web_router_found = true;
+					continue;
+				}
+
+				if( $comparator->match($mount_point) )
+				{
+					// redirect to folder
+					if( $comparator->isLastClosable() )
+					{
+						$response
+							->redirect($url->makeURL($url->getPath() . "/", $_GET ?? [], true))
+							->send();
+
+						return $result_type = 'redirect';
+					}
+					else
+					{
+						$controller = $this->readyController($mount_point, $comparator->getLastMatch());
+
+						// found
+						if( $controller !== null )
+						{
+							$found = true;
+							if( $web_router_404 )
+							{
+								break;
+							}
+							continue;
+						}
+						else
+						{
+							$web_router_found = true;
+						}
+					}
 				}
 			}
-		}
 
-		if( $controller === null && $web_router_404 !== false )
-		{
-			$controller = $this->readyController($web_router_404);
-			$web_page_404 = true;
+			if( $controller === null && $web_router_404 !== false )
+			{
+				$controller = $this->readyController($web_router_404);
+				$web_page_404 = true;
+			}
 		}
 
 		if( $controller === null )
 		{
-			throw new PageNotFoundException("", $web_router_found ? 404 : 500 );
+			if( $is_route )
+			{
+				throw new PageNotFoundException("", $web_router_found ? 404 : 500 );
+			}
+			else
+			{
+				$controller = new WelcomeController($core_module);
+			}
 		}
 
 		$this->changeController($controller);
@@ -471,7 +492,7 @@ final class App
 
 		if( $cacheable && ! $page_cache->save($template, $out_page, $content_type) )
 		{
-			$this->Log->line( "Can't write page cache" );
+			$this->Log->line( "Cannot write page cache" );
 		}
 
 		$response->setBody( $view->eachPluginData( $out_page, static function( & $info ) { return $info["content"]; }, 3) );
@@ -490,8 +511,8 @@ final class App
 	/**
 	 * Load Controller
 	 *
-	 * @param Controller $controller
-	 * @return Controller
+	 * @param \EApp\Controllers\Controller $controller
+	 * @return \EApp\Controllers\Controller
 	 * @throws \Exception
 	 */
 	public function changeController( Controller $controller )
@@ -547,8 +568,8 @@ final class App
 
 		if( $cache->ready() )
 		{
-			$ctx = $cache->import();
-			foreach($ctx as $item)
+			$ctx = [];
+			foreach($cache->import() as $item)
 				$ctx[$item["name"]] = Context::createFromData($item);
 		}
 		else
@@ -578,11 +599,35 @@ final class App
 				if( is_array($value) )
 				{
 					if( ! in_array($_GET[$name], $value) )
-					{
 						return false;
-					}
 				}
 				else if( strlen($value) && $_GET[$name] !== $value )
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		function isHost(Context $context)
+		{
+			if( $context->getHost() !== ORIGINAL_HOST )
+			{
+				return false;
+			}
+
+			$protocol = $context->getProtocol();
+			if(strlen($protocol) && $protocol !== "*" && $protocol !== BASE_PROTOCOL )
+			{
+				return false;
+			}
+
+			$port = $context->getPort();
+			if( $port > 0 )
+			{
+				$test = isset($_SERVER['SERVER_PORT']) ? intval($_SERVER['SERVER_PORT']) : 80;
+				if( $test !== $port )
 				{
 					return false;
 				}
@@ -595,7 +640,7 @@ final class App
 		$priority_path  = false;
 		$priority_query = false;
 		$collection     = new Collection();
-		$path           = $this->Uri->length > 0 ? (implode("/", $this->Uri->segment) . "/") : "";
+		$path           = $this->Url->count() > 0 ? (implode("/", $this->Url->getSegments()) . "/") : "";
 
 		foreach($ctx as $name => $context_item)
 		{
@@ -610,7 +655,7 @@ final class App
 			}
 
 			if(
-				$is_host  && $context_item->getHost() !== APP_HOST ||
+				$is_host  && ! isHost( $context_item ) ||
 				$is_path  && ! ( $path && strpos($path, $context_item->getPath() . "/") === 0 ) ||
 				$is_query && ! isQuery( $context_item->getQuery() ) ||
 				$priority_host  && ! $is_host ||
@@ -644,21 +689,24 @@ final class App
 	public function load( $name )
 	{
 		static $init = false;
-		static $ci = [];
-		static $reserved = ['Lang', 'Log', 'PhpExport', 'Session', 'Uri', 'Context', 'Controller'];
+
+		// reserved
+		static $ci = [
+			'Database' => DataBaseManager::class,
+			'Filesystem' => Filesystem::class,
+			'View' => View::class,
+			'Lang' => Lang::class,
+			'Url' => Url::class,
+		];
+
+		static $reserved = ['Log', 'PhpExport', 'Session', 'Context', 'Controller'];
 
 		if( ! $init )
 		{
 			$init = true;
-			$ci = Prop::file("ci");
 			$this->ci['Log'] = CiLog::getInstance();
 			$this->ci['Response'] = new Response();
 			$this->ci['Request'] = Request::createFromGlobals();
-
-			// reserved
-			$ci['Database'] = DataBaseManager::class;
-			$ci['Filesystem'] = Filesystem::class;
-			$ci['View'] = View::class;
 
 			$event = new SingletonEvent();
 			EventManager::dispatch($event);
@@ -699,9 +747,9 @@ final class App
 			}
 
 			$className = isset( $ci[$name] ) ? $ci[$name] : "EApp\\CI\\" . $name;
-			if( !class_exists($className, true) )
+			if( ! class_exists($className, true) )
 			{
-				throw new NotFoundException("Singleton class '{$name}' not found.");
+				throw new NotFoundException("Singleton class '{$name}' not found");
 			}
 
 			$this->ci[$name] = (new \ReflectionMethod($className, 'getInstance'))->invoke(null);
@@ -842,9 +890,9 @@ final class App
 
 	private function readyController( MountPoint $mount_point, $match = null )
 	{
-		$class_name = $mount_point->getModule()->getNameSpace() . 'Router';
+		$class_name = $mount_point->getModule()->getNamespace() . 'Router';
 
-		/** @var Router $router */
+		/** @var \EApp\Route\Router $router */
 
 		$router = new $class_name( $mount_point, $match );
 

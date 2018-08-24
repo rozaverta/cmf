@@ -11,11 +11,9 @@ namespace EApp\Component\Driver;
 use EApp\Component\Driver\Tools\ModuleFake;
 use EApp\Component\Module;
 use EApp\Component\Scheme\ModuleSchemeDesigner;
-use EApp\Database\Connection;
 use EApp\Event\EventManager;
-use EApp\Support\Exceptions\NotFoundException;
+use EApp\Exceptions\NotFoundException;
 use EApp\Support\Str;
-use InvalidArgumentException;
 
 class ModuleComponent extends ModuleComponentAbstract
 {
@@ -40,7 +38,7 @@ class ModuleComponent extends ModuleComponentAbstract
 		$this->name = $row->name;
 		$this->key = $row->key;
 
-		$this->setModule($this->install ? new Module($this->id, false) : new ModuleFake($this->id));
+		$this->setModule($this->install ? new Module($this->id) : new ModuleFake($this->id));
 		$module = $this->getModule();
 		$module->getVersion();
 	}

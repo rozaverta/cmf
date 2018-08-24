@@ -8,17 +8,15 @@
 
 namespace EApp\Cache\Database;
 
-use EApp\App;
+use EApp\Cache\DatabaseKeyName;
 use EApp\Cache\KeyName;
 use EApp\Cache\Value;
 use EApp\Database\Connection;
-use EApp\Database\QueryException;
+use EApp\Database\Query\Builder;
 
 class DatabaseValue extends Value
 {
-	private $connection;
-
-	private $table;
+	use DatabaseConnectionTrait;
 
 	private $ready = false;
 
@@ -29,22 +27,21 @@ class DatabaseValue extends Value
 	 */
 	private $row = null;
 
-	public function __construct( Connection $connection, string $table, KeyName $key_name, int $life = 0 )
+	public function __construct( Connection $connection, string $table, KeyName $key_name )
 	{
 		if( ! $key_name instanceof DatabaseKeyName )
 		{
 			throw new \InvalidArgumentException("You must used the " . DatabaseKeyName::class . ' object instance for the ' . __CLASS__ . ' constructor');
 		}
+
 		parent::__construct( $key_name );
-		$this->connection = $connection;
-		$this->table = $table;
-		$this->life = $life;
+
+		$this->setConnection($connection, $table);
 	}
 
 	public function load( int $life = 0 )
 	{
 		$this->life = $life;
-		return $this;
 	}
 
 	public function has(): bool
@@ -52,27 +49,25 @@ class DatabaseValue extends Value
 		if( ! $this->ready )
 		{
 			$this->ready = true;
-			try {
-				$row = $this->table()->first([
+
+			$row = $this->fetch(function(Builder $table) {
+				return $table->first([
 					'id', 'value', 'updated_at'
 				]);
+			}, $this->tableThen());
 
-				if( !$row )
-				{
-					return false;
-				}
-
-				if( $this->life > 0 && (new \DateTime($row->updated_at))->getTimestamp() + $this->life < time() )
-				{
-					$this->forget();
-				}
-				else
-				{
-					$this->row = $row;
-				}
+			if( !$row )
+			{
+				return false;
 			}
-			catch(QueryException $e) {
-				$this->error($e);
+
+			if( $this->life > 0 && (new \DateTime($row->updated_at))->getTimestamp() + $this->life < time() )
+			{
+				$this->forget();
+			}
+			else
+			{
+				$this->row = $row;
 			}
 		}
 
@@ -85,34 +80,40 @@ class DatabaseValue extends Value
 			'value' => $value,
 			'size' => strlen($value),
 			'updated_at' => date(
-				$this->connection->getQueryGrammar()->getDateTimeFormatString()
+				$this->getConnection()->getQueryGrammar()->getDateTimeFormatString()
 			)
 		];
 
 		if( $this->has() )
 		{
 			$id = $this->row->id;
-			try {
-				$this
-					->table(false, $id)
-					->update($data);
-			}
-			catch( QueryException $e ) {
-				return $this->error($e);
+			$update = $this->fetch(
+				function(Builder $table) use($data) {
+					return $table->update($data) !== false;
+				},
+				$this->tableThen(false, $id)
+			);
+
+			if( !$update )
+			{
+				return false;
 			}
 		}
 		else
 		{
-			$data["key_name"]   = $this->key_name->getKey();
-			$data["key_prefix"] = $this->key_name->getKeyPrefix();
+			$data["key_name"]   = $this->key_name->keyName();
+			$data["key_prefix"] = $this->key_name->keyPrefix();
 
-			try {
-				$id = $this
-					->table(false)
-					->insertGetId($data);
-			}
-			catch( QueryException $e ) {
-				return $this->error($e);
+			$id = $this->fetch(
+				function(Builder $table) use($data) {
+					return $table->insertGetId($data);
+				},
+				$this->tableThen(false)
+			);
+
+			if( !$id )
+			{
+				return false;
 			}
 		}
 
@@ -144,11 +145,16 @@ class DatabaseValue extends Value
 
 	public function forget(): bool
 	{
-		try {
-			$this->table()->delete();
-		}
-		catch( QueryException $e ) {
-			return $this->error($e);
+		$delete = $this->fetch(
+			function(Builder $table) {
+				return $table->delete() !== false;
+			},
+			$this->tableThen()
+		);
+
+		if( !$delete )
+		{
+			return false;
 		}
 
 		$this->ready = false;
@@ -157,17 +163,15 @@ class DatabaseValue extends Value
 		return true;
 	}
 
-	protected function table( bool $key_name = true, int $where_id = 0 )
+	protected function tableThen( bool $key_name = true, int $where_id = 0 ): Builder
 	{
-		$table = $this
-			->connection
-			->table($this->table);
+		$table = $this->table();
 
 		if($key_name)
 		{
 			$table
-				->where('key_name', '=', $this->key_name->getKeyName())
-				->where('key_prefix', '=', $this->key_name->getKeyPrefix());
+				->where('key_name', '=', $this->key_name->keyName())
+				->where('key_prefix', '=', $this->key_name->keyPrefix());
 		}
 		else if( $where_id > 0 )
 		{
@@ -176,11 +180,5 @@ class DatabaseValue extends Value
 		}
 
 		return $table;
-	}
-
-	protected function error(QueryException $error): bool
-	{
-		App::Log($error);
-		return false;
 	}
 }

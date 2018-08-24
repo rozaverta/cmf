@@ -69,7 +69,7 @@ final class EventFactory
 			$class_name = $row->class_name;
 			if( $class_name[0] !== "\\" && $row->module_id > 0 )
 			{
-				$class_name = Module::cache((int) $row->module_id)->getNameSpace() . $class_name;
+				$class_name = Module::cache((int) $row->module_id)->getNamespace() . $class_name;
 			}
 			if( $class_name[0] !== "\\" )
 			{

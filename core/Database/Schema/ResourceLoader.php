@@ -8,15 +8,15 @@
 
 namespace EApp\Database\Schema;
 
+use EApp\Filesystem\Resource as ResourceFile;
 use EApp\Prop;
 use EApp\Support\Collection;
-use EApp\Support\Traits\GetModuleComponent;
-use EApp\System\Fs\FileResource;
-use EApp\System\Interfaces\ModuleComponent;
+use EApp\Traits\GetModuleComponentTrait;
+use EApp\Interfaces\ModuleComponentInterface;
 
-class ResourceLoader implements ModuleComponent
+class ResourceLoader implements ModuleComponentInterface
 {
-	use GetModuleComponent;
+	use GetModuleComponentTrait;
 
 	/**
 	 * Table name
@@ -45,16 +45,16 @@ class ResourceLoader implements ModuleComponent
 	 */
 	protected $extra;
 
-	public function __construct( FileResource $file )
+	public function __construct(ResourceFile $resource)
 	{
 		$this->columns = new Collection();
 		$this->indexes = new Collection();
 		$this->filters = new Collection();
-		$this->load($file);
+		$this->load($resource);
 	}
 
 	/**
-	 * Get table name
+	 * GetTrait table name
 	 *
 	 * @return string
 	 */
@@ -96,7 +96,7 @@ class ResourceLoader implements ModuleComponent
 	}
 
 	/**
-	 * Get extra value
+	 * GetTrait extra value
 	 *
 	 * @param string $name
 	 * @param mixed $default
@@ -107,26 +107,26 @@ class ResourceLoader implements ModuleComponent
 		return $this->extra->getOr($name, $default);
 	}
 
-	protected function load( FileResource $file)
+	protected function load( ResourceFile $resource )
 	{
-		if( $file->getType() !== "#/data_base_table" )
+		if( $resource->getType() !== "#/data_base_table" )
 		{
 			throw new \InvalidArgumentException("Invalid resource type");
 		}
 
-		$module = $file->getModule();
+		$module = $resource->getModule();
 		if( $module === null )
 		{
-			throw new \InvalidArgumentException("ModuleComponent is not used module for database table");
+			throw new \InvalidArgumentException("ModuleComponentInterface is not used module for database table");
 		}
 
-		$this->table_name = $file->get("name");
+		$this->table_name = $resource->get("name");
 		$this->setModule($module);
 
-		$fields = $file->getOr("fields", []);
-		$indexes = $file->getOr("indexes", []);
-		$primaryKeys = $file->getOr("primaryKey", []);
-		$filters = $file->getOr("filters", []);
+		$fields = $resource->getOr("fields", []);
+		$indexes = $resource->getOr("indexes", []);
+		$primaryKeys = $resource->getOr("primaryKey", []);
+		$filters = $resource->getOr("filters", []);
 		if($primaryKeys)
 		{
 			if( !is_array($primaryKeys) )
@@ -140,7 +140,7 @@ class ResourceLoader implements ModuleComponent
 		count($indexes) && $this->loadIndexes($indexes);
 		count($filters) && $this->loadFilters($filters);
 
-		$this->extra = new Prop( $file->getOr("extra", []) );
+		$this->extra = new Prop( $resource->getOr("extra", []) );
 	}
 
 	protected function loadPrimaryKeys( array $fields )

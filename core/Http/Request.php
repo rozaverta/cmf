@@ -485,7 +485,7 @@ class Request
 	}
 
 	/**
-	 * Get the request's pathname
+	 * GetTrait the request's pathname
 	 *
 	 * @return string
 	 */

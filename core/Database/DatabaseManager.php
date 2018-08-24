@@ -59,7 +59,7 @@ class DatabaseManager implements ConnectionResolverInterface
 	}
 
 	/**
-	 * Get a database connection instance.
+	 * GetTrait a database connection instance.
 	 *
 	 * @param  string  $name
 	 * @return \EApp\Database\Connection
@@ -124,7 +124,7 @@ class DatabaseManager implements ConnectionResolverInterface
 	}
 
 	/**
-	 * Get the configuration for a connection.
+	 * GetTrait the configuration for a connection.
 	 *
 	 * @param  string  $name
 	 * @return array
@@ -254,7 +254,7 @@ class DatabaseManager implements ConnectionResolverInterface
 	}
 
 	/**
-	 * Get the default connection name.
+	 * GetTrait the default connection name.
 	 *
 	 * @return string
 	 */
@@ -264,7 +264,7 @@ class DatabaseManager implements ConnectionResolverInterface
 	}
 
 	/**
-	 * Set the default connection name.
+	 * SetTrait the default connection name.
 	 *
 	 * @param  string  $name
 	 * @return void
@@ -275,7 +275,7 @@ class DatabaseManager implements ConnectionResolverInterface
 	}
 
 	/**
-	 * Get all of the support drivers.
+	 * GetTrait all of the support drivers.
 	 *
 	 * @return array
 	 */
@@ -285,7 +285,7 @@ class DatabaseManager implements ConnectionResolverInterface
 	}
 
 	/**
-	 * Get all of the drivers that are actually available.
+	 * GetTrait all of the drivers that are actually available.
 	 *
 	 * @return array
 	 */

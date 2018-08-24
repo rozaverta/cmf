@@ -8,8 +8,8 @@
 
 namespace EApp;
 
-use EApp\Support\Exceptions\NotFoundException;
-use EApp\Support\Traits\SingletonInstance;
+use EApp\Exceptions\NotFoundException;
+use EApp\Traits\SingletonInstanceTrait;
 
 /**
  * Class Host
@@ -19,7 +19,7 @@ use EApp\Support\Traits\SingletonInstance;
  */
 final class Host
 {
-	use SingletonInstance;
+	use SingletonInstanceTrait;
 
 	/**
 	 * @var string
@@ -202,7 +202,6 @@ final class Host
 
 		if( is_string($host) && strlen($host) )
 		{
-
 			if( preg_match('/^https?:\/\//', $host, $m) )
 			{
 				$ssl = $m[0] === 'https://';

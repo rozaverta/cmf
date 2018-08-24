@@ -107,7 +107,7 @@ class Str
 	}
 
 	/**
-	 * Get part of string
+	 * GetTrait part of string
 	 *
 	 * @link http://php.net/manual/en/function.mb-substr.php
 	 *

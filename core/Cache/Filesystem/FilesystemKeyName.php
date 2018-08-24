@@ -17,7 +17,7 @@ class FilesystemKeyName extends KeyName
 		return parent::getKey() . ".php";
 	}
 
-	public function getKeyName(): string
+	public function keyName(): string
 	{
 		$file = $this->name;
 		if( ! $this->validFileName($file) )
@@ -45,7 +45,7 @@ class FilesystemKeyName extends KeyName
 		return $file;
 	}
 
-	public function getKeyPrefix(): string
+	public function keyPrefix(): string
 	{
 		$prefix = trim($this->prefix, "/");
 		if( strlen($prefix) > 0 )

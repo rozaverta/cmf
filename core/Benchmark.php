@@ -24,8 +24,9 @@ class Benchmark
 
 	public function setPoint( $name = null )
 	{
+		$end = $this->end;
 		$this->end = microtime(true);
-		$this->points[] = [$this->end, $name];
+		$this->points[] = [$this->end, $this->end - $end, $name];
 		return $this;
 	}
 

@@ -9,16 +9,16 @@
 namespace EApp\Component;
 
 use EApp\Support\Collection;
-use EApp\Support\Exceptions\ReadyException;
+use EApp\Exceptions\ReadException;
 use EApp\Support\Str;
-use EApp\System\Fs\FileResource;
+use EApp\Filesystem\Resource;
 use ReflectionClass;
 
 abstract class ModuleConfig
 {
 	public $version = "1.0.0";
 
-	public $name  = "";
+	public $name = "";
 
 	public $title = "";
 
@@ -82,7 +82,7 @@ abstract class ModuleConfig
 
 	/**
 	 * @param $name
-	 * @return \EApp\System\Fs\FileResource|null
+	 * @return \EApp\Filesystem\Resource|null
 	 */
 	public function getResource( $name )
 	{
@@ -92,14 +92,14 @@ abstract class ModuleConfig
 			return null;
 		}
 
-		return new FileResource($file);
+		return new Resource($file);
 	}
 
 	/**
-	 * Get all module resources
+	 * GetTrait all module resources
 	 *
 	 * @return Collection
-	 * @throws ReadyException
+	 * @throws ReadException
 	 */
 	public function listResources()
 	{
@@ -110,7 +110,7 @@ abstract class ModuleConfig
 			$scan = @ scandir($path);
 			if( !$scan )
 			{
-				throw new ReadyException("Cannot ready resources directory for the '" . get_class($this) . "' module");
+				throw new ReadException("Cannot ready resources directory for the '" . get_class($this) . "' module");
 			}
 
 			$path .= DIRECTORY_SEPARATOR;
@@ -118,7 +118,7 @@ abstract class ModuleConfig
 			{
 				if( $file[0] !== "." && preg_match('/\.json$/', $file) )
 				{
-					$list[] = new FileResource($path . $file);
+					$list[] = new Resource($path . $file);
 				}
 			}
 		}
@@ -136,7 +136,7 @@ abstract class ModuleConfig
 		return Str::cache($this->name, "snake");
 	}
 
-	public function getNameSpace()
+	public function getNamespace()
 	{
 		return $this->reflector->getNamespaceName() . "\\";
 	}

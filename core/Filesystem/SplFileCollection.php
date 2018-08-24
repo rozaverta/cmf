@@ -9,7 +9,7 @@
 namespace EApp\Filesystem;
 
 use EApp\Support\Collection;
-use EApp\Support\Interfaces\TypeOfInterface;
+use EApp\Interfaces\TypeOfInterface;
 
 class SplFileCollection extends Collection implements TypeOfInterface
 {

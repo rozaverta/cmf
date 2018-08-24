@@ -8,9 +8,9 @@
 
 namespace EApp\Database\Query;
 
-use EApp\Support\Interfaces\InstanceStateConstructable;
+use EApp\Interfaces\CreateInstanceInterface;
 
-class WhereClause implements InstanceStateConstructable
+class WhereClause implements CreateInstanceInterface
 {
 	protected $name;
 
@@ -66,16 +66,23 @@ class WhereClause implements InstanceStateConstructable
 		}
 	}
 
-	public static function createInstance( ... $args )
+	public static function __set_state( $an_array )
 	{
-		return new self(... $args);
+		return new static(
+			$an_array["name"],
+			$an_array["value"],
+			$an_array["operator"],
+			$an_array["not"]
+		);
 	}
 
-	public function getInstanceState(): array
+	/**
+	 * @param array ...$args
+	 * @return WhereClause|static
+	 */
+	public static function createInstance( ... $args )
 	{
-		return [
-			$this->name, $this->value, $this->operator, $this->not
-		];
+		return new static(... $args);
 	}
 
 	/**

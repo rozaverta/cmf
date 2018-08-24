@@ -11,7 +11,7 @@ namespace EApp\Cache\Filesystem;
 use EApp\Cache\KeyName;
 use EApp\Cache\Value;
 use EApp\Filesystem\Filesystem;
-use EApp\Filesystem\WriteFileTrait;
+use EApp\Filesystem\Traits\WriteFileTrait;
 
 class FilesystemValue extends Value
 {
@@ -38,7 +38,7 @@ class FilesystemValue extends Value
 		parent::__construct($key_name);
 
 		$this->filesystem = $filesystem;
-		$this->file_path = APP_DIR . $directory . DIRECTORY_SEPARATOR . $key_name->getKey();
+		$this->file_path = (defined("APP_DIR") ? APP_DIR : sys_get_temp_dir()) . $directory . DIRECTORY_SEPARATOR . $key_name->getKey();
 	}
 
 	public function load( int $life = 0 )
@@ -54,6 +54,11 @@ class FilesystemValue extends Value
 
 	public function set( string $value ): bool
 	{
+		if( ! defined("APP_DIR") )
+		{
+			return false;
+		}
+
 		$value = str_replace( '?>', '', $value);
 		$value = str_replace( '<?', '', $value);
 		$value = '<' . "?php defined('ELS_CMS') || exit('Not access'); ob_start(); ?" . '>' . $value . '<' . "?php \$data = ob_get_contents(); ob_end_clean();";
@@ -69,7 +74,7 @@ class FilesystemValue extends Value
 
 	protected function exportData( $data ): bool
 	{
-		if( ! $this->writeFileExport($this->file_path, $data) )
+		if( ! defined("APP_DIR") || ! $this->writeFileExport($this->file_path, $data) )
 		{
 			return false;
 		}

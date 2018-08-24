@@ -99,7 +99,7 @@ class Status
 	}
 
 	/**
-	 * Get the HTTP status code
+	 * GetTrait the HTTP status code
 	 *
 	 * @return int
 	 */
@@ -109,7 +109,7 @@ class Status
 	}
 
 	/**
-	 * Get the HTTP status message
+	 * GetTrait the HTTP status message
 	 *
 	 * @return string
 	 */
@@ -119,7 +119,7 @@ class Status
 	}
 
 	/**
-	 * Set the HTTP status code
+	 * SetTrait the HTTP status code
 	 *
 	 * @param int $code
 	 * @return Status
@@ -131,7 +131,7 @@ class Status
 	}
 
 	/**
-	 * Set the HTTP status message
+	 * SetTrait the HTTP status message
 	 *
 	 * @param string $message
 	 * @return Status
@@ -143,7 +143,7 @@ class Status
 	}
 
 	/**
-	 * Get a string representation of our HTTP status
+	 * GetTrait a string representation of our HTTP status
 	 *
 	 * @return string
 	 */
@@ -171,7 +171,7 @@ class Status
 	}
 
 	/**
-	 * Get our HTTP 1.1 message from our passed code
+	 * GetTrait our HTTP 1.1 message from our passed code
 	 *
 	 * Returns null if no corresponding message was
 	 * found for the passed in code

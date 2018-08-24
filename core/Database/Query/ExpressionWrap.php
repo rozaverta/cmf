@@ -26,7 +26,7 @@ class ExpressionWrap extends Expression
 	}
 
 	/**
-	 * Get the value of the expression.
+	 * GetTrait the value of the expression.
 	 *
 	 * @return mixed
 	 */

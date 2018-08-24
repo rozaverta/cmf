@@ -8,8 +8,8 @@
 
 namespace EApp\Event\Driver\Events;
 
-use EApp\System\Events\SystemDriverEvent;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Events\SystemDriverEvent;
+use EApp\Interfaces\SystemDriverInterface;
 
 /**
  * Class EventUpdateDriverEvent
@@ -22,7 +22,7 @@ use EApp\System\Interfaces\SystemDriver;
  */
 class EventUpdateDriverEvent extends SystemDriverEvent
 {
-	public function __construct( SystemDriver $driver, string $event_name, string $title, bool $completable )
+	public function __construct( SystemDriverInterface $driver, string $event_name, string $title, bool $completable )
 	{
 		parent::__construct( $driver, "update", compact( 'event_name', 'title', 'completable') );
 	}

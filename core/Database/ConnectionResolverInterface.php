@@ -11,7 +11,7 @@ namespace EApp\Database;
 interface ConnectionResolverInterface
 {
 	/**
-	 * Get a database connection instance.
+	 * GetTrait a database connection instance.
 	 *
 	 * @param  string  $name
 	 * @return \EApp\Database\ConnectionInterface
@@ -19,14 +19,14 @@ interface ConnectionResolverInterface
 	public function connection($name = null);
 
 	/**
-	 * Get the default connection name.
+	 * GetTrait the default connection name.
 	 *
 	 * @return string
 	 */
 	public function getDefaultConnection();
 
 	/**
-	 * Set the default connection name.
+	 * SetTrait the default connection name.
 	 *
 	 * @param  string  $name
 	 * @return void

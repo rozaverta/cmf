@@ -75,7 +75,7 @@ class CollectionRecorder extends Collection
 	}
 
 	/**
-	 * Get current page number.
+	 * GetTrait current page number.
 	 *
 	 * @return int
 	 */
@@ -92,5 +92,19 @@ class CollectionRecorder extends Collection
 	public function getPages()
 	{
 		return $this->total > $this->limit ? ceil($this->total / $this->limit) : 1;
+	}
+
+	/**
+	 * @param array $an_array
+	 * @return static
+	 */
+	public static function __set_state($an_array)
+	{
+		return new static(
+			$an_array["items"] ?? [],
+			$an_array["limit"] ?? 0,
+			$an_array["offset"] ?? 0,
+			$an_array["total"] ?? 0
+		);
 	}
 }

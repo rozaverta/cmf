@@ -57,7 +57,7 @@ class MySqlConnector extends Connector implements ConnectorInterface
 	}
 
 	/**
-	 * Set the connection character set and collation.
+	 * SetTrait the connection character set and collation.
 	 *
 	 * @param  array  $config
 	 * @return void
@@ -73,7 +73,7 @@ class MySqlConnector extends Connector implements ConnectorInterface
 	}
 
 	/**
-	 * Get the collation for the configuration.
+	 * GetTrait the collation for the configuration.
 	 *
 	 * @param  array  $config
 	 * @return string
@@ -84,7 +84,7 @@ class MySqlConnector extends Connector implements ConnectorInterface
 	}
 
 	/**
-	 * Set the timezone on the connection.
+	 * SetTrait the timezone on the connection.
 	 *
 	 * @param  array  $config
 	 * @return void
@@ -121,7 +121,7 @@ class MySqlConnector extends Connector implements ConnectorInterface
 	}
 
 	/**
-	 * Get the DSN string for a socket configuration.
+	 * GetTrait the DSN string for a socket configuration.
 	 *
 	 * @param  array  $config
 	 * @return string
@@ -134,7 +134,7 @@ class MySqlConnector extends Connector implements ConnectorInterface
 	}
 
 	/**
-	 * Get the DSN string for a host / port configuration.
+	 * GetTrait the DSN string for a host / port configuration.
 	 *
 	 * @param  array  $config
 	 * @return string
@@ -148,7 +148,7 @@ class MySqlConnector extends Connector implements ConnectorInterface
 	}
 
 	/**
-	 * Set the modes for the connection.
+	 * SetTrait the modes for the connection.
 	 *
 	 * @param  array  $config
 	 * @return void
@@ -173,7 +173,7 @@ class MySqlConnector extends Connector implements ConnectorInterface
 	}
 
 	/**
-	 * Set the custom modes on the connection.
+	 * SetTrait the custom modes on the connection.
 	 *
 	 * @param  array  $config
 	 * @return void
@@ -185,7 +185,7 @@ class MySqlConnector extends Connector implements ConnectorInterface
 	}
 
 	/**
-	 * Get the query to enable strict mode.
+	 * GetTrait the query to enable strict mode.
 	 *
 	 * @return string
 	 */

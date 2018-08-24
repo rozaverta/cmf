@@ -16,6 +16,8 @@ abstract class KeyName
 
 	protected $data;
 
+	protected $delimiter = "";
+
 	public function __construct( string $name, string $prefix = "", array $data = [])
 	{
 		$this->name = $name;
@@ -25,12 +27,12 @@ abstract class KeyName
 
 	public function getKey(): string
 	{
-		return $this->getKeyPrefix() . $this->getKeyName();
+		return $this->keyPrefix() . $this->delimiter . $this->keyName();
 	}
 
-	abstract public function getKeyName(): string;
+	abstract public function keyName(): string;
 
-	abstract public function getKeyPrefix(): string;
+	abstract public function keyPrefix(): string;
 
 	/**
 	 * @return string

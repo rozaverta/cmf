@@ -142,7 +142,7 @@ set_exception_handler(static function( $exception )
 
 		try {
 			\EApp\Event\EventManager::dispatch(
-				new \EApp\System\Events\ThrowableEvent($exception),
+				new \EApp\Events\ThrowableEvent($exception),
 				function( $result ) use ( & $output ) {
 					if( $result instanceof \Closure )
 					{
@@ -158,6 +158,7 @@ set_exception_handler(static function( $exception )
 		catch(\EApp\Database\QueryException $e) {
 			exc_db($e);
 		}
+		catch( \EApp\Exceptions\WriteException $e) {}
 
 		try {
 			$app->close();
@@ -165,6 +166,7 @@ set_exception_handler(static function( $exception )
 		catch(\EApp\Database\QueryException $e) {
 			exc_db($e);
 		}
+		catch( \EApp\Exceptions\WriteException $e) {}
 	}
 
 	if( $output instanceof \Closure )
@@ -175,7 +177,7 @@ set_exception_handler(static function( $exception )
 
 	if( $is_send )
 	{
-		exit();
+		exit;
 	}
 
 	if( exc_cmd() )
@@ -184,7 +186,7 @@ set_exception_handler(static function( $exception )
 	}
 	else
 	{
-		$page404 =  $exception instanceof \EApp\Support\Exceptions\PageNotFoundException && $code == 404;
+		$page404 =  $exception instanceof \EApp\Exceptions\PageNotFoundException && $code == 404;
 		$body = null;
 
 		// 404 page from file
@@ -192,9 +194,7 @@ set_exception_handler(static function( $exception )
 		{
 			$file = APP_DIR . '404_error.html';
 			if( file_exists($file) )
-			{
 				$body = @ file_get_contents($file);
-			}
 		}
 
 		if( $page404 )
@@ -205,9 +205,8 @@ set_exception_handler(static function( $exception )
 		else
 		{
 			$head_title = $title;
-			if( $code ) {
+			if( $code )
 				$head_title .= " [{$code}]";
-			}
 		}
 
 		$mode = defined("DEBUG_MODE") ? DEBUG_MODE : "production";
@@ -226,7 +225,7 @@ set_exception_handler(static function( $exception )
 				$body = ob_get_contents();
 				ob_end_clean();
 			}
-			else if($mode === "development" && (! $exception instanceof \EApp\Support\Exceptions\PageNotFoundException || $code !== 404)) {
+			else if($mode === "development" && (! $exception instanceof \EApp\Exceptions\PageNotFoundException || $code !== 404)) {
 				$debug = '<pre>' . get_class($exception) . ", trace: \n" . $exception->getTraceAsString() . '</pre>';
 			}
 		}
@@ -255,13 +254,19 @@ EOT;
 		$response->setBody($body);
 	}
 
+	$send = false;
+
 	try {
 		$response->send(true);
+		$send = true;
 	}
 	catch(\EApp\Database\QueryException $e) {
 		exc_db($e);
-		exc_print((exc_cmd() ? "\033[31;31m%s (%s)\033[0m" : "%s (%s)") . ": %s", [$title, $code, $message]);
 	}
+	catch( \EApp\Exceptions\WriteException $e) {}
+
+	if( ! $send )
+		exc_print((exc_cmd() ? "\033[31;31m%s (%s)\033[0m" : "%s (%s)") . ": %s", [$title, $code, $message]);
 
 	exit;
 });

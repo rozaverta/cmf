@@ -13,15 +13,17 @@ use EApp\Component\Scheme\RouteSchemeDesigner;
 use EApp\Database\Query\Builder;
 use EApp\Event\EventManager;
 use EApp\Prop;
-use EApp\Support\Interfaces\Loggable;
+use EApp\Interfaces\Loggable;
 use EApp\Support\Json;
-use EApp\Support\Traits\LoggableTrait;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Traits\GetModuleComponentTrait;
+use EApp\Traits\LoggableTrait;
+use EApp\Interfaces\SystemDriverInterface;
 use EApp\Text;
 
-class ModuleRouter implements SystemDriver, Loggable
+class ModuleRouter implements SystemDriverInterface, Loggable
 {
 	use LoggableTrait;
+	use GetModuleComponentTrait;
 
 	protected $types = [
 		"index", "all", "404", "match", "uri", "of", "path", "query", "host"
@@ -39,15 +41,7 @@ class ModuleRouter implements SystemDriver, Loggable
 			throw new \InvalidArgumentException("You can not use CoreModule for router");
 		}
 
-		$this->module = $module;
-	}
-
-	/**
-	 * @return \EApp\Component\Module
-	 */
-	public function getModule()
-	{
-		return $this->module;
+		$this->setModule($module);
 	}
 
 	public function add( $path, $type = null, $position = null, array $properties = null )

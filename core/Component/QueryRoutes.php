@@ -21,7 +21,7 @@ class QueryRoutes extends QueryPrototype
 	{
 		parent::initialisation();
 		unset( $this->valid_columns["install"] );
-		$this->columns = ["t.id", "t.module_id", "t.path", "t.properties"];
+		$this->columns = ["t.id", "t.module_id", "t.type", "t.rule", "t.properties"];
 		$this->orderBy("position");
 	}
 

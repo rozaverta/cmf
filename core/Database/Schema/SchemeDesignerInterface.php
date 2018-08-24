@@ -11,5 +11,5 @@ namespace EApp\Database\Schema;
 
 interface SchemeDesignerInterface
 {
-	public function __set_state( $data );
+	public static function __set_state( $data );
 }

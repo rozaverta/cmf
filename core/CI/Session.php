@@ -9,9 +9,9 @@
 namespace EApp\CI;
 
 use EApp\Prop;
-use EApp\Support\Traits\Compare;
-use EApp\Support\Traits\Get;
-use EApp\Support\Traits\SingletonInstance;
+use EApp\Traits\CompareTrait;
+use EApp\Traits\GetTrait;
+use EApp\Traits\SingletonInstanceTrait;
 
 /**
  * Class Session
@@ -21,9 +21,9 @@ use EApp\Support\Traits\SingletonInstance;
  */
 class Session
 {
-	use SingletonInstance;
-	use Get;
-	use Compare;
+	use SingletonInstanceTrait;
+	use GetTrait;
+	use CompareTrait;
 
 	protected $items = [];
 

@@ -9,16 +9,28 @@
 namespace EApp\Component;
 
 use EApp\Cache;
+use EApp\Interfaces\PhpExportSerializeInterface;
 use EApp\ModuleCore;
-use EApp\Support\Exceptions\NotFoundException;
-use EApp\Support\Interfaces\Arrayable;
-use EApp\Support\Traits\Get;
-use EApp\Support\Traits\GetIdentifier;
+use EApp\Exceptions\NotFoundException;
+use EApp\Interfaces\Arrayable;
+use EApp\Traits\CacheIdentifierInstanceTrait;
+use EApp\Traits\CachePhpExportIdentifierTrait;
+use EApp\Traits\GetTrait;
+use EApp\Traits\GetIdentifierTrait;
 
-class Module implements Arrayable
+/**
+ * Class Module
+ *
+ * @package EApp\Component
+ */
+class Module implements Arrayable, PhpExportSerializeInterface
 {
-	use GetIdentifier;
-	use Get;
+	use GetIdentifierTrait;
+	use GetTrait;
+	use CachePhpExportIdentifierTrait;
+	use CacheIdentifierInstanceTrait {
+		cache as defaultCache;
+	}
 
 	/**
 	 * @var string
@@ -61,81 +73,14 @@ class Module implements Arrayable
 
 	protected $is_install = true;
 
-	private static $cache = [];
-
-	public function __construct( int $id, bool $cached = true )
+	public function __construct( int $id )
 	{
 		$id = (int) $id;
-
-		if( $cached )
-		{
-			$cache = new Cache( $id, 'modules' );
-			if( $cache->ready() )
-			{
-				$row = $cache->import();
-			}
-			else
-			{
-				$row = $this->fetch( $id );
-				$cache->export($row);
-			}
-		}
-		else
-		{
-			$row = $this->fetch($id);
-		}
-
-		$this->fill($id, $row);
-	}
-
-	public function __set_state( $data )
-	{
-		if( !isset($data["id"]) || ! is_int($data["id"]) )
-		{
-			throw new \InvalidArgumentException(__CLASS__ . "::" . __METHOD__ . " 'id' property is not used");
-		}
-
-		$id = $data["id"];
-		if( isset(self::$cache[$id]) )
-		{
-			return self::$cache[$id];
-		}
-
-		/** @var self $module */
-
-		if( $id > 0 )
-		{
-			$ref = new \ReflectionClass(self::class);
-			$module = $ref->newInstanceWithoutConstructor();
-			$module->fill($id, $data);
-		}
-		else
-		{
-			$module = new ModuleCore();
-		}
-
-		self::$cache[$id] = $module;
-		return $module;
+		$this->fill($id, $this->fetch($id));
 	}
 
 	/**
-	 * Load (or create) module instance from local cache
-	 *
-	 * @param int $id
-	 * @return Module
-	 */
-	public static function cache( int $id ): Module
-	{
-		if( !isset(self::$cache[$id]) )
-		{
-			self::$cache[$id] = $id === 0 ? new ModuleCore() : new self($id, true);
-		}
-
-		return self::$cache[$id];
-	}
-
-	/**
-	 * Get module name
+	 * GetTrait module name
 	 *
 	 * @return string
 	 */
@@ -145,7 +90,7 @@ class Module implements Arrayable
 	}
 
 	/**
-	 * Get module key name
+	 * GetTrait module key name
 	 *
 	 * @return string
 	 */
@@ -155,7 +100,7 @@ class Module implements Arrayable
 	}
 
 	/**
-	 * Get module title
+	 * GetTrait module title
 	 *
 	 * @return string
 	 */
@@ -175,7 +120,7 @@ class Module implements Arrayable
 	}
 
 	/**
-	 * Get module version
+	 * GetTrait module version
 	 *
 	 * @return string
 	 */
@@ -185,7 +130,7 @@ class Module implements Arrayable
 	}
 
 	/**
-	 * Get module path
+	 * GetTrait module path
 	 *
 	 * @return string
 	 */
@@ -195,17 +140,17 @@ class Module implements Arrayable
 	}
 
 	/**
-	 * Get module namespace
+	 * GetTrait module namespace
 	 *
 	 * @return string
 	 */
-	public function getNameSpace(): string
+	public function getNamespace(): string
 	{
 		return $this->name_space;
 	}
 
 	/**
-	 * Get all support addons
+	 * GetTrait all support addons
 	 *
 	 * @return array
 	 */
@@ -241,7 +186,7 @@ class Module implements Arrayable
 	{
 		$builder = \DB
 			::table("modules")
-			->whereId($id);
+				->whereId($id);
 
 		if( $this->is_install )
 		{
@@ -251,14 +196,14 @@ class Module implements Arrayable
 		$row = $builder->first();
 		if( !$row )
 		{
-			throw new NotFoundException("ModuleComponent '{$this->id}' not found");
+			throw new NotFoundException("ModuleComponentInterface '{$this->id}' not found");
 		}
 
 		$name_space = trim($row->name_space, '\\');
 		$class = $name_space . '\\Module';
 		if( !class_exists($class, true) )
 		{
-			throw new NotFoundException("ModuleComponent '{$row->name}' not found");
+			throw new NotFoundException("ModuleComponentInterface '{$row->name}' not found");
 		}
 
 		/**
@@ -288,7 +233,7 @@ class Module implements Arrayable
 			'title' => $module_config->title,
 			'version' => $version,
 			'path' => $module_config->getPath(),
-			'name_space' => $module_config->getNameSpace(),
+			'name_space' => $module_config->getNamespace(),
 			'support' => $module_config->support,
 			'extra' => []
 		];
@@ -316,5 +261,48 @@ class Module implements Arrayable
 		$this->name_space = $row["name_space"];
 		$this->support = $row["support"];
 		$this->items = $row["extra"];
+	}
+
+	/**
+	 * Load (or create) module instance from local cache
+	 *
+	 * @param int $id
+	 * @return Module
+	 */
+	public static function cache( int $id )
+	{
+		if( ! self::cacheIs($id) && $id === 0 )
+		{
+			$module = new ModuleCore();
+			self::setCache(0, $module->setLoadedFromCache());
+		}
+
+		return self::defaultCache($id);
+	}
+
+	protected static function createCache( int $id ): Cache
+	{
+		return new Cache($id, 'modules');
+	}
+
+	protected function importCacheData( $data )
+	{
+		$this->fill($data["id"], $data);
+	}
+
+	protected function exportCacheData()
+	{
+		return [
+			'id' => $this->getId(),
+			'name' => $this->name,
+			'key' => $this->key,
+			'route' => $this->route,
+			'title' => $this->title,
+			'version' => $this->version,
+			'path' => $this->path,
+			'name_space' => $this->name_space,
+			'support' => $this->support,
+			'extra' => $this->items
+		];
 	}
 }

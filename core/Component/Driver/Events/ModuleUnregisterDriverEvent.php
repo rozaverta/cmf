@@ -9,8 +9,8 @@
 namespace EApp\Component\Driver\Events;
 
 use EApp\Component\Module;
-use EApp\System\Events\SystemDriverEvent;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Events\SystemDriverEvent;
+use EApp\Interfaces\SystemDriverInterface;
 
 /**
  * Class ModuleUnregisterDriverEvent
@@ -21,7 +21,7 @@ use EApp\System\Interfaces\SystemDriver;
  */
 class ModuleUnregisterDriverEvent extends SystemDriverEvent
 {
-	public function __construct( SystemDriver $driver, Module $module )
+	public function __construct( SystemDriverInterface $driver, Module $module )
 	{
 		parent::__construct( $driver, "unregister", compact('module') );
 	}

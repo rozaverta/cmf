@@ -34,13 +34,13 @@ class Cache
 	}
 
 	/**
-	 * @return Cache\Manager
+	 * @return Cache\CacheManager
 	 */
-	public static function manager(): Cache\Manager
+	public static function manager(): Cache\CacheManager
 	{
 		if( ! isset(self::$manager) )
 		{
-			self::$manager = new Cache\Manager( Prop::cache("cache") );
+			self::$manager = new Cache\CacheManager( Prop::cache("cache") );
 		}
 		return self::$manager;
 	}

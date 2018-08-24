@@ -9,13 +9,13 @@
 namespace EApp\Component;
 
 use EApp\Component\Scheme\ContextSchemeDesigner;
-use EApp\Support\Exceptions\NotFoundException;
-use EApp\Support\Interfaces\Arrayable;
-use EApp\Support\Traits\GetIdentifier;
+use EApp\Exceptions\NotFoundException;
+use EApp\Interfaces\Arrayable;
+use EApp\Traits\GetIdentifierTrait;
 
 class Context implements Arrayable
 {
-	use GetIdentifier;
+	use GetIdentifierTrait;
 
 	/**
 	 * @var ContextSchemeDesigner
@@ -72,6 +72,8 @@ class Context implements Arrayable
 		$instance->title = $data["title"] ?? "";
 		$instance->comment = $data["comment"] ?? "";
 		$instance->host = $data["host"] ?? "";
+		$instance->host_port = $data["host_port"] ?? 0;
+		$instance->host_scheme = $data["host_scheme"] ?? "";
 		$instance->path = $data["path"] ?? "";
 		$instance->query = $data["query"] ?? [];
 		$instance->is_default = $data["is_default"] ?? false;
@@ -131,6 +133,14 @@ class Context implements Arrayable
 	public function isPath(): bool
 	{
 		return $this->instance->isPath();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSsl(): bool
+	{
+		return $this->instance->host_scheme === "https";
 	}
 
 	/**
@@ -202,6 +212,22 @@ class Context implements Arrayable
 	/**
 	 * @return string
 	 */
+	public function getPort(): string
+	{
+		return $this->instance->host_port;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getProtocol(): string
+	{
+		return $this->instance->host_scheme;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getPath(): string
 	{
 		return $this->instance->path;
@@ -224,7 +250,7 @@ class Context implements Arrayable
 	}
 
 	/**
-	 * Get the instance as an array.
+	 * GetTrait the instance as an array.
 	 *
 	 * @return array
 	 */

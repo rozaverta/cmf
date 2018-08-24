@@ -8,8 +8,8 @@
 
 namespace EApp\Event\Driver\Events;
 
-use EApp\System\Events\SystemDriverEvent;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Events\SystemDriverEvent;
+use EApp\Interfaces\SystemDriverInterface;
 
 /**
  * Class EventRenameDriverEvent
@@ -21,7 +21,7 @@ use EApp\System\Interfaces\SystemDriver;
  */
 class EventRenameDriverEvent extends SystemDriverEvent
 {
-	public function __construct( SystemDriver $driver, string $event_name, string $event_name_new )
+	public function __construct( SystemDriverInterface $driver, string $event_name, string $event_name_new )
 	{
 		parent::__construct( $driver, "rename", compact( 'event_name', 'event_name_new' ) );
 	}

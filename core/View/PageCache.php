@@ -11,19 +11,14 @@ namespace EApp\View;
 use EApp\App;
 use EApp\Cache;
 use EApp\Event\EventManager;
-use EApp\Filesystem\WriteFileTrait;
-use EApp\Proto\Controller;
+use EApp\Controllers\Controller;
 use EApp\Support\Str;
-use EApp\Support\Traits\CallbackTrait;
-use EApp\System\Events\CompleteEvent;
-use EApp\System\Events\PreRenderEvent;
-use EApp\System\Events\ReadyEvent;
+use EApp\Events\CompleteEvent;
+use EApp\Events\PreRenderEvent;
+use EApp\Events\ReadyEvent;
 
 class PageCache
 {
-	use WriteFileTrait;
-	use CallbackTrait;
-
 	protected $exists = false;
 
 	/**

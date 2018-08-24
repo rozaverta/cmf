@@ -31,7 +31,7 @@ class Filter
 		$this->filters = $filters;
 	}
 
-	public function __set_state(array $data)
+	public static function __set_state(array $data)
 	{
 		if( !isset($data["name"]) )
 		{

@@ -9,12 +9,12 @@
 namespace EApp\Component\Driver\Traits;
 
 use EApp\App;
-use EApp\Support\Interfaces\Arrayable;
-use EApp\Support\Interfaces\Jsonable;
-use EApp\Support\Interfaces\Loggable;
+use EApp\Interfaces\Arrayable;
+use EApp\Interfaces\Jsonable;
+use EApp\Interfaces\Loggable;
 use EApp\Support\Json;
-use EApp\Support\Traits\Write;
-use EApp\System\Fs\FileResource;
+use EApp\Traits\Write;
+use EApp\Filesystem\Resource;
 use EApp\Text;
 
 trait ResourceBackup
@@ -62,7 +62,7 @@ trait ResourceBackup
 	{
 		$type = null;
 
-		if( $content instanceof FileResource )
+		if( $content instanceof Resource )
 		{
 			$type = $content->getType();
 			$text = $content->getRawData();

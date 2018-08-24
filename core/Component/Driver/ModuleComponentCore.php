@@ -12,8 +12,8 @@ use EApp\Component\Driver\Tools\FileConfig;
 use EApp\Event\EventManager;
 use EApp\ModuleCore;
 use EApp\Prop;
-use EApp\Support\Traits\Write;
-use EApp\System\Events\ThrowableEvent;
+use EApp\Traits\Write;
+use EApp\Events\ThrowableEvent;
 use InvalidArgumentException;
 
 class ModuleComponentCore extends ModuleComponentAbstract

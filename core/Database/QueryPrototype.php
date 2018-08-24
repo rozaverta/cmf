@@ -4,6 +4,7 @@ namespace EApp\Database;
 
 use EApp\Database\Query\Builder;
 use EApp\Database\Schema\Column;
+use EApp\Database\Schema\SchemeDesigner;
 use EApp\Database\Schema\Table;
 use EApp\Support\CollectionRecorder;
 use InvalidArgumentException;
@@ -286,7 +287,7 @@ abstract class QueryPrototype
 
 	protected function fetchObject()
 	{
-		return false;
+		return SchemeDesigner::class;
 	}
 
 	protected function complete( array $items )

@@ -43,7 +43,7 @@ class Arr
 	}
 
 	/**
-	 * Get an item from an array using "dot" notation.
+	 * GetTrait an item from an array using "dot" notation.
 	 *
 	 * @param  \ArrayAccess|array  $array
 	 * @param  string  $key
@@ -85,7 +85,7 @@ class Arr
 	}
 
 	/**
-	 * Get all of the given array except for a specified array of items.
+	 * GetTrait all of the given array except for a specified array of items.
 	 *
 	 * @param  array  $array
 	 * @param  array|string  $keys
@@ -152,7 +152,7 @@ class Arr
 	}
 
 	/**
-	 * Set an array item to a given value using "dot" notation.
+	 * SetTrait an array item to a given value using "dot" notation.
 	 *
 	 * If no key is given to the method, the entire array will be replaced.
 	 *
@@ -383,7 +383,7 @@ class Arr
 	}
 
 	/**
-	 * Get one or a specified number of random values from an array.
+	 * GetTrait one or a specified number of random values from an array.
 	 *
 	 * @param  array  $array
 	 * @param  int|null  $number

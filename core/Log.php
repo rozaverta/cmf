@@ -8,7 +8,7 @@
 
 namespace EApp;
 
-use EApp\Support\Interfaces\Arrayable;
+use EApp\Interfaces\Arrayable;
 
 class Log implements Arrayable, \JsonSerializable
 {
@@ -21,8 +21,10 @@ class Log implements Arrayable, \JsonSerializable
 	public $replace = false;
 
 	private $time;
+
 	private $line = false;
-	private $translate = true;
+
+	private $translate = false;
 
 	public function __construct( $text, $level = null, $code = 0 )
 	{
@@ -83,15 +85,19 @@ class Log implements Arrayable, \JsonSerializable
 		return $this;
 	}
 
-	public function line()
+	public function setLine(bool $line = true)
 	{
-		$this->line = true;
+		$this->line = $line;
 		return $this;
 	}
 
-	public function translateOff()
+	/**
+	 * @param bool $translate
+	 * @return $this
+	 */
+	public function setTranslate( bool $translate = true )
 	{
-		$this->translate = false;
+		$this->translate = $translate;
 		return $this;
 	}
 
@@ -118,7 +124,7 @@ class Log implements Arrayable, \JsonSerializable
 
 			if( $fatal )
 			{
-				return $this->translateOff()->message();
+				return $this->setTranslate(false)->message();
 			}
 
 			if( $this->replace !== false )
@@ -146,7 +152,7 @@ class Log implements Arrayable, \JsonSerializable
 		$text = "";
 		if( $this->line )
 		{
-			$text = "- " . date( "Y-m-d H:i", $this->time ) . ' [' . $this->level . '] ';
+			$text = "- " . date( "Y-m-d H:i:s", $this->time ) . ' [' . $this->level . '] ';
 		}
 
 		$text .= $this->message();
@@ -154,7 +160,7 @@ class Log implements Arrayable, \JsonSerializable
 	}
 
 	/**
-	 * Get the instance as an array.
+	 * GetTrait the instance as an array.
 	 *
 	 * @return array
 	 */

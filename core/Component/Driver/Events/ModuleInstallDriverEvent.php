@@ -9,12 +9,12 @@
 namespace EApp\Component\Driver\Events;
 
 
-use EApp\System\Events\SystemDriverEvent;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Events\SystemDriverEvent;
+use EApp\Interfaces\SystemDriverInterface;
 
 class ModuleInstallDriverEvent extends SystemDriverEvent
 {
-	public function __construct( SystemDriver $driver, array $data = [] )
+	public function __construct( SystemDriverInterface $driver, array $data = [] )
 	{
 		parent::__construct( $driver, "install", $data );
 	}

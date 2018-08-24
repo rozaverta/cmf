@@ -8,10 +8,11 @@
 
 namespace EApp\Filesystem;
 
-use EApp\Support\Interfaces\CreateInstanceInterface;
+use EApp\Interfaces\CreateInstanceInterface;
+use IteratorAggregate;
 use Traversable;
 
-class Iterator implements \IteratorAggregate, CreateInstanceInterface
+class Iterator implements IteratorAggregate, CreateInstanceInterface
 {
 	const TYPE_FILE = 1;
 	const TYPE_DIRECTORY = 2;
@@ -28,7 +29,7 @@ class Iterator implements \IteratorAggregate, CreateInstanceInterface
 		}
 		else
 		{
-			throw new Exceptions\InvalidArgumentException("The '{$path}' path does not exist or is not a directory or is a link");
+			throw new Exceptions\InvalidArgumentPathException($path,"The '{$path}' path does not exist or is not a directory or is a link");
 		}
 	}
 

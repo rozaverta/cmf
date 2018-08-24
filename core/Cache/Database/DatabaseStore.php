@@ -8,59 +8,45 @@
 
 namespace EApp\Cache\Database;
 
-
-use EApp\App;
 use EApp\Cache\CacheStoreInterface;
 use EApp\Cache\CacheValueInterface;
+use EApp\Cache\DatabaseKeyName;
 use EApp\Cache\KeyName;
 use EApp\Database\Connection;
-use EApp\Database\QueryException;
+use EApp\Database\Query\Builder;
 
 class DatabaseStore implements CacheStoreInterface
 {
-	/**
-	 * @var Connection
-	 */
-	protected $connection;
-
-	protected $table;
+	use DatabaseConnectionTrait;
 
 	protected $life = 0;
 
 	public function __construct( Connection $connection, string $table = "cache", int $life = 0 )
 	{
-		$this->connection = $connection;
-		$this->table = $table;
+		$this->setConnection($connection, $table);
 		$this->life = $life;
-
-		// table scheme
-
-		// - id
-		// - key_name
-		// - key_prefix (group)
-		// - value
-		// - size
-		// - updated_at
 	}
 
 	public function flush( string $prefix = null ): bool
 	{
-		$table = $this->connection->table($this->table);
-		if( ! is_null($prefix) )
+		$table = $this->table();
+
+		if( is_null($prefix) )
 		{
-			$key_name = new DatabaseKeyName("", $prefix);
-			$table->where("key_prefix", '=', $key_name->getKeyPrefix());
+			return $this->fetch(function(Builder $table) {
+				$table->truncate();
+				return true;
+			}, $table);
 		}
 
-		try {
-			$table->delete();
-		}
-		catch( QueryException $e ) {
-			App::Log($e);
-			return false;
-		}
+		$prefix = (new DatabaseKeyName("", $prefix))->keyPrefix();
+		$table
+			->where("key_prefix", '=', $prefix)
+			->orWhere("key_prefix", "like", addcslashes($prefix, "%_") . "%");
 
-		return true;
+		return $this->fetch(function(Builder $table) {
+			return $table->delete() !== false;
+		}, $table);
 	}
 
 	public function getValue( KeyName $key_name, int $life = null ): CacheValueInterface

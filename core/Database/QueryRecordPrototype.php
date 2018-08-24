@@ -4,18 +4,19 @@ namespace EApp\Database;
 
 use EApp\Database\Query\Builder;
 use EApp\Database\Schema\Table;
-use EApp\Support\Exceptions\NotFoundException;
-use EApp\Support\Interfaces\Arrayable;
-use EApp\Support\Interfaces\InstanceStateConstructable;
-use EApp\Support\Traits\CreateInstanceTrait;
-use EApp\Support\Traits\Get;
-use EApp\Support\Traits\GetIdentifier;
+use EApp\Exceptions\NotFoundException;
+use EApp\Interfaces\Arrayable;
+use EApp\Interfaces\PhpExportSerializeInterface;
+use EApp\Support\PhpExportSerialize;
+use EApp\Traits\CreateInstanceTrait;
+use EApp\Traits\GetTrait;
+use EApp\Traits\GetIdentifierTrait;
 
-abstract class QueryRecordPrototype implements Arrayable, InstanceStateConstructable
+abstract class QueryRecordPrototype implements Arrayable, PhpExportSerializeInterface
 {
 	use QueryTypeTrait;
-	use Get;
-	use GetIdentifier;
+	use GetTrait;
+	use GetIdentifierTrait;
 	use CreateInstanceTrait;
 
 	protected $items = [];
@@ -126,11 +127,9 @@ abstract class QueryRecordPrototype implements Arrayable, InstanceStateConstruct
 		return $this->items;
 	}
 
-	public function getInstanceState(): array
+	public function phpExportSerialize(): PhpExportSerialize
 	{
-		return [
-			$this->getId()
-		];
+		return new PhpExportSerialize( $this, "__construct", [$this->getId()]);
 	}
 
 	protected function createBuilder()

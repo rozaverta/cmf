@@ -22,19 +22,19 @@ use EApp\Database\Schema\TableData;
 use EApp\Event\EventManager;
 use EApp\ModuleCoreConfig;
 use EApp\Prop;
-use EApp\Support\Interfaces\Loggable;
-use EApp\Support\Traits\GetModuleComponent;
-use EApp\Support\Traits\LoggableTrait;
-use EApp\System\Fs\FileResource;
-use EApp\System\Interfaces\SystemDriver;
+use EApp\Interfaces\Loggable;
+use EApp\Traits\GetModuleComponentTrait;
+use EApp\Traits\LoggableTrait;
+use EApp\Filesystem\Resource;
+use EApp\Interfaces\SystemDriverInterface;
 use EApp\Text;
 
-class DB implements SystemDriver, Loggable
+class DB implements SystemDriverInterface, Loggable
 {
 	use LoggableTrait;
 	use Traits\DBALToolsTraits;
 	use Traits\ResourceBackup;
-	use GetModuleComponent;
+	use GetModuleComponentTrait;
 
 	/**
 	 * @var string
@@ -56,7 +56,7 @@ class DB implements SystemDriver, Loggable
 		{
 			/** @var \EApp\Component\ModuleConfig $config */
 
-			$config_class = $module->getId() === 0 ? ModuleCoreConfig::class : $module->getNameSpace() . "Module";
+			$config_class = $module->getId() === 0 ? ModuleCoreConfig::class : $module->getNamespace() . "Module";
 			$config = new $config_class();
 			$version = $config->version;
 		}
@@ -87,7 +87,7 @@ class DB implements SystemDriver, Loggable
 
 		$this->resourceDirIsWritable($module_id, false, true);
 
-		$fileResource = new FileResource( "db_" . $name, null, $this->getModule() );
+		$fileResource = new Resource( "db_" . $name, null, $this->getModule() );
 		$table = TableData::createInstanceFromResource( $fileResource );
 		$schema = new Schema();
 		$tableDbal = $this->getDbalTable( $table, $schema->createTable( $this->getTablePrefix() . $table->getTableName() ) );
@@ -165,8 +165,8 @@ class DB implements SystemDriver, Loggable
 		$module_id = $this->getModule()->getId();
 		$this->resourceDirIsWritable($module_id, false, true);
 
-		$fileCurrent = new FileResource("db_" . $table_name, null, $this->getModule(), true );
-		$file = new FileResource("db_" . $new_table_name, null, $this->getModule() );
+		$fileCurrent = new Resource("db_" . $table_name, null, $this->getModule(), true );
+		$file = new Resource("db_" . $new_table_name, null, $this->getModule() );
 		$tableCurrent = TableData::createInstanceFromResource($fileCurrent);
 		$table = TableData::createInstanceFromResource($file);
 
@@ -258,7 +258,7 @@ class DB implements SystemDriver, Loggable
 			throw new \InvalidArgumentException("Table '{$name}' is used by another module");
 		}
 
-		$fileResource = new FileResource( "db_" . $name, null, $this->getModule(), true );
+		$fileResource = new Resource( "db_" . $name, null, $this->getModule(), true );
 		$table = TableData::createInstanceFromResource( $fileResource );
 		$schema = new Schema();
 		$schema->dropTable($this->getTablePrefix() . $name);

@@ -14,7 +14,7 @@ class ModuleCore extends Module
 {
 	public function __construct()
 	{
-		parent::__construct(0, false );
+		parent::__construct(0);
 	}
 
 	protected function fetch( int $id )

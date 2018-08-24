@@ -102,7 +102,7 @@ class ConnectionFactory
 	}
 
 	/**
-	 * Get the read configuration for a read / write connection.
+	 * GetTrait the read configuration for a read / write connection.
 	 *
 	 * @param  array $config
 	 * @return array
@@ -115,7 +115,7 @@ class ConnectionFactory
 	}
 
 	/**
-	 * Get the read configuration for a read / write connection.
+	 * GetTrait the read configuration for a read / write connection.
 	 *
 	 * @param  array $config
 	 * @return array
@@ -128,7 +128,7 @@ class ConnectionFactory
 	}
 
 	/**
-	 * Get a read / write level configuration.
+	 * GetTrait a read / write level configuration.
 	 *
 	 * @param  array $config
 	 * @param  string $type

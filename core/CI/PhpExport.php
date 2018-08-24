@@ -8,9 +8,9 @@
 
 namespace EApp\CI;
 
-use EApp\Support\Interfaces\InstanceStateConstructable;
+use EApp\Interfaces\PhpExportSerializeInterface;
 use EApp\Support\Str;
-use EApp\Support\Traits\SingletonInstance;
+use EApp\Traits\SingletonInstanceTrait;
 
 /**
  * Class PhpExport
@@ -20,7 +20,7 @@ use EApp\Support\Traits\SingletonInstance;
  */
 class PhpExport
 {
-	use SingletonInstance;
+	use SingletonInstanceTrait;
 
 	const ARRAY_PRETTY_PRINT = 1;
 	const SHORT_ARRAY_SYNTAX = 2;
@@ -42,13 +42,16 @@ class PhpExport
 	 */
 	public function data( $value, $name = "data", $init = true, $smart_depth = false )
 	{
-		$is_object = false;
+		$is_object = is_object( $value );
 		$get = '';
 		$map = '$' . $name;
 
-		if( is_object( $value ) )
+		if( $is_object )
 		{
-			$is_object = true;
+			if( $this->fromExportObject($value, $result) )
+			{
+				return $map . ' = ' . $result . ";\n";
+			}
 		}
 		else if( ! is_array( $value ) )
 		{
@@ -418,20 +421,9 @@ class PhpExport
 
 		if( $is_object )
 		{
-			// 1. The object itself converts data
-			if( method_exists($val, '__set_state') )
+			if( $this->fromExportObject($val, $result) )
 			{
-				return var_export($val, true);
-			}
-
-			// 2. The object get constructor property
-			if( $val instanceof InstanceStateConstructable )
-			{
-				$arguments = array_map( static function($value) { return var_export($value, true); }, $val->getInstanceState() );
-				$class_name = get_class($val);
-				if($class_name[0] !== "\\") $class_name = "\\" . $class_name;
-
-				return $class_name . '::createInstance(' . implode(',', $arguments) . ')';
+				return $result;
 			}
 
 			// fix recursive
@@ -477,5 +469,27 @@ class PhpExport
 		}
 
 		return $this->string( $val );
+	}
+
+	private function fromExportObject($val, & $result)
+	{
+		// 1. The object custom PhpExport
+		if( $val instanceof PhpExportSerializeInterface )
+		{
+			$result = var_export($val->phpExportSerialize(), true);
+		}
+
+		// 2. The object itself converts data
+		else if( method_exists($val, '__set_state') )
+		{
+			$result = var_export($val, true);
+		}
+
+		else
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

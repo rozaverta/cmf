@@ -108,7 +108,7 @@ class Connector
 	}
 
 	/**
-	 * Get the PDO options based on the configuration.
+	 * GetTrait the PDO options based on the configuration.
 	 *
 	 * @param  array  $config
 	 * @return array
@@ -120,7 +120,7 @@ class Connector
 	}
 
 	/**
-	 * Get the default PDO connection options.
+	 * GetTrait the default PDO connection options.
 	 *
 	 * @return array
 	 */
@@ -130,7 +130,7 @@ class Connector
 	}
 
 	/**
-	 * Set the default PDO connection options.
+	 * SetTrait the default PDO connection options.
 	 *
 	 * @param  array  $options
 	 * @return void
