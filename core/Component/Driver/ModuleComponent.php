@@ -10,7 +10,7 @@ namespace EApp\Component\Driver;
 
 use EApp\Component\ModuleFake;
 use EApp\Component\Module;
-use EApp\Component\Scheme\ModulesSchemeDesigner;
+use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Event\EventManager;
 use EApp\Exceptions\NotFoundException;
 use EApp\Support\Str;

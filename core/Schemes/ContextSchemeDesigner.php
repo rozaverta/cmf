@@ -6,7 +6,7 @@
  * Time: 16:28
  */
 
-namespace EApp\Component\Scheme;
+namespace EApp\Schemes;
 
 use EApp\Database\Schema\SchemeDesigner;
 

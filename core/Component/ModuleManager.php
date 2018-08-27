@@ -45,7 +45,7 @@ class ModuleManager implements Arrayable
 				         ->filter('install', true)
 				         ->get() as $item ) {
 
-				/** @var \EApp\Component\Scheme\ModulesSchemeDesigner $item */
+				/** @var \EApp\Schemes\ModulesSchemeDesigner $item */
 				$this->names[$item->name] = $item->id;
 				$this->items[$item->id] = [
 					"id"    => $item->id,

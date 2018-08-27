@@ -16,17 +16,10 @@ class RedisFactory extends Factory
 {
 	use RedisClientTrait;
 
-	private $life = 0;
-
-	public function __construct( Client $client, Hash $key_name )
+	public function __construct( Client $client, Hash $hash )
 	{
-		parent::__construct( $key_name );
+		parent::__construct( $hash );
 		$this->setRedis($client);
-	}
-
-	public function load( int $life = 0 )
-	{
-		$this->life = $life;
 	}
 
 	public function has(): bool

@@ -13,7 +13,7 @@ use EApp\Interfaces\ModuleComponentInterface;
 use EApp\Traits\GetTrait;
 use EApp\Traits\GetIdentifierTrait;
 use EApp\Traits\GetModuleComponentTrait;
-use EApp\View\Scheme\TemplatesSchemeDesigner;
+use EApp\Schemes\TemplatesSchemeDesigner;
 
 class Template implements ModuleComponentInterface
 {

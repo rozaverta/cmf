@@ -6,11 +6,9 @@
  * Time: 0:05
  */
 
-namespace EApp\View\Scheme;
+namespace EApp\Schemes;
 
-use EApp\Database\Schema\SchemeDesigner;
-
-class TemplatePackagesSchemeDesigner extends SchemeDesigner
+class TemplatePackagesSchemeDesigner extends _ModuleSchemeDesigner
 {
 	/**
 	 * Plugin unique identifier.
@@ -18,13 +16,6 @@ class TemplatePackagesSchemeDesigner extends SchemeDesigner
 	 * @var int
 	 */
 	public $id;
-
-	/**
-	 * ModuleConfig identifier.
-	 *
-	 * @var int
-	 */
-	public $module_id;
 
 	/**
 	 * Package access name.

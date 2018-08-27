@@ -11,7 +11,7 @@ namespace EApp\Route;
 use EApp\Database\Query\Builder;
 use EApp\Database\Query\JoinClause;
 use EApp\Database\QueryPrototype;
-use EApp\Component\Scheme\RouteSchemeDesigner;
+use EApp\Schemes\ModuleRouterSchemeDesigner;
 
 class QueryRoutes extends QueryPrototype
 {
@@ -32,7 +32,7 @@ class QueryRoutes extends QueryPrototype
 
 	protected function fetchObject()
 	{
-		return RouteSchemeDesigner::class;
+		return ModuleRouterSchemeDesigner::class;
 	}
 
 	protected function prepare( Builder $builder )

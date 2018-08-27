@@ -10,7 +10,7 @@ namespace EApp\Component\Driver;
 
 use EApp\Component\ModuleFake;
 use EApp\Component\ModuleConfig;
-use EApp\Component\Scheme\ModulesSchemeDesigner;
+use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Database\Connection;
 use EApp\Event\EventManager;
 use EApp\Filesystem\Resource as JsonResource;
@@ -106,7 +106,7 @@ class ModuleRegisterDriverInterface implements SystemDriverInterface, Loggable
 			"unregistered" => false
 		]);
 
-		/** @var ModulesSchemeDesigner $scheme */
+		/** @var \EApp\Schemes\ModulesSchemeDesigner $scheme */
 		$scheme = \DB
 			::table("modules")
 				->where("name", $module_name)

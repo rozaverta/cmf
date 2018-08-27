@@ -17,8 +17,8 @@ use EApp\ModuleCore;
 use EApp\Traits\CacheIdentifierInstanceTrait;
 use EApp\Traits\GetIdentifierTrait;
 use EApp\Traits\GetModuleComponentTrait;
-use EApp\View\Scheme\TemplatePackagesSchemeDesigner;
-use EApp\View\Scheme\TemplatesSchemeDesigner;
+use EApp\Schemes\TemplatePackagesSchemeDesigner;
+use EApp\Schemes\TemplatesSchemeDesigner;
 
 class Package implements ModuleComponentInterface
 {

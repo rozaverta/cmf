@@ -8,7 +8,7 @@
 
 namespace EApp\Component;
 
-use EApp\Component\Scheme\ContextSchemeDesigner;
+use EApp\Schemes\ContextSchemeDesigner;
 use EApp\Database\QueryPrototype;
 
 class QueryContext extends QueryPrototype

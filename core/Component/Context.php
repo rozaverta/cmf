@@ -8,7 +8,7 @@
 
 namespace EApp\Component;
 
-use EApp\Component\Scheme\ContextSchemeDesigner;
+use EApp\Schemes\ContextSchemeDesigner;
 use EApp\Exceptions\NotFoundException;
 use EApp\Interfaces\Arrayable;
 use EApp\Traits\GetIdentifierTrait;
@@ -18,7 +18,7 @@ class Context implements Arrayable
 	use GetIdentifierTrait;
 
 	/**
-	 * @var ContextSchemeDesigner
+	 * @var \EApp\Schemes\ContextSchemeDesigner
 	 */
 	private $instance;
 

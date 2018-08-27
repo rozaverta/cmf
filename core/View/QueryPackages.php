@@ -9,7 +9,7 @@
 namespace EApp\View;
 
 use EApp\Database\QueryPrototype;
-use EApp\View\Scheme\TemplatePackagesSchemeDesigner;
+use EApp\Schemes\TemplatePackagesSchemeDesigner;
 
 class QueryPackages extends QueryPrototype
 {

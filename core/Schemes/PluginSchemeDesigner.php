@@ -6,12 +6,9 @@
  * Time: 23:21
  */
 
-namespace EApp\Plugin\Scheme;
+namespace EApp\Schemes;
 
-use EApp\Component\Module;
-use EApp\Database\Schema\SchemeDesigner;
-
-class PluginSchemeDesigner extends SchemeDesigner
+class PluginSchemeDesigner extends _ModuleSchemeDesigner
 {
 	/**
 	 * Plugin unique identifier.
@@ -19,13 +16,6 @@ class PluginSchemeDesigner extends SchemeDesigner
 	 * @var int
 	 */
 	public $id;
-
-	/**
-	 * ModuleConfig identifier.
-	 *
-	 * @var int
-	 */
-	public $module_id;
 
 	/**
 	 * Plugin access name.
@@ -62,31 +52,32 @@ class PluginSchemeDesigner extends SchemeDesigner
 	 */
 	public $class_name;
 
-	/**
-	 * Package (module) name.
-	 *
-	 * @var string
-	 */
-	public $package_name;
-
 	public function __construct()
 	{
 		$this->id = (int) $this->id;
 		$this->module_id = (int) $this->module_id;
 		$this->visible = $this->visible > 0;
+	}
 
+	/**
+	 * Package (module) name.
+	 *
+	 * @return  string
+	 */
+	public function getPackageName(): string
+	{
 		if( $this->module_id > 0 )
 		{
-			$module = Module::cache($this->module_id);
+			$module = $this->getModule();
 			if( strpos($this->class_name, "\\") === false )
 			{
 				$this->class_name = $module->getNamespace() . "Plugin\\" . $this->class_name;
 			}
-			$this->package_name = $module->getName();
+			return $module->getName();
 		}
 		else
 		{
-			$this->package_name = $this->name;
+			return $this->name;
 		}
 	}
 }

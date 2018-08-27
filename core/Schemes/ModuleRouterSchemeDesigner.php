@@ -6,24 +6,16 @@
  * Time: 2:51
  */
 
-namespace EApp\Component\Scheme;
+namespace EApp\Schemes;
 
-use EApp\Database\Schema\SchemeDesigner;
 use EApp\Support\Json;
 
-class RouteSchemeDesigner extends SchemeDesigner
+class ModuleRouterSchemeDesigner extends _ModuleSchemeDesigner
 {
 	/**
-	 * ModuleConfig unique identifier in the database table.
-	 *
 	 * @var int
 	 */
 	public $id;
-
-	/**
-	 * @var int
-	 */
-	public $module_id;
 
 	public $type = "path";
 

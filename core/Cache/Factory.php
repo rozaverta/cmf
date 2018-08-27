@@ -13,11 +13,18 @@ abstract class Factory implements CacheFactoryInterface
 	/**
 	 * @var Hash
 	 */
-	protected $key_name;
+	protected $hash;
 
-	public function __construct( Hash $key_name )
+	protected $life = 0;
+
+	public function __construct( Hash $hash )
 	{
-		$this->key_name = $key_name;
+		$this->hash = $hash;
+	}
+
+	public function load( int $life = 0 )
+	{
+		$this->life = $life;
 	}
 
 	public function export( $data ): bool
@@ -39,6 +46,6 @@ abstract class Factory implements CacheFactoryInterface
 
 	protected function getKey(): string
 	{
-		return $this->key_name->getHash();
+		return $this->hash->getHash();
 	}
 }

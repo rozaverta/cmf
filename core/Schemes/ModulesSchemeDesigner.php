@@ -6,7 +6,7 @@
  * Time: 2:51
  */
 
-namespace EApp\Component\Scheme;
+namespace EApp\Schemes;
 
 use EApp\Database\Schema\SchemeDesigner;
 use EApp\Exceptions\NotFoundException;
@@ -15,14 +15,14 @@ use EApp\Component\ModuleConfig;
 class ModulesSchemeDesigner extends SchemeDesigner
 {
 	/**
-	 * ModuleComponentInterface unique identifier in the database table.
+	 * Module unique identifier in the database table.
 	 *
 	 * @var int
 	 */
 	public $id;
 
 	/**
-	 * ModuleComponentInterface name (base directory for namespace)
+	 * Module name (base directory for namespace)
 	 *
 	 * @var string
 	 */

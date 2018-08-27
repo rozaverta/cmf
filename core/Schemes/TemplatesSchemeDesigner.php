@@ -6,7 +6,7 @@
  * Time: 0:05
  */
 
-namespace EApp\View\Scheme;
+namespace EApp\Schemes;
 
 use EApp\Database\Schema\SchemeDesigner;
 use EApp\Support\Json;

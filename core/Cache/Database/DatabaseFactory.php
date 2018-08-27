@@ -20,28 +20,21 @@ class DatabaseFactory extends Factory
 
 	private $ready = false;
 
-	private $life = 0;
-
 	/**
 	 * @var null | object
 	 */
 	private $row = null;
 
-	public function __construct( Connection $connection, string $table, Hash $key_name )
+	public function __construct( Connection $connection, string $table, Hash $hash )
 	{
-		if( ! $key_name instanceof DatabaseHash )
+		if( ! $hash instanceof DatabaseHash )
 		{
 			throw new \InvalidArgumentException("You must used the " . DatabaseHash::class . ' object instance for the ' . __CLASS__ . ' constructor');
 		}
 
-		parent::__construct( $key_name );
+		parent::__construct( $hash );
 
 		$this->setConnection($connection, $table);
-	}
-
-	public function load( int $life = 0 )
-	{
-		$this->life = $life;
 	}
 
 	public function has(): bool
@@ -101,8 +94,8 @@ class DatabaseFactory extends Factory
 		}
 		else
 		{
-			$data["key_name"]   = $this->key_name->keyName();
-			$data["key_prefix"] = $this->key_name->keyPrefix();
+			$data["name"]   = $this->hash->keyName();
+			$data["prefix"] = $this->hash->keyPrefix();
 
 			$id = $this->fetch(
 				function(Builder $table) use($data) {
@@ -163,15 +156,15 @@ class DatabaseFactory extends Factory
 		return true;
 	}
 
-	protected function tableThen( bool $key_name = true, int $where_id = 0 ): Builder
+	protected function tableThen( bool $hash = true, int $where_id = 0 ): Builder
 	{
 		$table = $this->table();
 
-		if($key_name)
+		if($hash)
 		{
 			$table
-				->where('key_name', '=', $this->key_name->keyName())
-				->where('key_prefix', '=', $this->key_name->keyPrefix());
+				->where('name', '=', $this->hash->keyName())
+				->where('prefix', '=', $this->hash->keyPrefix());
 		}
 		else if( $where_id > 0 )
 		{

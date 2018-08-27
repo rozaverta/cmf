@@ -43,8 +43,8 @@ class DatabaseStore extends Store
 
 		$prefix = (new DatabaseHash("", $prefix))->keyPrefix();
 		$table
-			->where("key_prefix", '=', $prefix)
-			->orWhere("key_prefix", "like", addcslashes($prefix, "%_") . "%");
+			->where("prefix", '=', $prefix)
+			->orWhere("prefix", "like", addcslashes($prefix, "%_") . "%");
 
 		return $this->fetch(function(Builder $table) {
 			return $table->delete() !== false;
@@ -74,10 +74,10 @@ class DatabaseStore extends Store
 		$all = $this->fetch(function(Builder $table) {
 
 			return $table
-				->groupBy("key_prefix")
+				->groupBy("prefix")
 				->get([
-					"key_name",
-					"key_prefix",
+					"name",
+					"prefix",
 					new ExpressionWrap('COUNT(%s) as %s', ['id', 'items']),
 					new ExpressionWrap('SUM(%s) as %s', ['size', 'sizes']),
 				]);
@@ -97,7 +97,7 @@ class DatabaseStore extends Store
 
 			foreach($all as $item)
 			{
-				$key = empty($item->key_prefix) ? $item->key_name : $item->key_prefix;
+				$key = empty($item->prefix) ? $item->name : $item->prefix;
 				$items = (int) $item->items;
 				$sizes = (int) $item->sizes;
 
@@ -135,9 +135,9 @@ class DatabaseStore extends Store
 		return $stats;
 	}
 
-	public function createFactory( string $key_name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
 	{
-		$value = new DatabaseFactory($this->connection, $this->table, new DatabaseHash($key_name, $prefix, $properties));
+		$value = new DatabaseFactory($this->connection, $this->table, new DatabaseHash($name, $prefix, $properties));
 		$value->load(is_null($life) ? $this->life : $life);
 		return $value;
 	}

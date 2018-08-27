@@ -12,13 +12,6 @@ use EApp\Cache\Factory;
 
 class ApcFactory extends Factory
 {
-	protected $life = 0;
-
-	public function load( int $life = 0 )
-	{
-		$this->life = $life;
-	}
-
 	public function has(): bool
 	{
 		return apcu_exists( $this->getKey() );

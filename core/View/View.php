@@ -13,7 +13,7 @@ use EApp\Cache;
 use EApp\Event\EventManager;
 use EApp\Plugin\QueryPlugins;
 use EApp\Plugin\Interfaces\PluginShotable;
-use EApp\Plugin\Scheme\PluginSchemeDesigner;
+use EApp\Schemes\PluginSchemeDesigner;
 use EApp\Prop;
 use EApp\Plugin\Plugin;
 use EApp\Exceptions\NotFoundException;
@@ -164,7 +164,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		}
 
 		return [
-				"package_name" => $item->package_name,
+				"package_name" => $item->getPackageName(),
 				"name" => $item->name,
 				"short" => $short,
 				"class_name" => $class_name
@@ -231,7 +231,7 @@ final class View implements SingletonCompletable, ArrayAccess
 		}
 		else
 		{
-			/** @var \EApp\View\Scheme\TemplatePackagesSchemeDesigner $item */
+			/** @var \EApp\Schemes\TemplatePackagesSchemeDesigner $item */
 			foreach( (new QueryPackages())->get() as $item )
 			{
 				$this->packages[$item->name] = $item->id;

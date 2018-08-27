@@ -8,7 +8,7 @@
 
 namespace EApp\Component;
 
-use EApp\Component\Scheme\ModulesSchemeDesigner;
+use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Database\Manager as DB;
 use EApp\Database\Schema\SchemeDesigner;
 use EApp\Exceptions\NotFoundException;

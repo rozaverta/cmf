@@ -10,7 +10,7 @@ namespace EApp\Controllers;
 
 use EApp\App;
 use EApp\Component\QueryModules;
-use EApp\Component\Scheme\ModulesSchemeDesigner;
+use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Prop;
 use EApp\Exceptions\NotFoundException;
 use EApp\Filesystem\Resource;

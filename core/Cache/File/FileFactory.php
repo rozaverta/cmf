@@ -24,26 +24,24 @@ class FileFactory extends Factory
 
 	private $file_path;
 
-	private $life = 0;
-
 	private $file_exists = false;
 
-	public function __construct( Filesystem $filesystem, Hash $key_name, string $directory = "cache" )
+	public function __construct( Filesystem $filesystem, Hash $hash, string $directory = "cache" )
 	{
-		if( ! $key_name instanceof FileHash )
+		if( ! $hash instanceof FileHash )
 		{
 			throw new \InvalidArgumentException("You must used the " . FileHash::class . ' object instance for the ' . __CLASS__ . ' constructor');
 		}
 
-		parent::__construct($key_name);
+		parent::__construct($hash);
 
 		$this->filesystem = $filesystem;
-		$this->file_path = (defined("APP_DIR") ? APP_DIR : sys_get_temp_dir()) . $directory . DIRECTORY_SEPARATOR . $key_name->getHash();
+		$this->file_path = (defined("APP_DIR") ? APP_DIR : sys_get_temp_dir()) . $directory . DIRECTORY_SEPARATOR . $hash->getHash();
 	}
 
 	public function load( int $life = 0 )
 	{
-		$this->life = $life;
+		parent::load($life);
 		$this->ready();
 	}
 

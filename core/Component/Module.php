@@ -9,7 +9,7 @@
 namespace EApp\Component;
 
 use EApp\Cache;
-use EApp\Component\Scheme\ModulesSchemeDesigner;
+use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Interfaces\PhpExportSerializeInterface;
 use EApp\ModuleCore;
 use EApp\Exceptions\NotFoundException;

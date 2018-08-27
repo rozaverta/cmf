@@ -24,6 +24,10 @@ trait GetModuleComponentTrait
 	 */
 	public function getModule(): Module
 	{
+		if( is_null($this->module) )
+		{
+			$this->reloadModule();
+		}
 		return $this->module;
 	}
 
@@ -34,7 +38,7 @@ trait GetModuleComponentTrait
 	 */
 	public function getModuleId(): int
 	{
-		return $this->module->getId();
+		return $this->getModule()->getId();
 	}
 
 	/**
@@ -53,6 +57,11 @@ trait GetModuleComponentTrait
 	{
 		$this->module = $module;
 		return $this;
+	}
+
+	protected function reloadModule()
+	{
+		throw new \RuntimeException("Module is not loaded");
 	}
 
 	/**

@@ -16,7 +16,7 @@ use EApp\Traits\GetModuleComponentTrait;
 use EApp\Traits\LoggableTrait;
 use EApp\Traits\Write;
 use EApp\Interfaces\SystemDriverInterface;
-use EApp\View\Scheme\TemplatePackagesSchemeDesigner;
+use EApp\Schemes\TemplatePackagesSchemeDesigner;
 use ZipArchive;
 
 class PackageDriverInterface implements SystemDriverInterface, Loggable
@@ -40,7 +40,7 @@ class PackageDriverInterface implements SystemDriverInterface, Loggable
 
 	/**
 	 * @param $name
-	 * @return \EApp\View\Scheme\TemplatePackagesSchemeDesigner|false
+	 * @return \EApp\Schemes\TemplatePackagesSchemeDesigner|false
 	 */
 	public static function getPackageItem($name)
 	{

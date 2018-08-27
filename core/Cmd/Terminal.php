@@ -102,7 +102,7 @@ class Terminal
 				         ->filter("install", true)
 				         ->get() as $module )
 			{
-				/** @var \EApp\Component\Scheme\ModulesSchemeDesigner $module */
+				/** @var \EApp\Schemes\ModulesSchemeDesigner $module */
 				$count = $this->loadModule( $application, $module->getConfig() );
 				if( $count !== false )
 				{

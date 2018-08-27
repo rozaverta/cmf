@@ -26,9 +26,9 @@ class RedisStore extends Store
 		$this->setRedis($client);
 	}
 
-	public function createFactory( string $key_name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
 	{
-		$value = new RedisFactory($this->getRedis(), new DatabaseHash($key_name, $prefix, $properties));
+		$value = new RedisFactory($this->getRedis(), new DatabaseHash($name, $prefix, $properties));
 		$value->load(is_null($life) ? $this->getLife() : $life);
 		return $value;
 	}

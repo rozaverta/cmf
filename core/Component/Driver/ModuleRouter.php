@@ -9,7 +9,7 @@
 namespace EApp\Component\Driver;
 
 use EApp\Component\Module;
-use EApp\Component\Scheme\RouteSchemeDesigner;
+use EApp\Schemes\ModuleRouterSchemeDesigner;
 use EApp\Database\Query\Builder;
 use EApp\Event\EventManager;
 use EApp\Prop;
@@ -339,6 +339,6 @@ class ModuleRouter implements SystemDriverInterface, Loggable
 			->select(["*"])
 			->toSql();
 
-		return \DB::connection()->select($sql, [], true, RouteSchemeDesigner::class);
+		return \DB::connection()->select($sql, [], true, ModuleRouterSchemeDesigner::class);
 	}
 }

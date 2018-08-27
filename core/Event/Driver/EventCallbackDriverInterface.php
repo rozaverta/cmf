@@ -9,8 +9,8 @@
 namespace EApp\Event\Driver;
 
 use EApp\Component\Module;
-use EApp\Event\Scheme\EventCallbackSchemeDesigner;
-use EApp\Event\Scheme\EventSchemeDesigner;
+use EApp\Schemes\EventCallbackSchemeDesigner;
+use EApp\Schemes\EventsSchemeDesigner;
 use EApp\Exceptions\NotFoundException;
 use EApp\Interfaces\Loggable;
 use EApp\Traits\GetModuleComponentTrait;
@@ -63,7 +63,7 @@ class EventCallbackDriverInterface implements SystemDriverInterface, Loggable
 
 	/**
 	 * @param string $class_name
-	 * @return \EApp\Event\Scheme\EventCallbackSchemeDesigner | bool
+	 * @return \EApp\Schemes\EventCallbackSchemeDesigner | bool
 	 */
 	public function getCallbackItem( string $class_name )
 	{
@@ -79,9 +79,9 @@ class EventCallbackDriverInterface implements SystemDriverInterface, Loggable
 
 	// protected
 
-	protected function getEventItem( $event ): EventSchemeDesigner
+	protected function getEventItem( $event ): EventsSchemeDesigner
 	{
-		if( $event instanceof EventSchemeDesigner )
+		if( $event instanceof EventsSchemeDesigner )
 		{
 			return $event;
 		}

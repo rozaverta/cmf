@@ -7,10 +7,10 @@
 			"type": "integer:autoincrement"
 		},
 		{
-			"name": "key_name"
+			"name": "name"
 		},
 		{
-			"name": "key_prefix"
+			"name": "prefix"
 		},
 		{
 			"name": "value",

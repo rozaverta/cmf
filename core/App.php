@@ -7,8 +7,8 @@ use EApp\Component\Context;
 use EApp\Route\Comparator;
 use EApp\Route\MountPoint;
 use EApp\Component\QueryContext;
-use EApp\Component\Scheme\ContextSchemeDesigner;
-use EApp\Component\Scheme\RouteSchemeDesigner;
+use EApp\Schemes\ContextSchemeDesigner;
+use EApp\Schemes\ModuleRouterSchemeDesigner;
 use EApp\Controllers\WelcomeController;
 use EApp\Database\Manager as DataBaseManager;
 use EApp\Event\Event;
@@ -272,7 +272,7 @@ final class App
 		else {
 			$routers = (new QueryRoutes())
 				->get()
-				->map(function(RouteSchemeDesigner $scheme) {
+				->map(function( ModuleRouterSchemeDesigner $scheme) {
 					return new MountPoint($scheme);
 				})
 				->getAll();

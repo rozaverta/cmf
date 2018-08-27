@@ -28,9 +28,9 @@ class MemcachedStore extends Store
 		$this->prefix = $prefix;
 	}
 
-	public function createFactory( string $key_name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
 	{
-		$value = new MemcachedFactory($this->getConnection(), new DatabaseHash($key_name, $this->prefix . $prefix, $properties));
+		$value = new MemcachedFactory($this->getConnection(), new DatabaseHash($name, $this->prefix . $prefix, $properties));
 		$value->load(is_null($life) ? $this->life : $life);
 		return $value;
 	}

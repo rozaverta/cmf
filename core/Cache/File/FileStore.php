@@ -35,9 +35,9 @@ class FileStore extends Store
 		}
 	}
 
-	public function createFactory( string $key_name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
 	{
-		$value = new FileFactory($this->filesystem, new FileHash($key_name, $prefix, $properties), $this->directory);
+		$value = new FileFactory($this->filesystem, new FileHash($name, $prefix, $properties), $this->directory);
 		$value->load(is_null($life) ? $this->life : $life);
 		return $value;
 	}

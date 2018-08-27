@@ -14,7 +14,7 @@ use EApp\Event\Driver\Events\EventRenameDriverEvent;
 use EApp\Event\Driver\Events\EventUpdateDriverEvent;
 use EApp\Component\Module;
 use EApp\Event\EventManager;
-use EApp\Event\Scheme\EventSchemeDesigner;
+use EApp\Schemes\EventsSchemeDesigner;
 use EApp\Prop;
 use EApp\Exceptions\NotFoundException;
 use EApp\Interfaces\Loggable;
@@ -287,7 +287,7 @@ class EventDriverInterface implements SystemDriverInterface, Loggable
 
 	/**
 	 * @param $name
-	 * @return \EApp\Event\Scheme\EventSchemeDesigner | bool
+	 * @return \EApp\Schemes\EventsSchemeDesigner | bool
 	 */
 	public static function getEventItem( $name )
 	{
@@ -303,7 +303,7 @@ class EventDriverInterface implements SystemDriverInterface, Loggable
 			->limit(1)
 			->toSql();
 
-		$row = $con->selectOne($sql, [], true, EventSchemeDesigner::class);
+		$row = $con->selectOne($sql, [], true, EventsSchemeDesigner::class);
 		return $row;
 	}
 

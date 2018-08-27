@@ -10,8 +10,9 @@ namespace EApp\Route;
 
 use EApp\App;
 use EApp\Component\Module;
-use EApp\Component\Scheme\RouteSchemeDesigner;
+use EApp\Schemes\ModuleRouterSchemeDesigner;
 use EApp\Exceptions\NotFoundException;
+use EApp\Traits\GetModuleComponentTrait;
 use EApp\Traits\GetTrait;
 use EApp\Traits\GetIdentifierTrait;
 use EApp\Interfaces\ModuleComponentInterface;
@@ -20,10 +21,11 @@ class MountPoint implements ModuleComponentInterface
 {
 	use GetIdentifierTrait;
 	use GetTrait;
+	use GetModuleComponentTrait {
+		getModuleId as getNativeModuleId;
+	}
 
 	private $scheme;
-
-	private $module;
 
 	private $module_id;
 
@@ -35,7 +37,7 @@ class MountPoint implements ModuleComponentInterface
 
 	protected $length = -1;
 
-	public function __construct( RouteSchemeDesigner $scheme )
+	public function __construct( ModuleRouterSchemeDesigner $scheme )
 	{
 		$this->id = $scheme->id;
 		$this->module_id = $scheme->module_id;
@@ -65,9 +67,9 @@ class MountPoint implements ModuleComponentInterface
 			throw new \InvalidArgumentException(__CLASS__ . "::" . __METHOD__ . " 'id' property is not used");
 		}
 
-		$ref = new \ReflectionClass(RouteSchemeDesigner::class);
+		$ref = new \ReflectionClass(ModuleRouterSchemeDesigner::class);
 
-		/** @var RouteSchemeDesigner $scheme */
+		/** @var ModuleRouterSchemeDesigner $scheme */
 		$scheme = $ref->newInstanceWithoutConstructor();
 
 		$scheme->id = $data["id"];
@@ -99,7 +101,7 @@ class MountPoint implements ModuleComponentInterface
 			->whereId($id);
 
 		$result = $builder->getConnection()->selectOne(
-			$builder->toSql(), $builder->getBindings(), true, RouteSchemeDesigner::class
+			$builder->toSql(), $builder->getBindings(), true, ModuleRouterSchemeDesigner::class
 		);
 
 		if( !$result )
@@ -122,18 +124,6 @@ class MountPoint implements ModuleComponentInterface
 	}
 
 	/**
-	 * @return \EApp\Component\Module
-	 */
-	public function getModule(): Module
-	{
-		if( !isset($this->module) )
-		{
-			$this->module = Module::cache($this->module_id);
-		}
-		return $this->module;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function getType(): string
@@ -146,7 +136,7 @@ class MountPoint implements ModuleComponentInterface
 	 */
 	public function getModuleId(): int
 	{
-		return $this->module_id;
+		return $this->hasModule() ? $this->getNativeModuleId() : $this->module_id;
 	}
 
 	/**
@@ -163,5 +153,10 @@ class MountPoint implements ModuleComponentInterface
 	public function getRule()
 	{
 		return is_null($this->rule) ? "" : $this->rule;
+	}
+
+	protected function reloadModule()
+	{
+		$this->setModule(Module::cache($this->module_id));
 	}
 }

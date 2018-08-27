@@ -29,8 +29,8 @@ trait DatabaseConnectionTrait
 		// table scheme
 
 		// - id
-		// - key_name
-		// - key_prefix (group)
+		// - name
+		// - prefix (group)
 		// - value
 		// - size
 		// - updated_at
