@@ -8,30 +8,29 @@
 
 namespace EApp\Cache\Memcached;
 
-use EApp\Cache\CacheStoreInterface;
-use EApp\Cache\CacheValueInterface;
-use EApp\Cache\DatabaseKeyName;
-use EApp\Cache\KeyName;
+use EApp\Cache\CacheFactoryInterface;
+use EApp\Cache\DatabaseHash;
+use EApp\Cache\Properties\Property;
+use EApp\Cache\Properties\PropertyStats;
+use EApp\Cache\Store;
 use Memcached;
 
-class MemcachedStore implements CacheStoreInterface
+class MemcachedStore extends Store
 {
-	use ConnectionTrait;
+	use MemcachedConnectionTrait;
 
 	protected $prefix;
 
-	protected $life = 0;
-
-	public function __construct( Memcached $connection, string $prefix = "", int $life = 0 )
+	public function __construct( Memcached $connection, string $store_name, string $prefix = "", int $life = 0 )
 	{
+		parent::__construct($store_name, $life);
 		$this->setConnection($connection);
 		$this->prefix = $prefix;
-		$this->life = $life;
 	}
 
-	public function getValue( KeyName $key_name, int $life = null ): CacheValueInterface
+	public function createFactory( string $key_name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
 	{
-		$value = new MemcachedValue($this->getConnection(), $key_name);
+		$value = new MemcachedFactory($this->getConnection(), new DatabaseHash($key_name, $this->prefix . $prefix, $properties));
 		$value->load(is_null($life) ? $this->life : $life);
 		return $value;
 	}
@@ -48,9 +47,35 @@ class MemcachedStore implements CacheStoreInterface
 		);
 	}
 
-	public function getKeyName( string $key_name, string $prefix = "", array $properties = [] ): KeyName
+	public function info(): array
 	{
-		$prefix = $this->prefix . $prefix;
-		return new DatabaseKeyName($key_name, $prefix, $properties);
+		$info = [];
+
+		$info[] = new Property("driver", "memcache");
+		$info[] = new Property("driver_version", $this->getConnection()->getVersion());
+		$info[] = new Property("default_life", $this->life);
+
+		return $info;
+	}
+
+	public function stats(): array
+	{
+		$memcached = $this->getConnection();
+		$all = $memcached->getStats();
+		$stats = [];
+
+		if(is_array($all) && count($all) > 0)
+		{
+			foreach($all as $server => $info)
+			{
+				$stats[] = new Property("server_connection", $server);
+				foreach($info as $name => $value)
+				{
+					$stats[] = new PropertyStats($name, $value);
+				}
+			}
+		}
+
+		return $stats;
 	}
 }

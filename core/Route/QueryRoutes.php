@@ -6,7 +6,7 @@
  * Time: 2:21
  */
 
-namespace EApp\Component;
+namespace EApp\Route;
 
 use EApp\Database\Query\Builder;
 use EApp\Database\Query\JoinClause;

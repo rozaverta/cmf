@@ -12,7 +12,7 @@ use EApp\App;
 use EApp\Log;
 use Memcached;
 
-trait ConnectionTrait
+trait MemcachedConnectionTrait
 {
 	/**
 	 * @var Memcached

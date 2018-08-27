@@ -8,6 +8,8 @@
 
 namespace EApp\CmdCommands\Scripts;
 
+use EApp\Cache\Properties\Property;
+use EApp\Cache\Properties\PropertyMemory;
 use EApp\Cmd\IO\Option;
 
 class Cache extends AbstractScript
@@ -64,16 +66,64 @@ class Cache extends AbstractScript
 
 	public function info()
 	{
+		$info = \EApp\Cache::store()->info();
+		$rows = [];
+
+		/** @var Property $prop */
+		foreach($info as $prop)
+		{
+			$rows[] = [
+				$prop->getName(), $this->getTypeString($prop->getValue())
+			];
+		}
+
 		$this
 			->getIO()
-			->write("TODO: you select - INFO");
+			->table($rows, ["Name", "Factory"]);
 	}
 
 	public function stats()
 	{
+		$stats = \EApp\Cache::store()->stats();
+
+		$rows = [];
+		$prev = null;
+
+		/** @var Property $prop */
+		foreach($stats as $prop)
+		{
+			$current = get_class($prop);
+
+			if( $prev && $current !== $prev )
+			{
+				$rows[] = null;
+			}
+
+			$prev = $current;
+
+			if( $prop instanceof PropertyMemory )
+			{
+				$key = 'NS <info>' . $prop->getName() . '</info>';
+				$val = $this->getSizeUnits($prop->getValue());
+				if($prop->getCount() > 1)
+				{
+					$val .= ' <comment>[' . $prop->getCount() . ']</comment>';
+				}
+			}
+			else
+			{
+				$key = $prop->getName();
+				$val = $this->getTypeString($prop->getValue());
+			}
+
+			$rows[] = [
+				$key, $val
+			];
+		}
+
 		$this
 			->getIO()
-			->write("TODO: you select - FLUSH");
+			->table($rows, ["Name", "Factory"]);
 	}
 
 	private function flushAskPrefix()
@@ -87,6 +137,43 @@ class Cache extends AbstractScript
 		{
 			$this->flush($prefix);
 		}
+	}
+
+	private function getTypeString( $value, $depth = 0 ): string
+	{
+		if( is_null($value) )
+		{
+			return '<info>NULL</info>';
+		}
+
+		if( is_bool($value) )
+		{
+			return $value ? '<info>YES</info>' : '<error>NO</error>';
+		}
+
+		if( is_numeric($value) )
+		{
+			return '<comment>' . $value . '</comment>';
+		}
+
+		if( is_array($value) )
+		{
+			if( $depth > 0 )
+			{
+				return '[<info>' . count($value) . '</info>]';
+			}
+
+			return implode(", ", array_map(function($val) {
+				return $this->getTypeString($val, 1);
+			}, $value));
+		}
+
+		if( is_object($value) && ! method_exists($value, '__toString') )
+		{
+			return get_class($value);
+		}
+
+		return (string) $value;
 	}
 
 	private function getSizeUnits(int $size): string

@@ -9,6 +9,7 @@
 namespace EApp\Component;
 
 use EApp\Cache;
+use EApp\Component\Scheme\ModulesSchemeDesigner;
 use EApp\Interfaces\PhpExportSerializeInterface;
 use EApp\ModuleCore;
 use EApp\Exceptions\NotFoundException;
@@ -175,9 +176,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	 */
 	public function toArray()
 	{
-		$data = $this->items;
-		$data['support'] = $this->support;
-		return $data;
+		return $this->exportCacheData();
 	}
 
 	// -- protected
@@ -186,6 +185,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	{
 		$builder = \DB
 			::table("modules")
+				->setResultClass(ModulesSchemeDesigner::class)
 				->whereId($id);
 
 		if( $this->is_install )
@@ -193,34 +193,21 @@ class Module implements Arrayable, PhpExportSerializeInterface
 			$builder->where('install', true);
 		}
 
+		/** @var ModulesSchemeDesigner $row */
 		$row = $builder->first();
 		if( !$row )
 		{
-			throw new NotFoundException("ModuleComponentInterface '{$this->id}' not found");
+			throw new NotFoundException("The '{$this->id}' module not found");
 		}
 
-		$name_space = trim($row->name_space, '\\');
-		$class = $name_space . '\\Module';
-		if( !class_exists($class, true) )
-		{
-			throw new NotFoundException("ModuleComponentInterface '{$row->name}' not found");
-		}
+		$config = $row->getConfig();
 
-		/**
-		 * @var ModuleConfig $module
-		 */
-		$module = new $class();
-		if( $module->name !== $row->name )
-		{
-			throw new \InvalidArgumentException("Failure config data for module '{$row->name}'");
-		}
-
-		if( $this->is_install && $module->version !== $row->version )
+		if( $this->is_install && $config->version !== $row->version )
 		{
 			throw new \InvalidArgumentException("The current version of the '{$row->name}' module does not match the installed version of the module");
 		}
 
-		return $this->load( $row->id, $module, $row->version );
+		return $this->load( $row->id, $config, $row->version );
 	}
 
 	protected function load( $id, ModuleConfig $module_config, string $version )

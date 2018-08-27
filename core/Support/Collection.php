@@ -52,17 +52,97 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
+	 * Sort an collection and maintain index association
+	 *
+	 * @param bool $desc in reverse order
+	 * @return static
+	 */
+	public function sort( bool $desc = false )
+	{
+		$items = $this->items;
+		asort($items);
+		if($desc)
+		{
+			$items = array_reverse($items, true);
+		}
+		return new static($items);
+	}
+
+	/**
+	 * Sort an collection and maintain index association in reverse order
+	 *
+	 * @return static
+	 */
+	public function sortDesc()
+	{
+		return $this->sort(true);
+	}
+
+	/**
+	 * Sort an collection by key
+	 *
+	 * @param int $options Sorting type flags
+	 * @param bool $desc In reverse order
+	 * @return static
+	 */
+	public function sortKeys( int $options = SORT_REGULAR, bool $desc = false )
+	{
+		$items = $this->items;
+		$desc ? krsort($items, $options) : ksort($items, $options);
+		return new static($items);
+	}
+
+	/**
+	 * Sort an collection by key in reverse order
+	 *
+	 * @param int $options Sorting type flags
+	 * @return Collection
+	 */
+	public function sortKeysDesc( int $options = SORT_REGULAR )
+	{
+		return $this->sortKeys( $options, true );
+	}
+
+	/**
+	 * Sort an collection by values using a user-defined comparison function
+	 *
+	 * @param \Closure $callback
+	 * @param bool $save_keys maintain index association
+	 * @return static
+	 */
+	public function sortBy( \Closure $callback, bool $save_keys = true )
+	{
+		$items = $this->items;
+		$save_keys ? uasort($items, $callback) : usort($items, $callback);
+		return new static($items);
+	}
+
+	/**
+	 * Sort an collection by keys using a user-defined comparison function
+	 *
+	 * @param \Closure $callback
+	 * @return static
+	 */
+	public function sortByKeys( \Closure $callback )
+	{
+		$items = $this->items;
+		uksort($items, $callback);
+		return new static($items);
+	}
+
+	/**
 	 * Run a filter over each of the items.
 	 *
-	 * @param  callable|null  $callback
-	 * @return self
+	 * @param  callable|null $callback
+	 * @param int $flag
+	 * @return Collection
 	 */
-	public function filter(callable $callback = null)
+	public function filter(callable $callback = null, int $flag = ARRAY_FILTER_USE_BOTH)
 	{
 		if ($callback)
 		{
 			return new self(
-				array_filter($this->items, $callback, ARRAY_FILTER_USE_BOTH)
+				array_filter($this->items, $callback, $flag)
 			);
 		}
 		else

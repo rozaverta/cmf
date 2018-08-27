@@ -8,12 +8,12 @@
 
 namespace EApp\Component\Driver;
 
-use EApp\Component\Driver\Tools\ModuleFake;
+use EApp\Component\ModuleFake;
 use EApp\Component\ModuleConfig;
-use EApp\Component\Scheme\ModuleSchemeDesigner;
+use EApp\Component\Scheme\ModulesSchemeDesigner;
 use EApp\Database\Connection;
 use EApp\Event\EventManager;
-use EApp\Filesystem\Resource;
+use EApp\Filesystem\Resource as JsonResource;
 use EApp\Prop;
 use EApp\Exceptions\NotFoundException;
 use EApp\Interfaces\Loggable;
@@ -106,11 +106,11 @@ class ModuleRegisterDriverInterface implements SystemDriverInterface, Loggable
 			"unregistered" => false
 		]);
 
-		/** @var ModuleSchemeDesigner $scheme */
+		/** @var ModulesSchemeDesigner $scheme */
 		$scheme = \DB
 			::table("modules")
 				->where("name", $module_name)
-				->setResultClass(ModuleSchemeDesigner::class)
+				->setResultClass(ModulesSchemeDesigner::class)
 				->first();
 
 		if( ! $scheme )
@@ -148,7 +148,7 @@ class ModuleRegisterDriverInterface implements SystemDriverInterface, Loggable
 		return $prop;
 	}
 
-	private function getManifest(): Resource
+	private function getManifest(): JsonResource
 	{
 		// check module config exists
 
@@ -168,7 +168,7 @@ class ModuleRegisterDriverInterface implements SystemDriverInterface, Loggable
 
 		// load manifest
 
-		$manifest = new Resource("manifest", dirname($ref->getFileName()) . DIRECTORY_SEPARATOR . "resources");
+		$manifest = new JsonResource("manifest", dirname($ref->getFileName()) . DIRECTORY_SEPARATOR . "resources");
 		if( $manifest->getType() !== "#/module" )
 		{
 			throw new \InvalidArgumentException("Invalid manifest type");
@@ -177,7 +177,7 @@ class ModuleRegisterDriverInterface implements SystemDriverInterface, Loggable
 		return $manifest;
 	}
 
-	private function getModuleName( Resource $manifest ): string
+	private function getModuleName( JsonResource $manifest ): string
 	{
 		// check module name
 

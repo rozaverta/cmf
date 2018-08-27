@@ -8,7 +8,7 @@
 
 namespace EApp\Cache;
 
-abstract class KeyName
+abstract class Hash
 {
 	protected $name;
 
@@ -25,9 +25,17 @@ abstract class KeyName
 		$this->data = $data;
 	}
 
-	public function getKey(): string
+	public function getHash(): string
 	{
-		return $this->keyPrefix() . $this->delimiter . $this->keyName();
+		$prefix = $this->keyPrefix();
+		if(strlen($prefix))
+		{
+			return $prefix . $this->delimiter . $this->keyName();
+		}
+		else
+		{
+			return $this->keyName();
+		}
 	}
 
 	abstract public function keyName(): string;

@@ -12,7 +12,7 @@ use EApp\Database\Schema\SchemeDesigner;
 use EApp\Exceptions\NotFoundException;
 use EApp\Component\ModuleConfig;
 
-class ModuleSchemeDesigner extends SchemeDesigner
+class ModulesSchemeDesigner extends SchemeDesigner
 {
 	/**
 	 * ModuleComponentInterface unique identifier in the database table.
@@ -55,7 +55,7 @@ class ModuleSchemeDesigner extends SchemeDesigner
 	{
 		$this->id = (int) $this->id;
 		$this->install = $this->install > 0;
-		$name_space = empty($this->name_space) ? ('MD\\' . $this->name) : trim($this->name_space, '\\');
+		$name_space = empty($this->name_space) ? $this->name : trim($this->name_space, '\\');
 		$class_name = $name_space . '\\Module';
 
 		if( ! class_exists($class_name, true) )

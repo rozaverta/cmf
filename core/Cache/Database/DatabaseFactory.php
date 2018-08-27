@@ -8,13 +8,13 @@
 
 namespace EApp\Cache\Database;
 
-use EApp\Cache\DatabaseKeyName;
-use EApp\Cache\KeyName;
-use EApp\Cache\Value;
+use EApp\Cache\DatabaseHash;
+use EApp\Cache\Hash;
+use EApp\Cache\Factory;
 use EApp\Database\Connection;
 use EApp\Database\Query\Builder;
 
-class DatabaseValue extends Value
+class DatabaseFactory extends Factory
 {
 	use DatabaseConnectionTrait;
 
@@ -27,11 +27,11 @@ class DatabaseValue extends Value
 	 */
 	private $row = null;
 
-	public function __construct( Connection $connection, string $table, KeyName $key_name )
+	public function __construct( Connection $connection, string $table, Hash $key_name )
 	{
-		if( ! $key_name instanceof DatabaseKeyName )
+		if( ! $key_name instanceof DatabaseHash )
 		{
-			throw new \InvalidArgumentException("You must used the " . DatabaseKeyName::class . ' object instance for the ' . __CLASS__ . ' constructor');
+			throw new \InvalidArgumentException("You must used the " . DatabaseHash::class . ' object instance for the ' . __CLASS__ . ' constructor');
 		}
 
 		parent::__construct( $key_name );

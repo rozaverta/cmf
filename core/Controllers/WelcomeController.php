@@ -10,7 +10,7 @@ namespace EApp\Controllers;
 
 use EApp\App;
 use EApp\Component\QueryModules;
-use EApp\Component\Scheme\ModuleSchemeDesigner;
+use EApp\Component\Scheme\ModulesSchemeDesigner;
 use EApp\Prop;
 use EApp\Exceptions\NotFoundException;
 use EApp\Filesystem\Resource;
@@ -121,7 +121,7 @@ framework and a content management system (CMS).</p>
 			$body .= "<h3>Modules</h3>";
 			$body .= "<p>";
 
-			/** @var ModuleSchemeDesigner $module */
+			/** @var ModulesSchemeDesigner $module */
 			foreach( $clt as $module )
 			{
 				$body .= '<p><strong>' . $module->name . ':</strong> ' . $module->title;

@@ -8,9 +8,9 @@
 
 namespace EApp\Cache;
 
-class DatabaseKeyName extends KeyName
+class DatabaseHash extends Hash
 {
-	protected $delimiter = ":";
+	protected $delimiter = "/";
 
 	protected $db_name;
 

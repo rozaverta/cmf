@@ -8,9 +8,9 @@
 
 namespace EApp\Component\Driver;
 
-use EApp\Component\Driver\Tools\ModuleFake;
+use EApp\Component\ModuleFake;
 use EApp\Component\Module;
-use EApp\Component\Scheme\ModuleSchemeDesigner;
+use EApp\Component\Scheme\ModulesSchemeDesigner;
 use EApp\Event\EventManager;
 use EApp\Exceptions\NotFoundException;
 use EApp\Support\Str;
@@ -19,11 +19,11 @@ class ModuleComponent extends ModuleComponentAbstract
 {
 	public function __construct( $name )
 	{
-		/** @var ModuleSchemeDesigner $row */
+		/** @var ModulesSchemeDesigner $row */
 		$row = \DB
 			::table("modules")
 				->where("name", Str::studly($name))
-				->setResultClass(ModuleSchemeDesigner::class)
+				->setResultClass(ModulesSchemeDesigner::class)
 				->first();
 
 		if( ! $row )

@@ -8,14 +8,14 @@
 
 namespace EApp\Cache;
 
-abstract class Value implements CacheValueInterface
+abstract class Factory implements CacheFactoryInterface
 {
 	/**
-	 * @var KeyName
+	 * @var Hash
 	 */
 	protected $key_name;
 
-	public function __construct( KeyName $key_name )
+	public function __construct( Hash $key_name )
 	{
 		$this->key_name = $key_name;
 	}
@@ -36,4 +36,9 @@ abstract class Value implements CacheValueInterface
 	}
 
 	abstract protected function exportData( $data ): bool;
+
+	protected function getKey(): string
+	{
+		return $this->key_name->getHash();
+	}
 }

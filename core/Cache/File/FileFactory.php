@@ -6,14 +6,14 @@
  * Time: 13:54
  */
 
-namespace EApp\Cache\Filesystem;
+namespace EApp\Cache\File;
 
-use EApp\Cache\KeyName;
-use EApp\Cache\Value;
+use EApp\Cache\Hash;
+use EApp\Cache\Factory;
 use EApp\Filesystem\Filesystem;
 use EApp\Filesystem\Traits\WriteFileTrait;
 
-class FilesystemValue extends Value
+class FileFactory extends Factory
 {
 	use WriteFileTrait;
 
@@ -28,17 +28,17 @@ class FilesystemValue extends Value
 
 	private $file_exists = false;
 
-	public function __construct( Filesystem $filesystem, KeyName $key_name, string $directory = "cache" )
+	public function __construct( Filesystem $filesystem, Hash $key_name, string $directory = "cache" )
 	{
-		if( ! $key_name instanceof FilesystemKeyName )
+		if( ! $key_name instanceof FileHash )
 		{
-			throw new \InvalidArgumentException("You must used the " . FilesystemKeyName::class . ' object instance for the ' . __CLASS__ . ' constructor');
+			throw new \InvalidArgumentException("You must used the " . FileHash::class . ' object instance for the ' . __CLASS__ . ' constructor');
 		}
 
 		parent::__construct($key_name);
 
 		$this->filesystem = $filesystem;
-		$this->file_path = (defined("APP_DIR") ? APP_DIR : sys_get_temp_dir()) . $directory . DIRECTORY_SEPARATOR . $key_name->getKey();
+		$this->file_path = (defined("APP_DIR") ? APP_DIR : sys_get_temp_dir()) . $directory . DIRECTORY_SEPARATOR . $key_name->getHash();
 	}
 
 	public function load( int $life = 0 )

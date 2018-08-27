@@ -8,14 +8,14 @@
 
 namespace EApp\Cache\Memcached;
 
-use EApp\Cache\DatabaseKeyName;
-use EApp\Cache\KeyName;
-use EApp\Cache\Value;
+use EApp\Cache\DatabaseHash;
+use EApp\Cache\Hash;
+use EApp\Cache\Factory;
 use Memcached;
 
-class MemcachedValue extends Value
+class MemcachedFactory extends Factory
 {
-	use ConnectionTrait;
+	use MemcachedConnectionTrait;
 
 	private $ready = false;
 
@@ -26,11 +26,11 @@ class MemcachedValue extends Value
 	 */
 	private $row = null;
 
-	public function __construct( Memcached $connection, KeyName $key_name )
+	public function __construct( Memcached $connection, Hash $key_name )
 	{
-		if( ! $key_name instanceof DatabaseKeyName )
+		if( ! $key_name instanceof DatabaseHash )
 		{
-			throw new \InvalidArgumentException("You must used the " . DatabaseKeyName::class . ' object instance for the ' . __CLASS__ . ' constructor');
+			throw new \InvalidArgumentException("You must used the " . DatabaseHash::class . ' object instance for the ' . __CLASS__ . ' constructor');
 		}
 		parent::__construct( $key_name );
 
@@ -47,7 +47,7 @@ class MemcachedValue extends Value
 		if( ! $this->ready )
 		{
 			$this->ready = true;
-			$row = $this->getConnection()->get( $this->key_name->getKey() );
+			$row = $this->getConnection()->get( $this->key_name->getHash() );
 			if( $row !== false )
 			{
 				$this->row = $row;
@@ -83,7 +83,7 @@ class MemcachedValue extends Value
 			$this->ready = false;
 			return $this->result(
 				$this->getConnection()->delete(
-					$this->key_name->getKey()
+					$this->key_name->getHash()
 				)
 			);
 		}
@@ -97,7 +97,7 @@ class MemcachedValue extends Value
 	{
 		return $this->result(
 			$this->getConnection()->set(
-				$this->key_name->getKey(),
+				$this->key_name->getHash(),
 				$data,
 				$this->life > 0 ? time() + $this->life : 0
 			)

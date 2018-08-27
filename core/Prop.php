@@ -9,15 +9,17 @@
 namespace EApp;
 
 use ArrayAccess;
+use ArrayIterator;
 use Countable;
 use EApp\Support\Str;
+use IteratorAggregate;
 use Traversable;
 use EApp\Interfaces\Arrayable;
 use EApp\Traits\GetTrait;
 use EApp\Traits\SetTrait;
 use EApp\Traits\CompareTrait;
 
-class Prop implements ArrayAccess, Countable, Arrayable
+class Prop implements ArrayAccess, Countable, Arrayable, IteratorAggregate
 {
 	use GetTrait;
 	use SetTrait;
@@ -403,5 +405,17 @@ class Prop implements ArrayAccess, Countable, Arrayable
 			$get[0] = count($get) - 1;
 			return $get;
 		}
+	}
+
+	/**
+	 * Retrieve an external iterator
+	 * @link http://php.net/manual/en/iteratoraggregate.getiterator.php
+	 * @return Traversable An instance of an object implementing <b>Iterator</b> or
+	 * <b>Traversable</b>
+	 * @since 5.0.0
+	 */
+	public function getIterator()
+	{
+		return new ArrayIterator($this->items);
 	}
 }

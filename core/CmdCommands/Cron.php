@@ -163,7 +163,7 @@ class Cron extends CmdCommand
 		$head = false;
 		$table = new Table( $this->output );
 		$table->setHeaders([
-			"Name", "Value"
+			"Name", "Factory"
 		]);
 
 		foreach( $data as $name => $value )

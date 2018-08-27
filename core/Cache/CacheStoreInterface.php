@@ -10,9 +10,32 @@ namespace EApp\Cache;
 
 interface CacheStoreInterface
 {
-	public function getValue( KeyName $key_name, int $life = null ): CacheValueInterface;
+	/**
+	 * The store name
+	 *
+	 * @return string
+	 */
+	public function getName(): string;
+
+	/**
+	 * The store driver name
+	 *
+	 * @return string
+	 */
+	public function getDriver(): string;
+
+	/**
+	 * The default ttl for cache
+	 *
+	 * @return int
+	 */
+	public function getLife(): int;
+
+	public function createFactory( string $key_name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface;
 
 	public function flush( string $prefix = null ): bool;
 
-	public function getKeyName( string $key_name, string $prefix = "", array $properties = [] ): KeyName;
+	public function info(): array;
+
+	public function stats(): array;
 }

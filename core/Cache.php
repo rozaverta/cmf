@@ -8,19 +8,21 @@
 
 namespace EApp;
 
+use EApp\Cache\CacheStoreInterface;
+
 /**
  * Class Cache
  */
 class Cache
 {
 	/**
-	 * @var \EApp\Cache\CacheValueInterface
+	 * @var \EApp\Cache\CacheFactoryInterface
 	 */
 	private $factory;
 
 	private static $manager = null;
 
-	public function __construct( string $name, string $prefix = "", array $data = [] )
+	public function __construct( string $name, string $prefix = "", array $data = [], CacheStoreInterface $store = null )
 	{
 		$life = null;
 		if( isset($data["life"]) && is_int($data["life"]) )
@@ -29,8 +31,12 @@ class Cache
 			unset($data["life"]);
 		}
 
-		$store = self::store();
-		$this->factory = $store->getValue($store->getKeyName($name, $prefix, $data), $life);
+		if( is_null($store) )
+		{
+			$store = self::store();
+		}
+
+		$this->factory = $store->createFactory($name, $prefix, $data, $life);
 	}
 
 	/**
@@ -40,17 +46,18 @@ class Cache
 	{
 		if( ! isset(self::$manager) )
 		{
-			self::$manager = new Cache\CacheManager( Prop::cache("cache") );
+			self::$manager = Cache\CacheManager::getInstance();
 		}
 		return self::$manager;
 	}
 
 	/**
-	 * @return \EApp\Cache\CacheStoreInterface
+	 * @param string|null $name
+	 * @return Cache\CacheStoreInterface
 	 */
-	public static function store(): Cache\CacheStoreInterface
+	public static function store( string $name = null ): Cache\CacheStoreInterface
 	{
-		return self::manager()->getStore();
+		return self::manager()->getStore($name);
 	}
 
 	public function ready()

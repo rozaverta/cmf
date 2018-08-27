@@ -20,7 +20,7 @@ class Cache extends CmdCommand
 {
 	protected function init()
 	{
-		$this->addOption("clean-all", "c", InputOption::VALUE_NONE, "Clean all cache data");
+		$this->addOption("clear-all", "c", InputOption::VALUE_NONE, "Clear all cache data");
 		$this->addOption("info", "i", InputOption::VALUE_NONE, "Show cache driver info");
 		$this->addOption("stats", "s", InputOption::VALUE_NONE, "Show cache stats");
 	}

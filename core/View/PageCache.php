@@ -27,6 +27,7 @@ class PageCache
 	protected $cache;
 
 	protected $page_template = "main";
+	protected $page_code = 200;
 	protected $page_headers = [];
 	protected $page_protected = [];
 	protected $page_content_type = "text/html";
@@ -49,7 +50,10 @@ class PageCache
 
 		unset( $prop['prefix'] );
 
-		$this->cache = new Cache($name, $prefix, $prop);
+		$manager = Cache::manager();
+		$store = $manager->getStore($manager->hasStore("page") ? "page" : null );
+
+		$this->cache = new Cache($name, $prefix, $prop, $store);
 		if( $this->cache->ready() )
 		{
 			$data = $this->cache->import();
@@ -58,6 +62,7 @@ class PageCache
 				$this->exists = true;
 
 				$this->page_template = $data["template"];
+				$this->page_code = $data["code"];
 				$this->page_headers = $data["headers"];
 				$this->page_protected = $data["protected"];
 				$this->page_content_type = $data["content_type"];
@@ -93,6 +98,12 @@ class PageCache
 
 		EventManager::dispatch(new ReadyEvent(true));
 		EventManager::dispatch(new PreRenderEvent(true));
+
+		$app->Response->setCode($this->page_code);
+		foreach($this->page_headers as $key => $value )
+		{
+			$app->Response->header($key, $value);
+		}
 
 		$app->Response->setBody(
 			$view->eachPluginData(
@@ -162,6 +173,7 @@ class PageCache
 
 		$data = [
 			"template"      => $template,
+			"code"          => $app->Response->getCode(),
 			"headers"       => $app->Response->headers()->toArray(),
 			"protected"     => $view->getProtectedKeys(),
 			"content_type"  => $content_type,

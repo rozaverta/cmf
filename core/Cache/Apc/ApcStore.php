@@ -8,27 +8,27 @@
 
 namespace EApp\Cache\Apc;
 
-use EApp\Cache\CacheStoreInterface;
-use EApp\Cache\CacheValueInterface;
-use EApp\Cache\DatabaseKeyName;
-use EApp\Cache\KeyName;
+use EApp\Cache\CacheFactoryInterface;
+use EApp\Cache\DatabaseHash;
+use EApp\Cache\Properties\Property;
+use EApp\Cache\Properties\PropertyMemory;
+use EApp\Cache\Properties\PropertyStats;
+use EApp\Cache\Store;
 
-class ApcStore implements CacheStoreInterface
+class ApcStore extends Store
 {
 	protected $prefix;
 
-	protected $life = 0;
-
-	public function __construct(string $prefix = "", int $life = 0)
+	public function __construct(string $store_name, string $prefix = "", int $life = 0)
 	{
+		parent::__construct($store_name, $life);
 		$this->prefix = $prefix;
-		$this->life = $life;
 	}
 
-	public function getValue( KeyName $key_name, int $life = null ): CacheValueInterface
+	public function createFactory( string $key_name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
 	{
-		$value = new ApcValue($key_name);
-		$value->load(is_null($life) ? $this->life : $life);
+		$value = new ApcFactory(new DatabaseHash($key_name, $this->prefix . $prefix, $properties));
+		$value->load(is_null($life) ? $this->getLife() : $life);
 		return $value;
 	}
 
@@ -42,9 +42,88 @@ class ApcStore implements CacheStoreInterface
 		return apcu_clear_cache();
 	}
 
-	public function getKeyName( string $key_name, string $prefix = "", array $properties = [] ): KeyName
+	public function info(): array
 	{
-		$prefix = $this->prefix . $prefix;
-		return new DatabaseKeyName($key_name, $prefix, $properties);
+		$info = [];
+
+		$info[] = new Property("driver", "APCu");
+		$info[] = new Property("default_life", $this->getLife());
+
+		$all = apcu_cache_info(true);
+		if( is_array($all) )
+		{
+			foreach($all as $name => $value)
+			{
+				if( !is_array($value) )
+				{
+					$info[] = new Property($name, $value);
+				}
+			}
+		}
+
+		$this->cli($info);
+		return $info;
+	}
+
+	public function stats(): array
+	{
+		/** @var PropertyMemory[] $memories */
+		$items = 0;
+		$bytes = 0;
+		$memories = [];
+
+		$info = apcu_cache_info();
+		if( isset($info["cache_list"]) && is_array($info["cache_list"]) && count($info["cache_list"]) )
+		{
+			$increment = 0;
+			$rkey = [];
+
+			foreach($info["cache_list"] as $item)
+			{
+				$key  = $item["info"];
+				$size = $item["mem_size"];
+				$pos  = strpos($key, "/", 1);
+
+				++ $items;
+				$bytes += $size;
+
+				if( $pos !== false )
+				{
+					$key = substr($key, 0, $pos);
+				}
+
+				if( ! isset($rkey[$key]) )
+				{
+					$rkey[$key] = $increment;
+					$memories[$increment++] = new PropertyMemory($key, $size, 1);
+				}
+				else
+				{
+					$memories[$rkey[$key]]->add($size);
+				}
+			}
+		}
+
+		$stats = [
+			new PropertyStats("items", $items),
+			new PropertyStats("bytes", $bytes)
+		];
+
+		if(count($memories))
+		{
+			$stats = array_merge($stats, array_values($memories));
+		}
+
+		$this->cli($stats);
+		return $stats;
+	}
+
+	protected function cli( & $info )
+	{
+		$cli = function_exists("php_sapi_name") && strpos( php_sapi_name(), "cli") !== false;
+		if($cli)
+		{
+			$info[] = new Property("warning", "CLI mode. For show stats or show info or clearing cache you must use web interface");
+		}
 	}
 }

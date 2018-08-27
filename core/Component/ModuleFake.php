@@ -6,9 +6,7 @@
  * Time: 20:26
  */
 
-namespace EApp\Component\Driver\Tools;
-
-use EApp\Component\Module;
+namespace EApp\Component;
 
 final class ModuleFake extends Module
 {

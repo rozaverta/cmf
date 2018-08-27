@@ -8,7 +8,7 @@
 
 namespace EApp\Component;
 
-use EApp\Component\Scheme\ModuleSchemeDesigner;
+use EApp\Component\Scheme\ModulesSchemeDesigner;
 use EApp\Database\QueryPrototype;
 
 class QueryModules extends QueryPrototype
@@ -28,6 +28,6 @@ class QueryModules extends QueryPrototype
 
 	protected function fetchObject()
 	{
-		return ModuleSchemeDesigner::class;
+		return ModulesSchemeDesigner::class;
 	}
 }

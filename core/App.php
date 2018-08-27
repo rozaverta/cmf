@@ -36,7 +36,7 @@ use EApp\Events\PreRenderEvent;
 use EApp\Events\ReadyEvent;
 use EApp\Events\ShutdownEvent;
 use EApp\Component\Module;
-use EApp\Component\QueryRoutes;
+use EApp\Route\QueryRoutes;
 use EApp\Cmd\Terminal;
 use EApp\View\PageCache;
 use EApp\View\View;
@@ -49,16 +49,16 @@ use EApp\View\View;
  *
  * Class Els
  *
- * @property \EApp\CI\Log Log
+ * @property \EApp\CI\Log $Log
  * @property \EApp\CI\PhpExport $PhpExport
- * @property \EApp\Route\Url Url
- * @property \EApp\View\View View
- * @property \EApp\Filesystem\Filesystem Filesystem
- * @property \EApp\Language\Lang Lang
- * @property \EApp\CI\Session Session
- * @property \EApp\Database\Manager Database
- * @property Controller Controller
- * @property Context Context
+ * @property \EApp\Route\Url $Url
+ * @property \EApp\View\View $View
+ * @property \EApp\Filesystem\Filesystem $Filesystem
+ * @property \EApp\Language\Lang $Lang
+ * @property \EApp\CI\Session $Session
+ * @property \EApp\Database\Manager $Database
+ * @property Controller $Controller
+ * @property Context $Context
  *
  * @property \EApp\Http\Response Response
  * @property \EApp\Http\Request Request
@@ -216,7 +216,6 @@ final class App
 		}
 
 		$open = $url->count() > 0 && ! $url->isDir();
-		$path_prefix = "/";
 
 		// load or create context
 
@@ -238,7 +237,6 @@ final class App
 				return $result_type = 'redirect';
 			}
 
-			$path_prefix .= $path . "/";
 			$url->shift(substr_count($path, "/") + 1);
 		}
 

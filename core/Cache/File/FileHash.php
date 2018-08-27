@@ -6,23 +6,34 @@
  * Time: 13:23
  */
 
-namespace EApp\Cache\Filesystem;
+namespace EApp\Cache\File;
 
-use EApp\Cache\KeyName;
+use EApp\Cache\Hash;
 
-class FilesystemKeyName extends KeyName
+class FileHash extends Hash
 {
-	public function getKey(): string
+	protected $delimiter = DIRECTORY_SEPARATOR;
+
+	protected $file_name;
+
+	protected $file_prefix;
+
+	public function getHash(): string
 	{
-		return parent::getKey() . ".php";
+		return parent::getHash() . ".php";
 	}
 
 	public function keyName(): string
 	{
+		if( isset($this->file_name) )
+		{
+			return $this->file_name;
+		}
+
 		$file = $this->name;
 		if( ! $this->validFileName($file) )
 		{
-			$file = md5($file);
+			$file = "md5_" . md5($file);
 		}
 
 		if( count($this->data) )
@@ -36,28 +47,35 @@ class FilesystemKeyName extends KeyName
 			$name = implode('_', $name);
 			if( ! $this->validFileName($name) )
 			{
-				$name = md5($name);
+				$name = "md5_" . md5($name);
 			}
 
 			$file .= DIRECTORY_SEPARATOR . $name;
 		}
 
+		$this->file_name = $file;
 		return $file;
 	}
 
 	public function keyPrefix(): string
 	{
+		if( isset($this->file_prefix) )
+		{
+			return $this->file_prefix;
+		}
+
 		$prefix = trim($this->prefix, "/");
 		if( strlen($prefix) > 0 )
 		{
 			$path = [];
 			foreach(explode("/", $prefix) as $directory)
 			{
-				$path[] = $this->validFileName($directory) ? $directory : md5($directory);
+				$path[] = $this->validFileName($directory) ? $directory : "md5_" . md5($directory);
 			}
-			$prefix = implode(DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR;
+			$prefix = implode(DIRECTORY_SEPARATOR, $path);
 		}
 
+		$this->file_prefix = $prefix;
 		return $prefix;
 	}
 

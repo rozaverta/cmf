@@ -45,14 +45,14 @@ class ModuleManager implements Arrayable
 				         ->filter('install', true)
 				         ->get() as $item ) {
 
-				/** @var \EApp\Component\Scheme\ModuleSchemeDesigner $item */
+				/** @var \EApp\Component\Scheme\ModulesSchemeDesigner $item */
 				$this->names[$item->name] = $item->id;
 				$this->items[$item->id] = [
-					"id" => $item->id,
-					"name" => $item->name,
+					"id"    => $item->id,
+					"name"  => $item->name,
 					"title" => $item->title,
 					"route" => $item->route,
-					"path" => $item->path,
+					"path"  => $item->path,
 				];
 			}
 			$cache->export($this->items);
@@ -70,7 +70,7 @@ class ModuleManager implements Arrayable
 	}
 
 	/**
-	 * Each module items.
+	 * Each module items
 	 *
 	 * @param \Closure $callback
 	 * @return $this
@@ -124,24 +124,13 @@ class ModuleManager implements Arrayable
 		return true;
 	}
 
-	public function getModuleInstance( $name, $cached = true )
-	{
-		if( is_numeric($name) )
-		{
-			return new Module((int) $name, $cached);
-		}
-
-		$id = $this->getId($name);
-		if( $id === false )
-		{
-			throw new \Exception("ModuleComponentInterface '{$name}' not found");
-		}
-
-		return new Module($id, $cached);
-	}
-
 	public function getId( $name )
 	{
+		if( $name === "@core" )
+		{
+			return 0;
+		}
+
 		$name = Str::studly($name);
 		return isset($this->names[$name]) ? $this->names[$name] : false;
 	}

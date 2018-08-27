@@ -16,6 +16,8 @@ interface InputOutputInterface
 
 	public function ask( string $question, string $default = "" );
 
+	public function askTest( string $question, \Closure $test ): string ;
+
 	public function askOptions( array $options, string $title = "" );
 
 	public function askConfig( array $options, string $title = "", array $load = [] );

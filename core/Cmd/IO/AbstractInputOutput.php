@@ -10,6 +10,7 @@ namespace EApp\Cmd\IO;
 
 use EApp\Support\Str;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -66,7 +67,21 @@ abstract class AbstractInputOutput implements InputOutputInterface
 			$closure($table);
 		}
 
-		$table->addRows($rows);
+		foreach($rows as $row)
+		{
+			if( is_null($row) )
+			{
+				$table->addRow(
+					new TableSeparator()
+				);
+			}
+			else
+			{
+				$table->addRow(
+					is_array($row) ? $row : [$row]
+				);
+			}
+		}
 
 		$table->render();
 	}
@@ -122,6 +137,20 @@ abstract class AbstractInputOutput implements InputOutputInterface
 		}
 
 		return $this->getConfig( $options, $load );
+	}
+
+	public function askTest( string $question, \Closure $test ): string
+	{
+		$result = trim( $this->ask($question) );
+		try {
+			$valid = $test($result);
+		}
+		catch( \InvalidArgumentException $e ) {
+			$valid = false;
+			$this->write("<error>Error!</error> " . $e->getMessage());
+		}
+
+		return $valid ? $result : $this->askTest($question, $test);
 	}
 
 	private function getOption( $min, $max )

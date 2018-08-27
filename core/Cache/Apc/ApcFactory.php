@@ -8,9 +8,9 @@
 
 namespace EApp\Cache\Apc;
 
-use EApp\Cache\Value;
+use EApp\Cache\Factory;
 
-class ApcValue extends Value
+class ApcFactory extends Factory
 {
 	protected $life = 0;
 
@@ -49,10 +49,5 @@ class ApcValue extends Value
 		return apcu_store(
 			$this->getKey(), $data, $this->life
 		);
-	}
-
-	protected function getKey(): string
-	{
-		return $this->key_name->getKey();
 	}
 }
