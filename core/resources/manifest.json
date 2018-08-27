@@ -5,8 +5,9 @@
 	"version": "0.0.1",
 	"database_tables": [
 		"scheme_tables",
-		"module_router",
 		"modules",
+		"module_router",
+		"controllers",
 		"plugins",
 		"context",
 		"context_module_link",

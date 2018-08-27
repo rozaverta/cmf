@@ -25,9 +25,7 @@ abstract class Router implements ModuleComponentInterface
 
 	abstract public function ready();
 
-	abstract static public function getControllerNames(): array;
-
-	abstract static public function valid( string $controller, int $id ): bool;
+	abstract static public function exists( string $controller, int $id ): bool;
 
 	abstract static public function makeUrl( string $controller, int $id, string $context = null ): string;
 

@@ -1,0 +1,42 @@
+{
+	"type": "#/data_base_table",
+	"name": "controllers",
+	"fields": [
+		{
+			"name": "id",
+			"type": "integer:autoincrement"
+		},
+		{
+			"name": "module_id",
+			"type": "integer"
+		},
+		{
+			"name": "name"
+		},
+		{
+			"name": "title"
+		},
+		{
+			"name": "class_name"
+		},
+		{
+			"name": "dynamic",
+			"type": "boolean",
+			"default": false
+		},
+		{
+			"name": "properties",
+			"type": "text/json",
+			"default": "{}"
+		}
+	],
+	"primaryKey": "id",
+	"indexes": [
+		{
+			"name": "index_module_id",
+			"fields": [
+				"module_id"
+			]
+		}
+	]
+}
