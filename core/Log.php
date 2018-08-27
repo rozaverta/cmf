@@ -160,7 +160,7 @@ class Log implements Arrayable, \JsonSerializable
 	}
 
 	/**
-	 * GetTrait the instance as an array.
+	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */

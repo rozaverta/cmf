@@ -18,7 +18,7 @@ trait GetTrait
 	protected $itemsGetUndefined = false;
 
 	/**
-	 * GetTrait an item from the collection by key.
+	 * Get an item from the collection by key.
 	 *
 	 * @param  mixed  $name
 	 * @return mixed
@@ -33,7 +33,7 @@ trait GetTrait
 	}
 
 	/**
-	 * GetTrait an item from the collection by keys.
+	 * Get an item from the collection by keys.
 	 *
 	 * @param  array $keys
 	 * @param bool $default default value
@@ -53,7 +53,7 @@ trait GetTrait
 	}
 
 	/**
-	 * GetTrait all of the items in the collection.
+	 * Get all of the items in the collection.
 	 *
 	 * @return array
 	 */
@@ -63,7 +63,7 @@ trait GetTrait
 	}
 
 	/**
-	 * GetTrait the instance as an array.
+	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */
@@ -73,7 +73,7 @@ trait GetTrait
 	}
 
 	/**
-	 * GetTrait an item from the collection by key or default value if not exists.
+	 * Get an item from the collection by key or default value if not exists.
 	 *
 	 * @param  mixed  $name
 	 * @param  mixed  $default_value
@@ -120,7 +120,7 @@ trait GetTrait
 	}
 
 	/**
-	 * GetTrait an item at a given offset.
+	 * Get an item at a given offset.
 	 *
 	 * @param  mixed  $offset
 	 * @return mixed

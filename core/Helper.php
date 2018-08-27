@@ -227,7 +227,7 @@ class Helper
 	}
 
 	/**
-	 * GetTrait an item from an array or object using "dot" notation.
+	 * Get an item from an array or object using "dot" notation.
 	 *
 	 * @param  mixed   $target
 	 * @param  string|array  $key

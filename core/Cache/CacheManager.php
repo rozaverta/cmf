@@ -60,7 +60,7 @@ class CacheManager
 	}
 
 	/**
-	 * GetTrait store
+	 * Get store
 	 *
 	 * @param string $name
 	 * @return CacheStoreInterface
@@ -82,7 +82,7 @@ class CacheManager
 	}
 
 	/**
-	 * GetTrait cache config
+	 * Get cache config
 	 *
 	 * @return Prop
 	 */

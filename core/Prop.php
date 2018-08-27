@@ -75,7 +75,7 @@ class Prop implements ArrayAccess, Countable, Arrayable, IteratorAggregate
 	}
 
 	/**
-	 * GetTrait array data from file
+	 * Get array data from file
 	 *
 	 * @param $name
 	 * @param bool $exists
@@ -104,7 +104,7 @@ class Prop implements ArrayAccess, Countable, Arrayable, IteratorAggregate
 	}
 
 	/**
-	 * GetTrait cache property from file
+	 * Get cache property from file
 	 *
 	 * @param $name
 	 * @return Prop
@@ -202,7 +202,7 @@ class Prop implements ArrayAccess, Countable, Arrayable, IteratorAggregate
 	}
 
 	/**
-	 * GetTrait new property group
+	 * Get new property group
 	 *
 	 * @param $name
 	 * @return Prop
@@ -241,7 +241,7 @@ class Prop implements ArrayAccess, Countable, Arrayable, IteratorAggregate
 	}
 
 	/**
-	 * SetTrait value for path.
+	 * Set value for path.
 	 *
 	 * @example $this->pathSet( 'a.b.c', $value ) => $this->items['a']['b']['c'] = $value;
 	 *
@@ -329,7 +329,7 @@ class Prop implements ArrayAccess, Countable, Arrayable, IteratorAggregate
 	}
 
 	/**
-	 * GetTrait value from path.
+	 * Get value from path.
 	 *
 	 * @param string $path
 	 * @return mixed
@@ -340,7 +340,7 @@ class Prop implements ArrayAccess, Countable, Arrayable, IteratorAggregate
 	}
 
 	/**
-	 * GetTrait value from path or get default value if not exists.
+	 * Get value from path or get default value if not exists.
 	 *
 	 * @param string $path
 	 * @param mixed $default

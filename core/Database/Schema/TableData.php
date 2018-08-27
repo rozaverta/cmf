@@ -95,7 +95,7 @@ class TableData extends Collection implements ModuleComponentInterface, TypeOfIn
 	}
 
 	/**
-	 * GetTrait table name
+	 * Get table name
 	 *
 	 * @return string
 	 */
@@ -121,7 +121,7 @@ class TableData extends Collection implements ModuleComponentInterface, TypeOfIn
 	}
 
 	/**
-	 * GetTrait filter for one column
+	 * Get filter for one column
 	 *
 	 * @param string $name
 	 * @return Filter|null

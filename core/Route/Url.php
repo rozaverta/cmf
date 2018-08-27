@@ -497,7 +497,7 @@ class Url implements \Countable, CreateInstanceInterface
 	}
 
 	/**
-	 * GetTrait full url scheme string
+	 * Get full url scheme string
 	 *
 	 * @param Context $context
 	 * @param string $path
@@ -558,7 +558,7 @@ class Url implements \Countable, CreateInstanceInterface
 	}
 
 	/**
-	 * GetTrait url string
+	 * Get url string
 	 *
 	 * @param string $path
 	 * @param array $query

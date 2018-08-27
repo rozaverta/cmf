@@ -12,7 +12,7 @@ use EApp\Cmd\CmdCommand;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
- * GetTrait system cache info and clean cache data
+ * Get system cache info and clean cache data
  *
  * @package EApp\CmdCommands
  */

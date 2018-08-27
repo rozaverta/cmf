@@ -75,7 +75,7 @@ class CollectionRecorder extends Collection
 	}
 
 	/**
-	 * GetTrait current page number.
+	 * Get current page number.
 	 *
 	 * @return int
 	 */

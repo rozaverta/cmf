@@ -21,7 +21,7 @@ interface ConnectionInterface
 	public function table($table);
 
 	/**
-	 * GetTrait a new raw query expression.
+	 * Get a new raw query expression.
 	 *
 	 * @param  mixed  $value
 	 * @return \EApp\Database\Query\Expression
@@ -139,7 +139,7 @@ interface ConnectionInterface
 	public function rollBack();
 
 	/**
-	 * GetTrait the number of active transactions.
+	 * Get the number of active transactions.
 	 *
 	 * @return int
 	 */

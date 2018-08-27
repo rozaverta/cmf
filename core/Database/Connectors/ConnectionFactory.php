@@ -102,7 +102,7 @@ class ConnectionFactory
 	}
 
 	/**
-	 * GetTrait the read configuration for a read / write connection.
+	 * Get the read configuration for a read / write connection.
 	 *
 	 * @param  array $config
 	 * @return array
@@ -115,7 +115,7 @@ class ConnectionFactory
 	}
 
 	/**
-	 * GetTrait the read configuration for a read / write connection.
+	 * Get the read configuration for a read / write connection.
 	 *
 	 * @param  array $config
 	 * @return array
@@ -128,7 +128,7 @@ class ConnectionFactory
 	}
 
 	/**
-	 * GetTrait a read / write level configuration.
+	 * Get a read / write level configuration.
 	 *
 	 * @param  array $config
 	 * @param  string $type
@@ -250,8 +250,9 @@ class ConnectionFactory
 		switch( $config[ 'driver' ] ) {
 			case 'mysql':
 				return new MySqlConnector;
-			case 'pgsql':
-				return new PostgresConnector;
+			/* TODO add support
+			 * case 'pgsql':
+				return new PostgresConnector;*/
 		}
 
 		throw new InvalidArgumentException( "Unsupported driver [{$config['driver']}]" );

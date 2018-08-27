@@ -50,7 +50,7 @@ class Status
 		302 => 'Found',
 		303 => 'See Other',
 		304 => 'Not Modified',
-		305 => 'Use Proxy',
+		305 => 'Use ThenProxy',
 		306 => '(Unused)',
 		307 => 'Temporary Redirect',
 
@@ -62,7 +62,7 @@ class Status
 		404 => 'Not Found',
 		405 => 'Method Not Allowed',
 		406 => 'Not Acceptable',
-		407 => 'Proxy Authentication Required',
+		407 => 'ThenProxy Authentication Required',
 		408 => 'Request Timeout',
 		409 => 'Conflict',
 		410 => 'Gone',
@@ -99,7 +99,7 @@ class Status
 	}
 
 	/**
-	 * GetTrait the HTTP status code
+	 * Get the HTTP status code
 	 *
 	 * @return int
 	 */
@@ -109,7 +109,7 @@ class Status
 	}
 
 	/**
-	 * GetTrait the HTTP status message
+	 * Get the HTTP status message
 	 *
 	 * @return string
 	 */
@@ -119,7 +119,7 @@ class Status
 	}
 
 	/**
-	 * SetTrait the HTTP status code
+	 * Set the HTTP status code
 	 *
 	 * @param int $code
 	 * @return Status
@@ -131,7 +131,7 @@ class Status
 	}
 
 	/**
-	 * SetTrait the HTTP status message
+	 * Set the HTTP status message
 	 *
 	 * @param string $message
 	 * @return Status
@@ -143,7 +143,7 @@ class Status
 	}
 
 	/**
-	 * GetTrait a string representation of our HTTP status
+	 * Get a string representation of our HTTP status
 	 *
 	 * @return string
 	 */
@@ -171,7 +171,7 @@ class Status
 	}
 
 	/**
-	 * GetTrait our HTTP 1.1 message from our passed code
+	 * Get our HTTP 1.1 message from our passed code
 	 *
 	 * Returns null if no corresponding message was
 	 * found for the passed in code

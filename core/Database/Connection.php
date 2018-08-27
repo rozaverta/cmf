@@ -176,7 +176,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the query grammar to the default implementation.
+	 * Set the query grammar to the default implementation.
 	 *
 	 * @return void
 	 */
@@ -186,7 +186,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the default query grammar instance.
+	 * Get the default query grammar instance.
 	 *
 	 * @return \EApp\Database\Query\Grammars\Grammar
 	 */
@@ -196,7 +196,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the query post processor to the default implementation.
+	 * Set the query post processor to the default implementation.
 	 *
 	 * @return void
 	 */
@@ -206,7 +206,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the default post processor instance.
+	 * Get the default post processor instance.
 	 *
 	 * @return \EApp\Database\Query\Processors\Processor
 	 */
@@ -227,7 +227,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait a new query builder instance.
+	 * Get a new query builder instance.
 	 *
 	 * @return \EApp\Database\Query\Builder
 	 */
@@ -368,7 +368,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the PDO connection to use for a select query.
+	 * Get the PDO connection to use for a select query.
 	 *
 	 * @param  bool $useReadPdo
 	 * @return \PDO
@@ -683,7 +683,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the elapsed time since a given starting point.
+	 * Get the elapsed time since a given starting point.
 	 *
 	 * @param  int $start
 	 * @return float
@@ -808,7 +808,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait a new raw query expression.
+	 * Get a new raw query expression.
 	 *
 	 * @param  mixed $value
 	 * @return \EApp\Database\Query\Expression
@@ -833,7 +833,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the current PDO connection.
+	 * Get the current PDO connection.
 	 *
 	 * @return \PDO
 	 */
@@ -847,7 +847,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the current PDO connection used for reading.
+	 * Get the current PDO connection used for reading.
 	 *
 	 * @return \PDO
 	 */
@@ -869,7 +869,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the PDO connection.
+	 * Set the PDO connection.
 	 *
 	 * @param  \PDO|\Closure|null $pdo
 	 * @return $this
@@ -882,7 +882,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the PDO connection used for reading.
+	 * Set the PDO connection used for reading.
 	 *
 	 * @param  \PDO||\Closure|null  $pdo
 	 * @return $this
@@ -894,7 +894,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the reconnect instance on the connection.
+	 * Set the reconnect instance on the connection.
 	 *
 	 * @param  callable $reconnector
 	 * @return $this
@@ -906,7 +906,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the database connection name.
+	 * Get the database connection name.
 	 *
 	 * @return string|null
 	 */
@@ -916,7 +916,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait an option from the configuration options.
+	 * Get an option from the configuration options.
 	 *
 	 * @param  string|null $option
 	 * @return mixed
@@ -927,7 +927,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the PDO driver name.
+	 * Get the PDO driver name.
 	 *
 	 * @return string
 	 */
@@ -937,7 +937,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the query grammar used by the connection.
+	 * Get the query grammar used by the connection.
 	 *
 	 * @return \EApp\Database\Query\Grammars\Grammar
 	 */
@@ -947,7 +947,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the query grammar used by the connection.
+	 * Set the query grammar used by the connection.
 	 *
 	 * @param  \EApp\Database\Query\Grammars\Grammar $grammar
 	 * @return void
@@ -958,7 +958,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the query post processor used by the connection.
+	 * Get the query post processor used by the connection.
 	 *
 	 * @return \EApp\Database\Query\Processors\Processor
 	 */
@@ -968,7 +968,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the query post processor used by the connection.
+	 * Set the query post processor used by the connection.
 	 *
 	 * @param  \EApp\Database\Query\Processors\Processor $processor
 	 * @return void
@@ -979,7 +979,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the event dispatcher used by the connection.
+	 * Get the event dispatcher used by the connection.
 	 *
 	 * @return \EApp\Event\Dispatcher
 	 */
@@ -989,7 +989,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the event dispatcher instance on the connection.
+	 * Set the event dispatcher instance on the connection.
 	 *
 	 * @param  \EApp\Event\Dispatcher $events
 	 * @return void
@@ -1010,7 +1010,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the connection query log.
+	 * Get the connection query log.
 	 *
 	 * @return array
 	 */
@@ -1060,7 +1060,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the name of the connected database.
+	 * Get the name of the connected database.
 	 *
 	 * @return string
 	 */
@@ -1070,7 +1070,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the name of the connected database.
+	 * Set the name of the connected database.
 	 *
 	 * @param  string $database
 	 * @return void
@@ -1081,7 +1081,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the table prefix for the connection.
+	 * Get the table prefix for the connection.
 	 *
 	 * @return string
 	 */
@@ -1091,7 +1091,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the table prefix in use by the connection.
+	 * Set the table prefix in use by the connection.
 	 *
 	 * @param  string $prefix
 	 * @return void
@@ -1103,7 +1103,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * SetTrait the table prefix and return the grammar.
+	 * Set the table prefix and return the grammar.
 	 *
 	 * @param  \EApp\Database\Grammar $grammar
 	 * @return \EApp\Database\Grammar
@@ -1127,7 +1127,7 @@ class Connection implements ConnectionInterface
 	}
 
 	/**
-	 * GetTrait the connection resolver for the given driver.
+	 * Get the connection resolver for the given driver.
 	 *
 	 * @param  string $driver
 	 * @return mixed

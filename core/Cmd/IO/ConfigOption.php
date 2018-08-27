@@ -83,7 +83,7 @@ class ConfigOption extends Option
 	}
 
 	/**
-	 * SetTrait new value
+	 * Set new value
 	 *
 	 * @param $value
 	 * @return $this

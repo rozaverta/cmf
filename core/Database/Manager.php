@@ -54,7 +54,7 @@ final class Manager
 	}
 
 	/**
-	 * GetTrait a connection instance from the global manager.
+	 * Get a connection instance from the global manager.
 	 *
 	 * @param  string  $connection
 	 * @return \EApp\Database\Connection
@@ -77,7 +77,7 @@ final class Manager
 	}
 
 	/**
-	 * GetTrait the prop instance.
+	 * Get the prop instance.
 	 *
 	 * @return Prop
 	 */
@@ -107,7 +107,7 @@ final class Manager
 	}
 
 	/**
-	 * GetTrait a registered connection instance.
+	 * Get a registered connection instance.
 	 *
 	 * @param  string  $name
 	 * @return \EApp\Database\Connection
@@ -118,7 +118,7 @@ final class Manager
 	}
 
 	/**
-	 * GetTrait the database manager instance.
+	 * Get the database manager instance.
 	 *
 	 * @return \EApp\Database\DatabaseManager
 	 */
@@ -128,7 +128,7 @@ final class Manager
 	}
 
 	/**
-	 * GetTrait a fluent query builder instance.
+	 * Get a fluent query builder instance.
 	 *
 	 * @param  string  $table
 	 * @param  string  $connection

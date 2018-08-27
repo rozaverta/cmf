@@ -191,7 +191,7 @@ class Grammar extends BaseGrammar
 	}
 
 	/**
-	 * GetTrait an array of all the where clauses for the query.
+	 * Get an array of all the where clauses for the query.
 	 *
 	 * @param  \EApp\Database\Query\Builder  $query
 	 * @return array
@@ -842,7 +842,7 @@ class Grammar extends BaseGrammar
 	}
 
 	/**
-	 * GetTrait the grammar specific operators.
+	 * Get the grammar specific operators.
 	 *
 	 * @return array
 	 */

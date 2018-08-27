@@ -11,7 +11,7 @@ namespace EApp\Interfaces;
 interface Htmlable
 {
 	/**
-	 * GetTrait content as a string of HTML.
+	 * Get content as a string of HTML.
 	 *
 	 * @param bool $as_xml
 	 * @return string

@@ -230,7 +230,7 @@ trait ManagesTransactions
 	}
 
 	/**
-	 * GetTrait the number of active transactions.
+	 * Get the number of active transactions.
 	 *
 	 * @return int
 	 */

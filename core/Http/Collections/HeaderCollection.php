@@ -54,7 +54,7 @@ class HeaderCollection extends Collection
 	}
 
 	/**
-	 * GetTrait an item from the collection by key.
+	 * Get an item from the collection by key.
 	 *
 	 * @param  mixed  $name
 	 * @return mixed
@@ -70,7 +70,7 @@ class HeaderCollection extends Collection
 	}
 
 	/**
-	 * GetTrait an item from the collection by key or default value if not exists.
+	 * Get an item from the collection by key or default value if not exists.
 	 *
 	 * @param  mixed  $name
 	 * @param  mixed  $default_value
@@ -87,7 +87,7 @@ class HeaderCollection extends Collection
 	}
 
 	/**
-	 * GetTrait an item at a given offset.
+	 * Get an item at a given offset.
 	 *
 	 * @param  mixed  $offset
 	 * @return mixed
@@ -110,7 +110,7 @@ class HeaderCollection extends Collection
 	}
 
 	/**
-	 * SetTrait the item at a given offset.
+	 * Set the item at a given offset.
 	 *
 	 * @param  mixed  $offset
 	 * @param  mixed  $value

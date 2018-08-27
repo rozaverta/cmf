@@ -96,7 +96,7 @@ abstract class ModuleConfig
 	}
 
 	/**
-	 * GetTrait all module resources
+	 * Get all module resources
 	 *
 	 * @return Collection
 	 * @throws ReadException

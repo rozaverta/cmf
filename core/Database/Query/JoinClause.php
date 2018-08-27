@@ -95,7 +95,7 @@ class JoinClause extends Builder
 	}
 
 	/**
-	 * GetTrait a new instance of the join clause builder.
+	 * Get a new instance of the join clause builder.
 	 *
 	 * @return \EApp\Database\Query\JoinClause
 	 */

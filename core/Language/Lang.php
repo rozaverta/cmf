@@ -42,6 +42,11 @@ final class Lang implements SingletonCompletable
 	 */
 	private $lang;
 
+	/**
+	 * @var ThenProxy[]
+	 */
+	private $proxy = [];
+
 	private $lang_i18 = false;
 	private $lang_transliteration = false;
 	private $lang_text = false;
@@ -77,7 +82,7 @@ final class Lang implements SingletonCompletable
 	}
 
 	/**
-	 * GetTrait current language key
+	 * Get current language key
 	 *
 	 * @return string
 	 */
@@ -87,7 +92,7 @@ final class Lang implements SingletonCompletable
 	}
 
 	/**
-	 * GetTrait default language key
+	 * Get default language key
 	 *
 	 * @return string
 	 */
@@ -118,7 +123,7 @@ final class Lang implements SingletonCompletable
 	}
 
 	/**
-	 * SetTrait new language key and reload all packages
+	 * Set new language key and reload all packages
 	 *
 	 * @param string $language
 	 * @return bool
@@ -140,6 +145,7 @@ final class Lang implements SingletonCompletable
 		$this->language = $language;
 		$this->lang = null;
 		$this->lang_init = true;
+		$this->proxy = [];
 
 		$event = new LanguageLoadEvent($this);
 		EventManager::dispatch(
@@ -171,7 +177,7 @@ final class Lang implements SingletonCompletable
 	}
 
 	/**
-	 * SetTrait current package for ready next item
+	 * Set current package for ready next item
 	 *
 	 * @param string $context package name
 	 * @return $this
@@ -183,7 +189,29 @@ final class Lang implements SingletonCompletable
 	}
 
 	/**
-	 * GetTrait item
+	 * Get the language package proxy
+	 *
+	 * @param string $context
+	 * @return ThenProxy
+	 */
+	public function getProxy( string $context ): ThenProxy
+	{
+		if( isset($this->proxy[$context]) )
+		{
+			return $this->proxy[$context];
+		}
+
+		if( !$this->lang->load($context) )
+		{
+			throw new \InvalidArgumentException("Cannot load the '{$context}' language package");
+		}
+
+		$this->proxy[$context] = new ThenProxy($this, $context);
+		return $this->proxy[$context];
+	}
+
+	/**
+	 * Get item
 	 *
 	 * @param string $name
 	 * @param string $default
@@ -195,7 +223,7 @@ final class Lang implements SingletonCompletable
 	}
 
 	/**
-	 * GetTrait line (convert item to string)
+	 * Get line (convert item to string)
 	 *
 	 * @param string $text
 	 * @return string
@@ -207,7 +235,7 @@ final class Lang implements SingletonCompletable
 	}
 
 	/**
-	 * GetTrait line and replace values
+	 * Get line and replace values
 	 *
 	 * @param string $text
 	 * @param array ...$replace
@@ -266,7 +294,7 @@ final class Lang implements SingletonCompletable
 	}
 
 	/**
-	 * GetTrait text block
+	 * Get text block
 	 *
 	 * @param string $text
 	 * @return string

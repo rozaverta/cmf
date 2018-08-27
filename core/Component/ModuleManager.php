@@ -60,7 +60,7 @@ class ModuleManager implements Arrayable
 	}
 
 	/**
-	 * GetTrait all install modules collection.
+	 * Get all install modules collection.
 	 *
 	 * @return Collection
 	 */
@@ -136,7 +136,7 @@ class ModuleManager implements Arrayable
 	}
 
 	/**
-	 * GetTrait the instance as an array.
+	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */

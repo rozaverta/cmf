@@ -17,7 +17,7 @@ use EApp\Exceptions\WriteException;
 final class EventManager
 {
 	/**
-	 * GetTrait event manager element from cache
+	 * Get event manager element from cache
 	 *
 	 * @param $name
 	 * @return \EApp\Event\Dispatcher

@@ -22,7 +22,7 @@ class ServerCollection extends Collection
 		];
 
 	/**
-	 * GetTrait our headers from our server data collection
+	 * Get our headers from our server data collection
 	 *
 	 * PHP is weird... it puts all of the HTTP request
 	 * headers in the $_SERVER array. This handles that

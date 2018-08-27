@@ -13,14 +13,14 @@ use EApp\Component\Module;
 interface ModuleComponentInterface
 {
 	/**
-	 * GetTrait module instance
+	 * Get module instance
 	 *
 	 * @return \EApp\Component\Module
 	 */
 	public function getModule(): Module;
 
 	/**
-	 * GetTrait module id
+	 * Get module id
 	 *
 	 * @return int
 	 */

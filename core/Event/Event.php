@@ -49,7 +49,7 @@ abstract class Event implements EventInterface
 	}
 
 	/**
-	 * GetTrait event name
+	 * Get event name
 	 *
 	 * @return string
 	 */
@@ -80,7 +80,7 @@ abstract class Event implements EventInterface
 	}
 
 	/**
-	 * GetTrait all events parameters
+	 * Get all events parameters
 	 *
 	 * @return array
 	 */
@@ -90,7 +90,7 @@ abstract class Event implements EventInterface
 	}
 
 	/**
-	 * GetTrait event parameter by name
+	 * Get event parameter by name
 	 *
 	 * @param string $name parameter name
 	 * @return mixed

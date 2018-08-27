@@ -22,7 +22,7 @@ class Expression
 	}
 
 	/**
-	 * GetTrait the value of the expression.
+	 * Get the value of the expression.
 	 *
 	 * @return mixed
 	 */
@@ -32,7 +32,7 @@ class Expression
 	}
 
 	/**
-	 * GetTrait the value of the expression.
+	 * Get the value of the expression.
 	 *
 	 * @return string
 	 */

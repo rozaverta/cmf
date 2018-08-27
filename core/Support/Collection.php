@@ -253,7 +253,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * GetTrait the first item from the collection.
+	 * Get the first item from the collection.
 	 *
 	 * @param  callable|null  $callback
 	 * @param  mixed  $default
@@ -265,7 +265,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * GetTrait the last item from the collection.
+	 * Get the last item from the collection.
 	 *
 	 * @param  callable|null  $callback
 	 * @param  mixed  $default
@@ -277,7 +277,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * GetTrait the values of a given key.
+	 * Get the values of a given key.
 	 *
 	 * @param  string|array  $value
 	 * @param  string|null  $key
@@ -309,7 +309,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * GetTrait the keys of the collection items.
+	 * Get the keys of the collection items.
 	 *
 	 * @return self
 	 */
@@ -375,7 +375,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Arrayable, Jsonable,
 	}
 
 	/**
-	 * GetTrait the instance as an array.
+	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */

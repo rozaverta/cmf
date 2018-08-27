@@ -11,7 +11,7 @@ namespace EApp\Interfaces;
 interface Arrayable
 {
 	/**
-	 * GetTrait the instance as an array.
+	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */

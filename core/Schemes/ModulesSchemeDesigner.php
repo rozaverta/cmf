@@ -80,7 +80,7 @@ class ModulesSchemeDesigner extends SchemeDesigner
 	}
 
 	/**
-	 * GetTrait the instance as an array.
+	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */

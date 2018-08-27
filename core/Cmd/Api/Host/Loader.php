@@ -113,7 +113,7 @@ class Loader
 	}
 
 	/**
-	 * GetTrait host item
+	 * Get host item
 	 *
 	 * @param string $host domain name
 	 * @return Host|null

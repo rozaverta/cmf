@@ -13,7 +13,7 @@ trait GetIdentifierTrait
 	protected $id = 0;
 
 	/**
-	 * GetTrait element identifier
+	 * Get element identifier
 	 *
 	 * @return mixed
 	 */

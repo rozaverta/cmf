@@ -81,7 +81,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	}
 
 	/**
-	 * GetTrait module name
+	 * Get module name
 	 *
 	 * @return string
 	 */
@@ -91,7 +91,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	}
 
 	/**
-	 * GetTrait module key name
+	 * Get module key name
 	 *
 	 * @return string
 	 */
@@ -101,7 +101,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	}
 
 	/**
-	 * GetTrait module title
+	 * Get module title
 	 *
 	 * @return string
 	 */
@@ -121,7 +121,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	}
 
 	/**
-	 * GetTrait module version
+	 * Get module version
 	 *
 	 * @return string
 	 */
@@ -131,7 +131,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	}
 
 	/**
-	 * GetTrait module path
+	 * Get module path
 	 *
 	 * @return string
 	 */
@@ -141,7 +141,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	}
 
 	/**
-	 * GetTrait module namespace
+	 * Get module namespace
 	 *
 	 * @return string
 	 */
@@ -151,7 +151,7 @@ class Module implements Arrayable, PhpExportSerializeInterface
 	}
 
 	/**
-	 * GetTrait all support addons
+	 * Get all support addons
 	 *
 	 * @return array
 	 */

@@ -68,7 +68,7 @@ abstract class Controller implements Loggable, ModuleComponentInterface
 	abstract public function ready();
 
 	/**
-	 * GetTrait controller name
+	 * Get controller name
 	 *
 	 * @return string
 	 */

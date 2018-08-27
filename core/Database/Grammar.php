@@ -146,7 +146,7 @@ abstract class Grammar
 	}
 
 	/**
-	 * GetTrait the appropriate query parameter place-holder for a value.
+	 * Get the appropriate query parameter place-holder for a value.
 	 *
 	 * @param  mixed   $value
 	 * @return string
@@ -168,7 +168,7 @@ abstract class Grammar
 	}
 
 	/**
-	 * GetTrait the value of a raw expression.
+	 * Get the value of a raw expression.
 	 *
 	 * @param  \EApp\Database\Query\Expression  $expression
 	 * @return string
@@ -223,7 +223,7 @@ abstract class Grammar
 	}
 
 	/**
-	 * GetTrait the grammar's table prefix.
+	 * Get the grammar's table prefix.
 	 *
 	 * @return string
 	 */
@@ -233,7 +233,7 @@ abstract class Grammar
 	}
 
 	/**
-	 * SetTrait the grammar's table prefix.
+	 * Set the grammar's table prefix.
 	 *
 	 * @param  string  $prefix
 	 * @return $this

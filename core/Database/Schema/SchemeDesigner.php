@@ -27,7 +27,7 @@ class SchemeDesigner implements SchemeDesignerInterface, Arrayable, JsonSerializ
 	}
 
 	/**
-	 * GetTrait the instance as an array.
+	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */

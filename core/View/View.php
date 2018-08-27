@@ -18,6 +18,7 @@ use EApp\Prop;
 use EApp\Plugin\Plugin;
 use EApp\Exceptions\NotFoundException;
 use EApp\Interfaces\SingletonCompletable;
+use EApp\Support\HigherOrderTapProxy;
 use EApp\Support\Str;
 use EApp\Traits\SetTrait;
 use EApp\Events\RenderCompleteEvent;
@@ -40,6 +41,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	use GetTrait;
 	use SetTrait;
 	use CompareTrait;
+	use ViewDevelopTrait;
 
 	protected $items = [];
 
@@ -175,7 +177,14 @@ final class View implements SingletonCompletable, ArrayAccess
 	{
 		if( isset($this->call[$name]) )
 		{
-			return $this->call[$name]( $this, ...$arguments );
+			if( $this->call[$name] instanceof HigherOrderTapProxy )
+			{
+				return $this->call[$name]->{$name}( $arguments );
+			}
+			else
+			{
+				return $this->call[$name]( $this, ...$arguments );
+			}
 		}
 		else
 		{
@@ -186,6 +195,28 @@ final class View implements SingletonCompletable, ArrayAccess
 	public function register( $name, \Closure $callback )
 	{
 		$this->call[$name] = $callback;
+		return $this;
+	}
+
+	public function proxy( $target )
+	{
+		if( ! is_object($target) )
+		{
+			throw new \InvalidArgumentException("ThenProxy must be object");
+		}
+
+		$proxy = new HigherOrderTapProxy($target);
+		$ref = new \ReflectionClass($target);
+
+		foreach( $ref->getMethods( \ReflectionMethod::IS_PUBLIC ) as $method )
+		{
+			$name = $method->getShortName();
+			if( ! $method->isStatic() && ! array_key_exists($name, $this->call) )
+			{
+				$this->call[$name] = $proxy;
+			}
+		}
+
 		return $this;
 	}
 
@@ -391,7 +422,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	}
 
 	/**
-	 * GetTrait an item from the collection by keys if value not empty.
+	 * Get an item from the collection by keys if value not empty.
 	 *
 	 * @param array $keys
 	 * @param mixed $default default value
@@ -863,7 +894,7 @@ final class View implements SingletonCompletable, ArrayAccess
 	}
 
 	/**
-	 * GetTrait plugin data
+	 * Get plugin data
 	 *
 	 * @param $name
 	 * @param array $data

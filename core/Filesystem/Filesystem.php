@@ -34,7 +34,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait the contents of a file
+	 * Get the contents of a file
 	 *
 	 * @param  string $path
 	 * @param  bool $lock
@@ -52,7 +52,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait contents of a file with shared access.
+	 * Get contents of a file with shared access.
 	 *
 	 * @param  string $path
 	 * @return string
@@ -79,7 +79,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait the returned value of a file
+	 * Get the returned value of a file
 	 *
 	 * @param  string $path
 	 * @return mixed
@@ -99,7 +99,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait the saved data value of a file
+	 * Get the saved data value of a file
 	 *
 	 * @param  string $path
 	 * @param array $default
@@ -121,7 +121,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait the MD5 hash of the file at the given path
+	 * Get the MD5 hash of the file at the given path
 	 *
 	 * @param  string $path
 	 * @return string
@@ -173,7 +173,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait or set UNIX mode of a file or directory
+	 * Get or set UNIX mode of a file or directory
 	 *
 	 * @param  string $path
 	 * @param  int $mode
@@ -320,7 +320,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait the file type of a given file.
+	 * Get the file type of a given file.
 	 *
 	 * @param  string $path
 	 * @return string
@@ -331,7 +331,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait the mime-type of a given file.
+	 * Get the mime-type of a given file.
 	 *
 	 * @param  string $path
 	 * @return string|false
@@ -342,7 +342,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait the file size of a given file.
+	 * Get the file size of a given file.
 	 *
 	 * @param  string $path
 	 * @return int
@@ -353,7 +353,7 @@ class Filesystem
 	}
 
 	/**
-	 * GetTrait the file's last modification time.
+	 * Get the file's last modification time.
 	 *
 	 * @param  string $path
 	 * @return int

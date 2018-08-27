@@ -113,7 +113,7 @@ trait SetTrait
 	}
 
 	/**
-	 * SetTrait the item at a given offset.
+	 * Set the item at a given offset.
 	 *
 	 * @param  mixed  $offset
 	 * @param  mixed  $value

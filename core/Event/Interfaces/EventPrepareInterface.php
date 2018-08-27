@@ -20,7 +20,7 @@ interface EventPrepareInterface
 	public function __construct( string $name );
 
 	/**
-	 * GetTrait event parameter by name
+	 * Get event parameter by name
 	 *
 	 * @param Dispatcher $manager
 	 * @return mixed

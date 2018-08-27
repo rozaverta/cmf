@@ -250,7 +250,7 @@ class Context implements Arrayable
 	}
 
 	/**
-	 * GetTrait the instance as an array.
+	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */

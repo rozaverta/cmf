@@ -34,7 +34,8 @@ class SingletonEvent extends SystemEvent
 	}
 
 	/**
-	 * GetTrait all singletons
+	 * Get all singletons
+	 *
 	 * @return array
 	 */
 	public function getSingletons(): array

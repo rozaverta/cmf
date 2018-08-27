@@ -63,7 +63,7 @@ class QueryException extends PDOException
 	}
 
 	/**
-	 * GetTrait the SQL for the query.
+	 * Get the SQL for the query.
 	 *
 	 * @return string
 	 */
@@ -73,7 +73,7 @@ class QueryException extends PDOException
 	}
 
 	/**
-	 * GetTrait the bindings for the query.
+	 * Get the bindings for the query.
 	 *
 	 * @return array
 	 */

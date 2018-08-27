@@ -115,7 +115,7 @@ class Response
 	}
 
 	/**
-	 * GetTrait the HTTP protocol version
+	 * Get the HTTP protocol version
 	 *
 	 * @return string
 	 */
@@ -125,7 +125,7 @@ class Response
 	}
 
 	/**
-	 * SetTrait the HTTP protocol version
+	 * Set the HTTP protocol version
 	 *
 	 * @param string $protocol_version
 	 * @return string|$this
@@ -139,7 +139,7 @@ class Response
 	}
 
 	/**
-	 * SetTrait the response's body content
+	 * Set the response's body content
 	 *
 	 * @param string $body  The body content string
 	 * @return $this
@@ -153,7 +153,7 @@ class Response
 	}
 
 	/**
-	 * GetTrait the response's body content
+	 * Get the response's body content
 	 *
 	 * @return string
 	 */
@@ -193,7 +193,7 @@ class Response
 	}
 
 	/**
-	 * SetTrait the HTTP response code
+	 * Set the HTTP response code
 	 *
 	 * @param int $code     The HTTP status code to send
 	 * @return $this
@@ -207,7 +207,7 @@ class Response
 	}
 
 	/**
-	 * GetTrait the HTTP response code
+	 * Get the HTTP response code
 	 *
 	 * @return int
 	 */

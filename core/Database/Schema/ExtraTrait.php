@@ -19,7 +19,7 @@ trait ExtraTrait
 	protected $extra;
 
 	/**
-	 * GetTrait extra item
+	 * Get extra item
 	 *
 	 * @param string $name
 	 * @param mixed $default

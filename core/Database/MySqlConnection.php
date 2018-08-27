@@ -10,7 +10,7 @@ use EApp\Database\Query\Grammars\MySqlGrammar as QueryGrammar;
 class MySqlConnection extends Connection
 {
 	/**
-	 * GetTrait the default query grammar instance.
+	 * Get the default query grammar instance.
 	 *
 	 * @return \EApp\Database\Query\Grammars\MySqlGrammar
 	 */
@@ -20,7 +20,7 @@ class MySqlConnection extends Connection
 	}
 
 	/**
-	 * GetTrait the default post processor instance.
+	 * Get the default post processor instance.
 	 *
 	 * @return \EApp\Database\Query\Processors\MySqlProcessor
 	 */
@@ -30,7 +30,7 @@ class MySqlConnection extends Connection
 	}
 
 	/**
-	 * GetTrait the Doctrine DBAL driver.
+	 * Get the Doctrine DBAL driver.
 	 *
 	 * @return \Doctrine\DBAL\Driver\PDOMySql\Driver
 	 */

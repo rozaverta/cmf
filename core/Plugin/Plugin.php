@@ -128,7 +128,7 @@ abstract class Plugin
 	}
 
 	/**
-	 * GetTrait cache type.
+	 * Get cache type.
 	 * Valid values: nocache, data, view, plugin
 	 *
 	 * @return string

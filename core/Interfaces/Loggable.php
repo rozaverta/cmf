@@ -38,7 +38,7 @@ interface Loggable
 	public function hasLogs();
 
 	/**
-	 * GetTrait last log instance
+	 * Get last log instance
 	 *
 	 * @param bool $clearReturn
 	 * @return bool|\EApp\Log
@@ -46,7 +46,7 @@ interface Loggable
 	public function getLastLog( $clearReturn = false );
 
 	/**
-	 * GetTrait all logs as array
+	 * Get all logs as array
 	 *
 	 * @param bool $clear
 	 * @return mixed

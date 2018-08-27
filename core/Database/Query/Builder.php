@@ -209,7 +209,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait the columns to be selected.
+	 * Set the columns to be selected.
 	 *
 	 * @param  array|mixed  $columns
 	 * @return $this
@@ -315,7 +315,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait the table which the query is targeting.
+	 * Set the table which the query is targeting.
 	 *
 	 * @param  string  $table
 	 * @return $this
@@ -1525,7 +1525,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait the "offset" value of the query.
+	 * Set the "offset" value of the query.
 	 *
 	 * @param  int  $value
 	 * @return $this
@@ -1539,7 +1539,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait the "limit" value of the query.
+	 * Set the "limit" value of the query.
 	 *
 	 * @param  int $value
 	 * @param  int $offset
@@ -1561,7 +1561,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait the limit and offset for a given page.
+	 * Set the limit and offset for a given page.
 	 *
 	 * @param  int  $page
 	 * @param  int  $perPage
@@ -1595,7 +1595,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait an array with all orders with a given column removed.
+	 * Get an array with all orders with a given column removed.
 	 *
 	 * @param  string  $column
 	 * @return array
@@ -1678,7 +1678,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait result class
+	 * Set result class
 	 *
 	 * @param string $resultClass
 	 * @return \EApp\Database\Query\Builder
@@ -1690,7 +1690,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait the SQL representation of the query.
+	 * Get the SQL representation of the query.
 	 *
 	 * @return string
 	 */
@@ -1712,7 +1712,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait a single column's value from the first result of a query.
+	 * Get a single column's value from the first result of a query.
 	 *
 	 * @param  string  $column
 	 * @return mixed
@@ -1779,7 +1779,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait the count of the total records for the paginator.
+	 * Get the count of the total records for the paginator.
 	 *
 	 * @param  string $column
 	 * @return int
@@ -1846,7 +1846,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait a generator for the given query.
+	 * Get a generator for the given query.
 	 *
 	 * @return \Generator
 	 */
@@ -1920,7 +1920,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait an array with the values of a given column.
+	 * Get an array with the values of a given column.
 	 *
 	 * @param  string  $column
 	 * @param  string|null  $key
@@ -2104,7 +2104,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait the aggregate property without running the query.
+	 * Set the aggregate property without running the query.
 	 *
 	 * @param  string  $function
 	 * @param  array  $columns
@@ -2283,7 +2283,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait a new instance of the query builder.
+	 * Get a new instance of the query builder.
 	 *
 	 * @return \EApp\Database\Query\Builder
 	 */
@@ -2304,7 +2304,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait the current query value bindings in a flattened array.
+	 * Get the current query value bindings in a flattened array.
 	 *
 	 * @return array
 	 */
@@ -2314,7 +2314,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait the raw array of bindings.
+	 * Get the raw array of bindings.
 	 *
 	 * @return array
 	 */
@@ -2324,7 +2324,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait the bindings on the query builder.
+	 * Set the bindings on the query builder.
 	 *
 	 * @param  int     $number
 	 * @param  mixed   $value
@@ -2351,7 +2351,7 @@ class Builder
 	}
 
 	/**
-	 * SetTrait the bindings on the query builder.
+	 * Set the bindings on the query builder.
 	 *
 	 * @param  array   $bindings
 	 * @param  string  $type
@@ -2420,7 +2420,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait the database connection instance.
+	 * Get the database connection instance.
 	 *
 	 * @return \EApp\Database\Connection
 	 */
@@ -2430,7 +2430,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait the database query processor instance.
+	 * Get the database query processor instance.
 	 *
 	 * @return \EApp\Database\Query\Processors\Processor
 	 */
@@ -2440,7 +2440,7 @@ class Builder
 	}
 
 	/**
-	 * GetTrait the query grammar instance.
+	 * Get the query grammar instance.
 	 *
 	 * @return \EApp\Database\Query\Grammars\Grammar
 	 */

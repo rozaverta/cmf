@@ -54,7 +54,7 @@ class ResourceLoader implements ModuleComponentInterface
 	}
 
 	/**
-	 * GetTrait table name
+	 * Get table name
 	 *
 	 * @return string
 	 */
@@ -96,7 +96,7 @@ class ResourceLoader implements ModuleComponentInterface
 	}
 
 	/**
-	 * GetTrait extra value
+	 * Get extra value
 	 *
 	 * @param string $name
 	 * @param mixed $default

@@ -18,7 +18,7 @@ trait GetModuleComponentTrait
 	protected $module;
 
 	/**
-	 * GetTrait module component
+	 * Get module component
 	 *
 	 * @return Module
 	 */
@@ -32,7 +32,7 @@ trait GetModuleComponentTrait
 	}
 
 	/**
-	 * GetTrait module id
+	 * Get module id
 	 *
 	 * @return int
 	 */

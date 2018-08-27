@@ -49,7 +49,7 @@ class JsonExpression extends Expression
 	}
 
 	/**
-	 * GetTrait the value of the expression.
+	 * Get the value of the expression.
 	 *
 	 * @return mixed
 	 */
@@ -59,7 +59,7 @@ class JsonExpression extends Expression
 	}
 
 	/**
-	 * GetTrait the value of the expression.
+	 * Get the value of the expression.
 	 *
 	 * @return string
 	 */
