@@ -11,7 +11,7 @@ namespace EApp\Controllers;
 use EApp\App;
 use EApp\Prop;
 use EApp\Controllers\Interfaces\ControllerContentOutput;
-use EApp\Component\Module;
+use EApp\Module\Module;
 
 final class RedirectController extends Controller implements ControllerContentOutput
 {

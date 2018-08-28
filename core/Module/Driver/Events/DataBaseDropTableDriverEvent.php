@@ -2,20 +2,19 @@
 /**
  * Created by IntelliJ IDEA.
  * User: GoshaV [Maniako] <gosha@rozaverta.com>
- * Date: 14.04.2018
- * Time: 2:45
+ * Date: 09.04.2018
+ * Time: 13:06
  */
 
-namespace EApp\Component\Driver\Events;
-
+namespace EApp\Module\Driver\Events;
 
 use EApp\Events\SystemDriverEvent;
 use EApp\Interfaces\SystemDriverInterface;
 
-class ModuleInstallDriverEvent extends SystemDriverEvent
+class DataBaseDropTableDriverEvent extends SystemDriverEvent
 {
 	public function __construct( SystemDriverInterface $driver, array $data = [] )
 	{
-		parent::__construct( $driver, "install", $data );
+		parent::__construct( $driver, "drop", $data );
 	}
 }

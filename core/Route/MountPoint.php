@@ -9,7 +9,7 @@
 namespace EApp\Route;
 
 use EApp\App;
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Schemes\ModuleRouterSchemeDesigner;
 use EApp\Exceptions\NotFoundException;
 use EApp\Traits\GetModuleComponentTrait;

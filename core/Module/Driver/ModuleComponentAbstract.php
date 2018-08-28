@@ -6,7 +6,7 @@
  * Time: 2:49
  */
 
-namespace EApp\Component\Driver;
+namespace EApp\Module\Driver;
 
 use EApp\Database\Connection;
 use EApp\Database\Query\Expression;

@@ -6,7 +6,7 @@
  * Time: 12:18
  */
 
-namespace EApp\Component\Driver\Events;
+namespace EApp\Module\Driver\Events;
 
 use EApp\Events\SystemDriverEvent;
 use EApp\Interfaces\SystemDriverInterface;

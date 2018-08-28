@@ -6,9 +6,9 @@
  * Time: 2:49
  */
 
-namespace EApp\Component\Driver;
+namespace EApp\Module\Driver;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Schemes\ModuleRouterSchemeDesigner;
 use EApp\Database\Query\Builder;
 use EApp\Event\EventManager;
@@ -30,7 +30,7 @@ class ModuleRouter implements SystemDriverInterface, Loggable
 	];
 
 	/**
-	 * @var \EApp\Component\Module
+	 * @var \EApp\Module\Module
 	 */
 	protected $module;
 

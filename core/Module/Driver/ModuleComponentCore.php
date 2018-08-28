@@ -6,9 +6,9 @@
  * Time: 2:49
  */
 
-namespace EApp\Component\Driver;
+namespace EApp\Module\Driver;
 
-use EApp\Component\Driver\Tools\FileConfig;
+use EApp\Module\Driver\Tools\FileConfig;
 use EApp\Event\EventManager;
 use EApp\ModuleCore;
 use EApp\Prop;

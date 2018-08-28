@@ -9,8 +9,8 @@
 namespace EApp\CmdCommands;
 
 use EApp\App;
-use EApp\Component\Module;
-use EApp\Component\ModuleManager;
+use EApp\Module\Module;
+use EApp\Module\ModuleManager;
 use EApp\Log;
 use EApp\Cmd\CmdCommand;
 use EApp\Controllers\Controller;

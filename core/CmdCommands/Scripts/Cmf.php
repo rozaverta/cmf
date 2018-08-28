@@ -9,7 +9,7 @@
 namespace EApp\CmdCommands\Scripts;
 
 use EApp\CI\PhpExport;
-use EApp\Component\Driver\ModuleComponentCore;
+use EApp\Module\Driver\ModuleComponentCore;
 use EApp\Filesystem\Resource;
 use EApp\Log;
 use EApp\Prop;

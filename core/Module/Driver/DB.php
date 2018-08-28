@@ -6,7 +6,7 @@
  * Time: 18:31
  */
 
-namespace EApp\Component\Driver;
+namespace EApp\Module\Driver;
 
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
@@ -14,7 +14,7 @@ use Doctrine\DBAL\Schema\SchemaDiff;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Type;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Database\Connection;
 use EApp\Database\Schema\Column;
 use EApp\Database\Schema\Index;
@@ -54,7 +54,7 @@ class DB implements SystemDriverInterface, Loggable
 		// read last version
 		if( is_null($version) )
 		{
-			/** @var \EApp\Component\ModuleConfig $config */
+			/** @var \EApp\Module\ModuleConfig $config */
 
 			$config_class = $module->getId() === 0 ? ModuleCoreConfig::class : $module->getNamespace() . "Module";
 			$config = new $config_class();

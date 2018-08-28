@@ -6,7 +6,7 @@
  * Time: 12:27
  */
 
-namespace EApp\Component\Driver\Traits;
+namespace EApp\Module\Driver\Traits;
 
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 

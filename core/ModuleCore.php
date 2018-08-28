@@ -8,7 +8,7 @@
 
 namespace EApp;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 
 class ModuleCore extends Module
 {

@@ -35,7 +35,7 @@ use EApp\Events\LoadEvent;
 use EApp\Events\PreRenderEvent;
 use EApp\Events\ReadyEvent;
 use EApp\Events\ShutdownEvent;
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Route\QueryRoutes;
 use EApp\Cmd\Terminal;
 use EApp\View\PageCache;

@@ -6,7 +6,7 @@
  * Time: 2:21
  */
 
-namespace EApp\Component;
+namespace EApp\Module;
 
 use EApp\Cache;
 use EApp\Schemes\ModulesSchemeDesigner;
@@ -22,7 +22,7 @@ use EApp\Traits\GetIdentifierTrait;
 /**
  * Class Module
  *
- * @package EApp\Component
+ * @package EApp\Module
  */
 class Module implements Arrayable, PhpExportSerializeInterface
 {

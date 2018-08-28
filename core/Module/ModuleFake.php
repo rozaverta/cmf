@@ -6,7 +6,7 @@
  * Time: 20:26
  */
 
-namespace EApp\Component;
+namespace EApp\Module;
 
 final class ModuleFake extends Module
 {

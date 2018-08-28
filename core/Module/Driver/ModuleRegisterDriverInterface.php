@@ -6,10 +6,10 @@
  * Time: 12:42
  */
 
-namespace EApp\Component\Driver;
+namespace EApp\Module\Driver;
 
-use EApp\Component\ModuleFake;
-use EApp\Component\ModuleConfig;
+use EApp\Module\ModuleFake;
+use EApp\Module\ModuleConfig;
 use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Database\Connection;
 use EApp\Event\EventManager;

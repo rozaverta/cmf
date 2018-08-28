@@ -8,7 +8,7 @@
 
 namespace EApp\Context;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Schemes\ContextSchemeDesigner;
 use EApp\Exceptions\NotFoundException;
 use EApp\Interfaces\Arrayable;

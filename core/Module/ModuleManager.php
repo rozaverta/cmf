@@ -6,7 +6,7 @@
  * Time: 2:21
  */
 
-namespace EApp\Component;
+namespace EApp\Module;
 
 use EApp\Cache;
 use EApp\Support\Collection;

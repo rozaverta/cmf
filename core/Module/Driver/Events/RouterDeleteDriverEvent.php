@@ -6,16 +6,15 @@
  * Time: 0:33
  */
 
-namespace EApp\Component\Driver\Events;
-
+namespace EApp\Module\Driver\Events;
 
 use EApp\Events\SystemDriverEvent;
 use EApp\Interfaces\SystemDriverInterface;
 
-class RouterAddDriverEvent extends SystemDriverEvent
+class RouterDeleteDriverEvent extends SystemDriverEvent
 {
 	public function __construct( SystemDriverInterface $driver, array $data = [] )
 	{
-		parent::__construct( $driver, "add", $data );
+		parent::__construct( $driver, "delete", $data );
 	}
 }

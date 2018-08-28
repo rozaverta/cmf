@@ -8,7 +8,7 @@
 
 namespace EApp\Schemes;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Database\Schema\SchemeDesigner;
 use EApp\Interfaces\ModuleComponentInterface;
 use EApp\Traits\GetModuleComponentTrait;

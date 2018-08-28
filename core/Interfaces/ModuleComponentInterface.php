@@ -8,14 +8,14 @@
 
 namespace EApp\Interfaces;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 
 interface ModuleComponentInterface
 {
 	/**
 	 * Get module instance
 	 *
-	 * @return \EApp\Component\Module
+	 * @return \EApp\Module\Module
 	 */
 	public function getModule(): Module;
 

@@ -8,7 +8,7 @@
 
 namespace EApp\Database\Schema;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Prop;
 use EApp\Support\Collection;
 use EApp\Interfaces\TypeOfInterface;

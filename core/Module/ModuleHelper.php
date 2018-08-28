@@ -6,7 +6,7 @@
  * Time: 16:48
  */
 
-namespace EApp\Component;
+namespace EApp\Module;
 
 use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Database\Manager as DB;

@@ -28,7 +28,7 @@ class PackageEditor implements SystemDriverInterface
 	protected $unix = false;
 
 	/**
-	 * @var \EApp\Component\Module
+	 * @var \EApp\Module\Module
 	 */
 	protected $module;
 

@@ -8,7 +8,7 @@
 
 namespace EApp\Traits;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 
 trait GetModuleComponentTrait
 {

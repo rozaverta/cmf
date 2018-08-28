@@ -8,7 +8,7 @@
 
 namespace EApp\Filesystem;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Filesystem\Exceptions\AccessFileException;
 use EApp\Filesystem\Exceptions\NotFoundFileException;
 use EApp\Filesystem\Exceptions\ReadFileException;

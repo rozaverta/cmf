@@ -11,7 +11,7 @@ namespace EApp\Event;
 use EApp\App;
 use EApp\Database\Query\JoinClause;
 use EApp\Event\Interfaces\EventPrepareInterface;
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Prop;
 
 final class EventFactory

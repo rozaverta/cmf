@@ -6,7 +6,7 @@
  * Time: 1:45
  */
 
-namespace EApp\Component\Driver\Tools;
+namespace EApp\Module\Driver\Tools;
 
 use EApp\Helper;
 use EApp\Traits\GetTrait;

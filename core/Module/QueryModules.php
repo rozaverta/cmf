@@ -6,9 +6,9 @@
  * Time: 2:21
  */
 
-namespace EApp\Component;
+namespace EApp\Module;
 
-use EApp\Component\Scheme\ModulesSchemeDesigner;
+use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Database\QueryPrototype;
 
 class QueryModules extends QueryPrototype

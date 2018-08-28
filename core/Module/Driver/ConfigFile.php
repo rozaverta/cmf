@@ -6,16 +6,18 @@
  * Time: 11:16
  */
 
-namespace EApp\Component\Driver;
+namespace EApp\Module\Driver;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Event\EventManager;
 use EApp\Helper;
 use EApp\Prop;
 use EApp\Interfaces\Loggable;
-use EApp\Traits\{
-	GetTrait, GetModuleComponentTrait, LoggableTrait, SetTrait, Write
-};
+use EApp\Traits\GetTrait;
+use EApp\Traits\GetModuleComponentTrait;
+use EApp\Traits\LoggableTrait;
+use EApp\Traits\SetTrait;
+use EApp\Traits\Write;
 use EApp\Interfaces\SystemDriverInterface;
 use EApp\Text;
 

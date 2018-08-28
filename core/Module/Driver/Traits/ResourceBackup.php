@@ -6,7 +6,7 @@
  * Time: 0:19
  */
 
-namespace EApp\Component\Driver\Traits;
+namespace EApp\Module\Driver\Traits;
 
 use EApp\App;
 use EApp\Interfaces\Arrayable;

@@ -8,7 +8,7 @@
 
 namespace EApp;
 
-use EApp\Component\ModuleConfig;
+use EApp\Module\ModuleConfig;
 
 class ModuleCoreConfig extends ModuleConfig
 {

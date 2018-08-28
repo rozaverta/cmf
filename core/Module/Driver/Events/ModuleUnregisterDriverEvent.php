@@ -6,9 +6,9 @@
  * Time: 2:45
  */
 
-namespace EApp\Component\Driver\Events;
+namespace EApp\Module\Driver\Events;
 
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Events\SystemDriverEvent;
 use EApp\Interfaces\SystemDriverInterface;
 
@@ -17,7 +17,7 @@ use EApp\Interfaces\SystemDriverInterface;
  *
  * @property Module $module
  *
- * @package EApp\Component\Driver\Events
+ * @package EApp\Module\Driver\Events
  */
 class ModuleUnregisterDriverEvent extends SystemDriverEvent
 {

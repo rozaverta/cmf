@@ -6,10 +6,10 @@
  * Time: 2:49
  */
 
-namespace EApp\Component\Driver;
+namespace EApp\Module\Driver;
 
-use EApp\Component\ModuleFake;
-use EApp\Component\Module;
+use EApp\Module\ModuleFake;
+use EApp\Module\Module;
 use EApp\Schemes\ModulesSchemeDesigner;
 use EApp\Event\EventManager;
 use EApp\Exceptions\NotFoundException;

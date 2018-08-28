@@ -13,7 +13,7 @@ use EApp\Interfaces\PhpExportSerializeInterface;
 use EApp\ModuleCore;
 use EApp\Exceptions\NotFoundException;
 use EApp\Cache;
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Prop;
 use EApp\Support\Collection;
 use EApp\Support\PhpExportSerialize;

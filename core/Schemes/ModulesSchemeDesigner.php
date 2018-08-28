@@ -10,7 +10,7 @@ namespace EApp\Schemes;
 
 use EApp\Database\Schema\SchemeDesigner;
 use EApp\Exceptions\NotFoundException;
-use EApp\Component\ModuleConfig;
+use EApp\Module\ModuleConfig;
 
 class ModulesSchemeDesigner extends SchemeDesigner
 {
@@ -47,7 +47,7 @@ class ModulesSchemeDesigner extends SchemeDesigner
 	public $path;
 
 	/**
-	 * @var \EApp\Component\ModuleConfig $config
+	 * @var \EApp\Module\ModuleConfig $config
 	 */
 	protected $config;
 
@@ -102,7 +102,7 @@ class ModulesSchemeDesigner extends SchemeDesigner
 	}
 
 	/**
-	 * @return \EApp\Component\ModuleConfig
+	 * @return \EApp\Module\ModuleConfig
 	 */
 	public function getConfig(): ModuleConfig
 	{

@@ -9,7 +9,7 @@
 namespace EApp\Controllers;
 
 use EApp\Prop;
-use EApp\Component\Module;
+use EApp\Module\Module;
 use EApp\Interfaces\Loggable;
 use EApp\Traits\GetIdentifierTrait;
 use EApp\Traits\GetModuleComponentTrait;

@@ -6,7 +6,7 @@
  * Time: 2:45
  */
 
-namespace EApp\Component\Driver\Events;
+namespace EApp\Module\Driver\Events;
 
 use EApp\Events\SystemDriverEvent;
 use EApp\Filesystem\Resource;

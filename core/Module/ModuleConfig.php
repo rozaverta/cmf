@@ -6,7 +6,7 @@
  * Time: 14:26
  */
 
-namespace EApp\Component;
+namespace EApp\Module;
 
 use EApp\Support\Collection;
 use EApp\Exceptions\ReadException;

@@ -15,7 +15,7 @@ use EApp\Event\EventManager;
 use EApp\Prop;
 use EApp\Controllers\Interfaces\ControllerContentOutput;
 use EApp\Events\ThrowableEvent;
-use EApp\Component\Module as SystemModule;
+use EApp\Module\Module as SystemModule;
 
 abstract class JsonController extends Controller implements ControllerContentOutput
 {
