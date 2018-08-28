@@ -79,7 +79,7 @@ class Cache extends AbstractScript
 
 		$this
 			->getIO()
-			->table($rows, ["Name", "Factory"]);
+			->table($rows, ["Name", "Driver"]);
 	}
 
 	public function stats()
@@ -123,7 +123,7 @@ class Cache extends AbstractScript
 
 		$this
 			->getIO()
-			->table($rows, ["Name", "Factory"]);
+			->table($rows, ["Name", "Driver"]);
 	}
 
 	private function flushAskPrefix()

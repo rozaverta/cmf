@@ -31,7 +31,7 @@ interface CacheStoreInterface
 	 */
 	public function getLife(): int;
 
-	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface;
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheDriverInterface;
 
 	public function flush( string $prefix = null ): bool;
 

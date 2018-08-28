@@ -8,7 +8,7 @@
 
 namespace EApp\Cache\Apc;
 
-use EApp\Cache\CacheFactoryInterface;
+use EApp\Cache\CacheDriverInterface;
 use EApp\Cache\DatabaseHash;
 use EApp\Cache\Properties\Property;
 use EApp\Cache\Properties\PropertyMemory;
@@ -25,9 +25,9 @@ class ApcStore extends Store
 		$this->prefix = $prefix;
 	}
 
-	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheDriverInterface
 	{
-		$value = new ApcFactory(new DatabaseHash($name, $this->prefix . $prefix, $properties));
+		$value = new ApcDriver(new DatabaseHash($name, $this->prefix . $prefix, $properties));
 		$value->load(is_null($life) ? $this->getLife() : $life);
 		return $value;
 	}

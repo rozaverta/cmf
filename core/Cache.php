@@ -16,7 +16,7 @@ use EApp\Cache\CacheStoreInterface;
 class Cache
 {
 	/**
-	 * @var \EApp\Cache\CacheFactoryInterface
+	 * @var \EApp\Cache\CacheDriverInterface
 	 */
 	private $factory;
 

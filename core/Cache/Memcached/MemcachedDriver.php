@@ -10,10 +10,10 @@ namespace EApp\Cache\Memcached;
 
 use EApp\Cache\DatabaseHash;
 use EApp\Cache\Hash;
-use EApp\Cache\Factory;
+use EApp\Cache\Driver;
 use Memcached;
 
-class MemcachedFactory extends Factory
+class MemcachedDriver extends Driver
 {
 	use MemcachedConnectionTrait;
 

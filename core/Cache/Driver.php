@@ -8,7 +8,7 @@
 
 namespace EApp\Cache;
 
-abstract class Factory implements CacheFactoryInterface
+abstract class Driver implements CacheDriverInterface
 {
 	/**
 	 * @var Hash
@@ -44,7 +44,15 @@ abstract class Factory implements CacheFactoryInterface
 
 	abstract protected function exportData( $data ): bool;
 
-	protected function getKey(): string
+	/**
+	 * @return int
+	 */
+	public function getLife(): int
+	{
+		return $this->life;
+	}
+
+	protected function getHash(): string
 	{
 		return $this->hash->getHash();
 	}

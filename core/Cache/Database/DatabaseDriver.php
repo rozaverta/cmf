@@ -10,11 +10,11 @@ namespace EApp\Cache\Database;
 
 use EApp\Cache\DatabaseHash;
 use EApp\Cache\Hash;
-use EApp\Cache\Factory;
+use EApp\Cache\Driver;
 use EApp\Database\Connection;
 use EApp\Database\Query\Builder;
 
-class DatabaseFactory extends Factory
+class DatabaseDriver extends Driver
 {
 	use DatabaseConnectionTrait;
 

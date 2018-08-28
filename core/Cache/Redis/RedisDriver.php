@@ -9,10 +9,10 @@
 namespace EApp\Cache\Redis;
 
 use EApp\Cache\Hash;
-use EApp\Cache\Factory;
+use EApp\Cache\Driver;
 use Predis\Client;
 
-class RedisFactory extends Factory
+class RedisDriver extends Driver
 {
 	use RedisClientTrait;
 
@@ -24,32 +24,32 @@ class RedisFactory extends Factory
 
 	public function has(): bool
 	{
-		return $this->commandBool('exists', $this->getKey() );
+		return $this->commandBool('exists', $this->getHash() );
 	}
 
 	public function set( string $value ): bool
 	{
-		$set = $this->commandBool("set", $this->getKey(), $value);
+		$set = $this->commandBool("set", $this->getHash(), $value);
 		if( $set && $this->life > 0 )
 		{
-			$set = $this->commandBool("expire", $this->getKey(), $this->life);
+			$set = $this->commandBool("expire", $this->getHash(), $this->life);
 		}
 		return $set;
 	}
 
 	public function get()
 	{
-		$this->has() ? $this->command("get", $this->getKey()) : null;
+		$this->has() ? $this->command("get", $this->getHash()) : null;
 	}
 
 	public function import()
 	{
-		return $this->has() ? unserialize($this->command("get", $this->getKey())) : null;
+		return $this->has() ? unserialize($this->command("get", $this->getHash())) : null;
 	}
 
 	public function forget(): bool
 	{
-		return $this->has() ? $this->commandBool("del", $this->getKey()) : true;
+		return $this->has() ? $this->commandBool("del", $this->getHash()) : true;
 	}
 
 	protected function exportData( $data ): bool

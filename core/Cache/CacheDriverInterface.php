@@ -8,7 +8,7 @@
 
 namespace EApp\Cache;
 
-interface CacheFactoryInterface
+interface CacheDriverInterface
 {
 	public function load( int $life = 0 );
 

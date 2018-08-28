@@ -8,7 +8,7 @@
 
 namespace EApp\Cache\File;
 
-use EApp\Cache\CacheFactoryInterface;
+use EApp\Cache\CacheDriverInterface;
 use EApp\Cache\Properties\Property;
 use EApp\Cache\Properties\PropertyMemory;
 use EApp\Cache\Properties\PropertyStats;
@@ -35,9 +35,9 @@ class FileStore extends Store
 		}
 	}
 
-	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheDriverInterface
 	{
-		$value = new FileFactory($this->filesystem, new FileHash($name, $prefix, $properties), $this->directory);
+		$value = new FileDriver($this->filesystem, new FileHash($name, $prefix, $properties), $this->directory);
 		$value->load(is_null($life) ? $this->life : $life);
 		return $value;
 	}

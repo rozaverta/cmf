@@ -8,13 +8,13 @@
 
 namespace EApp\Cache\Apc;
 
-use EApp\Cache\Factory;
+use EApp\Cache\Driver;
 
-class ApcFactory extends Factory
+class ApcDriver extends Driver
 {
 	public function has(): bool
 	{
-		return apcu_exists( $this->getKey() );
+		return apcu_exists( $this->getHash() );
 	}
 
 	public function set( string $value ): bool
@@ -24,23 +24,23 @@ class ApcFactory extends Factory
 
 	public function get()
 	{
-		return $this->has() ? (string) apcu_fetch($this->getKey()) : null;
+		return $this->has() ? (string) apcu_fetch($this->getHash()) : null;
 	}
 
 	public function import()
 	{
-		return $this->has() ? apcu_fetch($this->getKey()) : null;
+		return $this->has() ? apcu_fetch($this->getHash()) : null;
 	}
 
 	public function forget(): bool
 	{
-		return apcu_delete( $this->getKey() );
+		return apcu_delete( $this->getHash() );
 	}
 
 	protected function exportData( $data ): bool
 	{
 		return apcu_store(
-			$this->getKey(), $data, $this->life
+			$this->getHash(), $data, $this->life
 		);
 	}
 }

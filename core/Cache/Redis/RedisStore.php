@@ -8,7 +8,7 @@
 
 namespace EApp\Cache\Redis;
 
-use EApp\Cache\CacheFactoryInterface;
+use EApp\Cache\CacheDriverInterface;
 use EApp\Cache\DatabaseHash;
 use EApp\Cache\Properties\Property;
 use EApp\Cache\Properties\PropertyMemory;
@@ -26,9 +26,9 @@ class RedisStore extends Store
 		$this->setRedis($client);
 	}
 
-	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheDriverInterface
 	{
-		$value = new RedisFactory($this->getRedis(), new DatabaseHash($name, $prefix, $properties));
+		$value = new RedisDriver($this->getRedis(), new DatabaseHash($name, $prefix, $properties));
 		$value->load(is_null($life) ? $this->getLife() : $life);
 		return $value;
 	}

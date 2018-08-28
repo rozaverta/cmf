@@ -8,7 +8,7 @@
 
 namespace EApp\Cache\Memcached;
 
-use EApp\Cache\CacheFactoryInterface;
+use EApp\Cache\CacheDriverInterface;
 use EApp\Cache\DatabaseHash;
 use EApp\Cache\Properties\Property;
 use EApp\Cache\Properties\PropertyStats;
@@ -28,9 +28,9 @@ class MemcachedStore extends Store
 		$this->prefix = $prefix;
 	}
 
-	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheDriverInterface
 	{
-		$value = new MemcachedFactory($this->getConnection(), new DatabaseHash($name, $this->prefix . $prefix, $properties));
+		$value = new MemcachedDriver($this->getConnection(), new DatabaseHash($name, $this->prefix . $prefix, $properties));
 		$value->load(is_null($life) ? $this->life : $life);
 		return $value;
 	}

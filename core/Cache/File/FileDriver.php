@@ -9,11 +9,11 @@
 namespace EApp\Cache\File;
 
 use EApp\Cache\Hash;
-use EApp\Cache\Factory;
+use EApp\Cache\Driver;
 use EApp\Filesystem\Filesystem;
 use EApp\Filesystem\Traits\WriteFileTrait;
 
-class FileFactory extends Factory
+class FileDriver extends Driver
 {
 	use WriteFileTrait;
 

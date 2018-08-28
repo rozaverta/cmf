@@ -8,7 +8,7 @@
 
 namespace EApp\Cache\Database;
 
-use EApp\Cache\CacheFactoryInterface;
+use EApp\Cache\CacheDriverInterface;
 use EApp\Cache\DatabaseHash;
 use EApp\Cache\Properties\Property;
 use EApp\Cache\Properties\PropertyLog;
@@ -135,9 +135,9 @@ class DatabaseStore extends Store
 		return $stats;
 	}
 
-	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheFactoryInterface
+	public function createFactory( string $name, string $prefix = "", array $properties = [], int $life = null ): CacheDriverInterface
 	{
-		$value = new DatabaseFactory($this->connection, $this->table, new DatabaseHash($name, $prefix, $properties));
+		$value = new DatabaseDriver($this->connection, $this->table, new DatabaseHash($name, $prefix, $properties));
 		$value->load(is_null($life) ? $this->life : $life);
 		return $value;
 	}
