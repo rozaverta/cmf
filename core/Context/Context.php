@@ -6,8 +6,9 @@
  * Time: 16:27
  */
 
-namespace EApp\Component;
+namespace EApp\Context;
 
+use EApp\Component\Module;
 use EApp\Schemes\ContextSchemeDesigner;
 use EApp\Exceptions\NotFoundException;
 use EApp\Interfaces\Arrayable;

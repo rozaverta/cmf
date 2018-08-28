@@ -46,7 +46,7 @@ class WelcomeController extends Controller
 
 		foreach($this->menu as & $page)
 		{
-			$page["link"] = $url->makeURL($page["name"], [], true, true);
+			$page["link"] = $url->makeUrl($page["name"], [], true, true);
 			$page["active"] = $page["name"] === $page_name;
 			if($page["active"])
 			{

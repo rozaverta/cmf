@@ -3,10 +3,10 @@
 namespace EApp;
 
 use EApp\CI\Log as CiLog;
-use EApp\Component\Context;
+use EApp\Context\Context;
 use EApp\Route\Comparator;
 use EApp\Route\MountPoint;
-use EApp\Component\QueryContext;
+use EApp\Context\QueryContext;
 use EApp\Schemes\ContextSchemeDesigner;
 use EApp\Schemes\ModuleRouterSchemeDesigner;
 use EApp\Controllers\WelcomeController;
@@ -231,7 +231,7 @@ final class App
 			if( $open && ("/" . $path) == $url->getPath() )
 			{
 				$response
-					->redirect( $url->makeURL( $url->getPath() . "/" ) )
+					->redirect( $url->makeUrl( $url->getPath() . "/" ) )
 					->send();
 
 				return $result_type = 'redirect';
@@ -330,7 +330,7 @@ final class App
 					if( $comparator->isLastClosable() )
 					{
 						$response
-							->redirect($url->makeURL($url->getPath() . "/", $_GET ?? [], true))
+							->redirect($url->makeUrl($url->getPath() . "/", $_GET ?? [], true))
 							->send();
 
 						return $result_type = 'redirect';
@@ -559,7 +559,7 @@ final class App
 
 		$cache = new Cache("context");
 
-		/** @var Context $context */
+		/** @var \EApp\Context\Context $context */
 		/** @var Context[] $ctx */
 		/** @var array $item */
 		/** @var ContextSchemeDesigner $instance */

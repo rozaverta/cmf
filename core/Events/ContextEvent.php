@@ -8,7 +8,7 @@
 
 namespace EApp\Events;
 
-use EApp\Component\Context;
+use EApp\Context\Context;
 use EApp\Support\Collection;
 
 /**

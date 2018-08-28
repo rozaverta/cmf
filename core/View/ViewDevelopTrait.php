@@ -27,7 +27,7 @@ trait ViewDevelopTrait {}
 namespace EApp\View;
 
 /**
- * @method string getUrl(string $controller, int $id, \EApp\Component\Context $context = null)
+ * @method string getUrl(string $controller, int $id, \EApp\Context\Context $context = null)
  * /
 trait ViewDevelopTrait {}
 

@@ -8,7 +8,7 @@
 
 namespace EApp\Route;
 
-use EApp\Component\Context;
+use EApp\Context\Context;
 use EApp\Interfaces\CreateInstanceInterface;
 use EApp\Prop;
 use EApp\Support\Regexp;
@@ -504,7 +504,7 @@ class Url implements \Countable, CreateInstanceInterface
 	 * @param array $query
 	 * @return string
 	 */
-	public function makeContextURL( Context $context, $path = '', array $query = [] ): string
+	public function makeContextUrl( Context $context, $path = '', array $query = [] ): string
 	{
 		if( $context->isHost() )
 		{
@@ -554,7 +554,7 @@ class Url implements \Countable, CreateInstanceInterface
 			$path = trim($context->getPath(), "/") . "/" . $path;
 		}
 
-		return $this->getModeURL($url, $path, $query);
+		return $this->getModeUrl($url, $path, $query);
 	}
 
 	/**
@@ -566,7 +566,7 @@ class Url implements \Countable, CreateInstanceInterface
 	 * @param bool|null $full
 	 * @return string
 	 */
-	public function makeURL( $path = '', array $query = [], bool $context = false, bool $full = null ): string
+	public function makeUrl( $path = '', array $query = [], bool $context = false, bool $full = null ): string
 	{
 		if( is_null($full) )
 		{
@@ -602,7 +602,7 @@ class Url implements \Countable, CreateInstanceInterface
 			}
 		}
 
-		return $this->getModeURL($url, $path, $query);
+		return $this->getModeUrl($url, $path, $query);
 	}
 
 	public function shift( $delta = 1 )
@@ -771,7 +771,7 @@ class Url implements \Countable, CreateInstanceInterface
 		return strlen($this->base_prefix) > 0;
 	}
 
-	protected function getModeURL( $url, $path, array $query ): string
+	protected function getModeUrl( $url, $path, array $query ): string
 	{
 		if( strlen($path) && $path !== "/" )
 		{

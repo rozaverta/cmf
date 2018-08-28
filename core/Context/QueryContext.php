@@ -6,7 +6,7 @@
  * Time: 17:44
  */
 
-namespace EApp\Component;
+namespace EApp\Context;
 
 use EApp\Schemes\ContextSchemeDesigner;
 use EApp\Database\QueryPrototype;
